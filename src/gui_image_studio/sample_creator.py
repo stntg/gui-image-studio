@@ -6,7 +6,14 @@ This creates various types of images including static icons, animated GIFs, and 
 
 import os
 from PIL import Image, ImageDraw, ImageFont
-import numpy as np
+import math
+
+# Try to import numpy, use fallback if not available
+try:
+    import numpy as np
+    HAS_NUMPY = True
+except ImportError:
+    HAS_NUMPY = False
 
 def create_sample_images():
     """Create a variety of sample images for testing image_loader functionality."""
@@ -87,19 +94,19 @@ def create_themed_icon(filepath, theme):
     
     # Draw gear teeth
     for i in range(teeth):
-        angle1 = (i * 360 / teeth) * np.pi / 180
-        angle2 = ((i + 0.3) * 360 / teeth) * np.pi / 180
-        angle3 = ((i + 0.7) * 360 / teeth) * np.pi / 180
-        angle4 = ((i + 1) * 360 / teeth) * np.pi / 180
+        angle1 = math.radians(i * 360 / teeth)
+        angle2 = math.radians((i + 0.3) * 360 / teeth)
+        angle3 = math.radians((i + 0.7) * 360 / teeth)
+        angle4 = math.radians((i + 1) * 360 / teeth)
         
-        x1 = center[0] + outer_radius * np.cos(angle1)
-        y1 = center[1] + outer_radius * np.sin(angle1)
-        x2 = center[0] + (outer_radius + 5) * np.cos(angle2)
-        y2 = center[1] + (outer_radius + 5) * np.sin(angle2)
-        x3 = center[0] + (outer_radius + 5) * np.cos(angle3)
-        y3 = center[1] + (outer_radius + 5) * np.sin(angle3)
-        x4 = center[0] + outer_radius * np.cos(angle4)
-        y4 = center[1] + outer_radius * np.sin(angle4)
+        x1 = center[0] + outer_radius * math.cos(angle1)
+        y1 = center[1] + outer_radius * math.sin(angle1)
+        x2 = center[0] + (outer_radius + 5) * math.cos(angle2)
+        y2 = center[1] + (outer_radius + 5) * math.sin(angle2)
+        x3 = center[0] + (outer_radius + 5) * math.cos(angle3)
+        y3 = center[1] + (outer_radius + 5) * math.sin(angle3)
+        x4 = center[0] + outer_radius * math.cos(angle4)
+        y4 = center[1] + outer_radius * math.sin(angle4)
         
         draw.polygon([(x1, y1), (x2, y2), (x3, y3), (x4, y4)], fill=primary)
     
@@ -197,8 +204,8 @@ def create_animated_gif(filepath, theme="default"):
         size = 20
         
         # Calculate rotated square corners
-        cos_a = np.cos(np.radians(angle))
-        sin_a = np.sin(np.radians(angle))
+        cos_a = math.cos(math.radians(angle))
+        sin_a = math.sin(math.radians(angle))
         
         corners = []
         for dx, dy in [(-size//2, -size//2), (size//2, -size//2), (size//2, size//2), (-size//2, size//2)]:
@@ -210,7 +217,7 @@ def create_animated_gif(filepath, theme="default"):
         draw.polygon(corners, fill=colors[color_idx] + (255,))
         
         # Add a circle that pulses
-        radius = 8 + 4 * np.sin(i * np.pi / 4)
+        radius = 8 + 4 * math.sin(i * math.pi / 4)
         draw.ellipse([center[0] - radius, center[1] - radius, 
                       center[0] + radius, center[1] + radius], 
                      fill=colors[(color_idx + 1) % len(colors)] + (200,))
