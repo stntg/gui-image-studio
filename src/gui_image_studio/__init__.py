@@ -16,7 +16,7 @@ Key Features:
 
 Basic Usage:
     import gui_image_studio
-    
+
     # Load an image
     image = gui_image_studio.get_image(
         "icon.png",
@@ -24,7 +24,7 @@ Basic Usage:
         size=(64, 64),
         theme="dark"
     )
-    
+
     # Use in your GUI
     label = tk.Label(root, image=image)
     label.pack()
@@ -50,31 +50,35 @@ __author__ = "Stan Griffiths"
 __email__ = "stantgriffiths@gmail.com"
 __license__ = "MIT"
 
+from .generator import embed_images_from_folder
+
 # Import main functionality
 from .image_loader import get_image
-from .generator import embed_images_from_folder
 from .sample_creator import create_sample_images
 
 # Make key functions available at package level
 __all__ = [
-    'get_image',
-    'embed_images_from_folder', 
-    'create_sample_images',
-    '__version__',
+    "get_image",
+    "embed_images_from_folder",
+    "create_sample_images",
+    "__version__",
 ]
 
 # Convenience imports for common use cases
 try:
-    import tkinter
+    import tkinter  # noqa: F401
+
     TKINTER_AVAILABLE = True
 except ImportError:
     TKINTER_AVAILABLE = False
 
 try:
-    import customtkinter
+    import customtkinter  # noqa: F401
+
     CUSTOMTKINTER_AVAILABLE = True
 except ImportError:
     CUSTOMTKINTER_AVAILABLE = False
+
 
 def get_available_frameworks():
     """Return list of available GUI frameworks."""
@@ -85,27 +89,32 @@ def get_available_frameworks():
         frameworks.append("customtkinter")
     return frameworks
 
+
 def check_dependencies():
     """Check if all required dependencies are available."""
     missing = []
-    
+
     try:
-        import PIL
+        import PIL  # noqa: F401
     except ImportError:
         missing.append("Pillow")
-    
+
     if not TKINTER_AVAILABLE:
         missing.append("tkinter (usually built-in)")
-        
+
     return missing
+
 
 # Package metadata
 __package_info__ = {
-    'name': 'gui_image_studio',
-    'version': __version__,
-    'description': 'A comprehensive Python toolkit for creating, embedding, and managing images in Python GUI applications with support for tkinter and customtkinter.',
-    'author': __author__,
-    'license': __license__,
-    'frameworks': get_available_frameworks(),
-    'dependencies_missing': check_dependencies(),
+    "name": "gui_image_studio",
+    "version": __version__,
+    "description": (
+        "A comprehensive Python toolkit for creating, embedding, and managing "
+        "images in Python GUI applications with support for tkinter and customtkinter."
+    ),
+    "author": __author__,
+    "license": __license__,
+    "frameworks": get_available_frameworks(),
+    "dependencies_missing": check_dependencies(),
 }

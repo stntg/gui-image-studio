@@ -5,20 +5,22 @@ Allows running: python -m gui_image_studio
 """
 
 import sys
+
+from .cli import generate_embedded_images
 from .sample_creator import create_sample_images
-from .cli import generate_embedded_images, create_sample_images as cli_create_samples
+
 
 def main():
     """Main entry point for the module."""
     if len(sys.argv) > 1:
         command = sys.argv[1].lower()
-        if command in ['sample', 'samples', 'create-samples']:
+        if command in ["sample", "samples", "create-samples"]:
             create_sample_images()
-        elif command in ['generate', 'embed']:
+        elif command in ["generate", "embed"]:
             # Remove the command from sys.argv so argparse works correctly
             sys.argv = [sys.argv[0]] + sys.argv[2:]
             generate_embedded_images()
-        elif command in ['help', '-h', '--help']:
+        elif command in ["help", "-h", "--help"]:
             print_help()
         else:
             print(f"Unknown command: {command}")
@@ -26,6 +28,7 @@ def main():
             sys.exit(1)
     else:
         print_help()
+
 
 def print_help():
     """Print help information."""
@@ -42,6 +45,7 @@ def print_help():
     print("Examples:")
     print("  python -m gui_image_studio samples")
     print("  python -m gui_image_studio generate --folder images --output embedded.py")
+
 
 if __name__ == "__main__":
     main()

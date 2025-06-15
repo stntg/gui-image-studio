@@ -68,12 +68,12 @@ jobs:
     
     - name: Run flake8
       run: |
-        flake8 src/ --max-line-length=88 --extend-ignore=E203,W503 --exclude=__pycache__
+        flake8 src/ --max-line-length=88 --extend-ignore=E203,W503 --exclude=__pycache__,*embedded_images.py
     
     - name: Check code formatting with black
       run: |
-        black --check src/ --line-length=88
+        black --check src/ --line-length=88 --exclude=".*embedded_images\.py"
     
     - name: Check import sorting
       run: |
-        isort --check-only src/ --profile=black
+        isort --check-only src/ --profile=black --skip-glob="*embedded_images.py"
