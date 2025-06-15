@@ -1,0 +1,71 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "img2res"
+version = "1.0.0"
+description = "Image Resource Manager - Embed and load images efficiently in Python GUI applications"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Your Name", email = "your.email@example.com"},
+]
+maintainers = [
+    {name = "Your Name", email = "your.email@example.com"},
+]
+keywords = ["image", "gui", "tkinter", "customtkinter", "embed", "resources", "PIL", "Pillow"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Multimedia :: Graphics",
+    "Topic :: Software Development :: User Interfaces",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+    "Framework :: tkinter",
+]
+requires-python = ">=3.7"
+dependencies = [
+    "Pillow>=8.0.0",
+]
+
+[project.optional-dependencies]
+customtkinter = ["customtkinter>=5.0.0"]
+dev = [
+    "pytest>=6.0",
+    "pytest-cov",
+    "black",
+    "flake8",
+    "mypy",
+]
+examples = [
+    "customtkinter>=5.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/img2res"
+Documentation = "https://github.com/yourusername/img2res#readme"
+Repository = "https://github.com/yourusername/img2res"
+"Bug Reports" = "https://github.com/yourusername/img2res/issues"
+
+[project.scripts]
+img2res-generate = "img2res.cli:generate_embedded_images"
+img2res-create-samples = "img2res.cli:create_sample_images"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+img2res = ["*.py"]
+
