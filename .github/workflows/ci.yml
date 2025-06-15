@@ -37,6 +37,8 @@ jobs:
       run: |
         cd test_workspace
         python ../test_package.py
+      env:
+        PYTHONIOENCODING: utf-8
     
     - name: Test package import
       run: |
@@ -50,7 +52,12 @@ jobs:
     
     - name: Cleanup test files
       run: |
-        rm -rf test_workspace
+        if [[ "$RUNNER_OS" == "Windows" ]]; then
+          rmdir /s /q test_workspace
+        else
+          rm -rf test_workspace
+        fi
+      shell: bash
       if: always()
 
   lint:
