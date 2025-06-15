@@ -59,6 +59,12 @@ def test_image_loading():
     """Test image loading functionality."""
     print("Testing image loading...")
     
+    # Skip GUI-dependent tests in CI environment
+    if os.environ.get("CI") == "true" or os.environ.get("GITHUB_ACTIONS") == "true":
+        print("⚠ Skipping image loading test in CI environment (no GUI available)")
+        print("✓ Image loading test skipped\n")
+        return
+    
     try:
         # First ensure we have embedded images
         if not os.path.exists("test_embedded_output.py"):

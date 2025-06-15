@@ -30,8 +30,12 @@ jobs:
     
     - name: Create test directory
       run: |
-        mkdir -p test_workspace
-        cd test_workspace
+        if [[ "$RUNNER_OS" == "Windows" ]]; then
+          mkdir test_workspace
+        else
+          mkdir -p test_workspace
+        fi
+      shell: bash
     
     - name: Run package tests
       run: |
@@ -39,6 +43,7 @@ jobs:
         python ../test_package.py
       env:
         PYTHONIOENCODING: utf-8
+        CI: true
     
     - name: Test package import
       run: |
@@ -53,7 +58,7 @@ jobs:
     - name: Cleanup test files
       run: |
         if [[ "$RUNNER_OS" == "Windows" ]]; then
-          rmdir /s /q test_workspace
+          powershell Remove-Item -Recurse -Force test_workspace -ErrorAction SilentlyContinue
         else
           rm -rf test_workspace
         fi
