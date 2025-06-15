@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ['3.7', '3.8', '3.9', '3.10', '3.11']
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+    
+    - name: Run package tests
+      run: |
+        python test_package.py
+    
+    - name: Test package import
+      run: |
+        python -c "import img2res; print('Package version:', img2res.__version__)"
+    
+    - name: Test CLI functionality
+      run: |
+        python -m img2res.sample_creator
+        python -c "import os; print('Sample images created:', os.path.exists('sample_images'))"
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: Install linting tools
+      run: |
+        pip install flake8 black isort
+    
+    - name: Run flake8
+      run: |
+        flake8 src/ --max-line-length=88 --extend-ignore=E203,W503 --exclude=__pycache__
+    
+    - name: Check code formatting with black
+      run: |
+        black --check src/ --line-length=88
+    
+    - name: Check import sorting
+      run: |
+        isort --check-only src/ --profile=black
