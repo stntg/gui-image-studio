@@ -6,10 +6,10 @@ Script to generate embedded_images.py from sample images.
 import sys
 import os
 
-# Add src directory to path to import img2res
+# Add src directory to path to import gui_image_studio
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 
-from img2res import embed_images_from_folder
+from generator import embed_images_from_folder
 
 if __name__ == "__main__":
     # Generate embedded images from sample_images folder

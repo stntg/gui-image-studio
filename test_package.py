@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 """
-Simple test script to verify img2res package functionality.
+Simple test script to verify gui_image_studio package functionality.
 """
 
-import img2res
+import generator
 
 def test_package_info():
     """Test basic package information."""
     print("Testing package info...")
-    print(f"Package version: {img2res.__version__}")
-    print(f"Available functions: {img2res.__all__}")
-    print(f"Available frameworks: {img2res.get_available_frameworks()}")
-    print(f"Missing dependencies: {img2res.check_dependencies()}")
+    print(f"Package version: {generator.__version__}")
+    print(f"Available functions: {generator.__all__}")
+    print(f"Available frameworks: {generator.get_available_frameworks()}")
+    print(f"Missing dependencies: {generator.check_dependencies()}")
     print("✓ Package info test passed\n")
 
 def test_image_loading():
@@ -20,15 +20,15 @@ def test_image_loading():
     
     try:
         # Test loading a basic image
-        image = img2res.get_image("icon.png", framework="tkinter", size=(32, 32))
+        image = generator.get_image("icon.png", framework="tkinter", size=(32, 32))
         print("✓ Successfully loaded icon.png for tkinter")
         
         # Test loading with theme
-        dark_image = img2res.get_image("icon.png", framework="tkinter", size=(32, 32), theme="dark")
+        dark_image = generator.get_image("icon.png", framework="tkinter", size=(32, 32), theme="dark")
         print("✓ Successfully loaded dark themed icon.png")
         
         # Test loading with transformations
-        transformed_image = img2res.get_image(
+        transformed_image = generator.get_image(
             "circle.png", 
             framework="tkinter", 
             size=(64, 64),
@@ -48,7 +48,7 @@ def test_sample_creation():
     print("Testing sample creation...")
     
     try:
-        img2res.create_sample_images()
+        generator.create_sample_images()
         print("✓ Sample creation test passed\n")
     except Exception as e:
         print(f"✗ Sample creation test failed: {e}\n")
@@ -58,7 +58,7 @@ def test_embedding():
     print("Testing image embedding...")
     
     try:
-        img2res.embed_images_from_folder("sample_images", "test_embedded_output.py", 90)
+        generator.embed_images_from_folder("sample_images", "test_embedded_output.py", 90)
         print("✓ Image embedding test passed\n")
     except Exception as e:
         print(f"✗ Image embedding test failed: {e}\n")

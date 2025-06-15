@@ -1,4 +1,4 @@
-# Deployment Guide for img2res
+# Deployment Guide for GUI Image Studio
 
 This guide covers creating releases, publishing to PyPI, and setting up automated workflows with GitHub Actions.
 
@@ -17,12 +17,14 @@ This guide covers creating releases, publishing to PyPI, and setting up automate
 Update version numbers in these files before creating a release:
 
 **pyproject.toml:**
+
 ```toml
 [project]
 version = "1.0.1"  # Update this
 ```
 
-**src/img2res/__init__.py:**
+**src/gui_image_studio/**init**.py:**
+
 ```python
 __version__ = "1.0.1"  # Update this
 ```
@@ -30,6 +32,7 @@ __version__ = "1.0.1"  # Update this
 ### 2. Prepare Release Notes
 
 Create or update `CHANGELOG.md`:
+
 ```markdown
 # Changelog
 
@@ -63,7 +66,7 @@ git push origin v1.0.1
 
 ### 4. Create GitHub Release
 
-1. Go to your repository: https://github.com/stntg/img2res
+1. Go to your repository: <https://github.com/stntg/gui-image-studio/releases>
 2. Click "Releases" → "Create a new release"
 3. Choose the tag you just created (v1.0.1)
 4. Fill in release details:
@@ -100,8 +103,9 @@ python -m build
 ```
 
 This creates:
-- `dist/img2res-1.0.1.tar.gz` (source distribution)
-- `dist/img2res-1.0.1-py3-none-any.whl` (wheel distribution)
+
+- `dist/gui_image_studio-1.0.1.tar.gz` (source distribution)
+- `dist/gui_image_studio-1.0.1-py3-none-any.whl` (wheel distribution)
 
 ### 4. Test Upload (TestPyPI)
 
@@ -112,7 +116,7 @@ First, test with TestPyPI:
 python -m twine upload --repository testpypi dist/*
 
 # Test installation
-pip install --index-url https://test.pypi.org/simple/ img2res
+pip install --index-url https://test.pypi.org/simple/ gui-image-studio
 ```
 
 ### 5. Upload to PyPI
@@ -123,14 +127,15 @@ python -m twine upload dist/*
 ```
 
 When prompted, use:
+
 - Username: `__token__`
 - Password: Your API token (including `pypi-` prefix)
 
 ### 6. Verify Installation
 
 ```bash
-pip install img2res
-python -c "import img2res; print(img2res.__version__)"
+pip install gui-image-studio
+python -c "import gui_image_studio; print(gui_image_studio.__version__)"
 ```
 
 ## GitHub Actions Setup
@@ -183,7 +188,7 @@ jobs:
     
     - name: Test package import
       run: |
-        python -c "import img2res; print('Package imported successfully')"
+        python -c "import gui_image_studio; print('Package imported successfully')"
 
   lint:
     runs-on: ubuntu-latest
@@ -284,7 +289,7 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'src/img2res/__init__.py'
+      - 'src/gui_image_studio/__init__.py'
 
 jobs:
   check-version:
@@ -300,7 +305,7 @@ jobs:
     - name: Get version
       id: version
       run: |
-        VERSION=$(python -c "import sys; sys.path.insert(0, 'src'); from img2res import __version__; print(__version__)")
+        VERSION=$(python -c "import sys; sys.path.insert(0, 'src'); from gui_image_studio import __version__; print(__version__)")
         echo "version=v$VERSION" >> $GITHUB_OUTPUT
     
     - name: Check if tag exists
@@ -376,6 +381,7 @@ rm -rf test_env
 ### 5. Monitoring
 
 After release:
+
 - Monitor PyPI download statistics
 - Watch for user issues/bug reports
 - Keep dependencies updated
@@ -386,6 +392,7 @@ After release:
 ### Common Issues
 
 **Build fails:**
+
 ```bash
 # Clean and rebuild
 rm -rf dist/ build/ *.egg-info/
@@ -393,15 +400,17 @@ python -m build
 ```
 
 **Upload fails:**
+
 ```bash
 # Check credentials
 python -m twine check dist/*
 ```
 
 **Version conflicts:**
+
 ```bash
 # Ensure version is updated in all files
-grep -r "version" pyproject.toml src/img2res/__init__.py
+grep -r "version" pyproject.toml src/gui_image_studio/__init__.py
 ```
 
 ### Getting Help
@@ -432,4 +441,4 @@ python -m twine upload dist/*
 # 4. Create GitHub release (via web interface)
 ```
 
-This completes the deployment setup for your img2res package!
+This completes the deployment setup for your gui_image_studio package!

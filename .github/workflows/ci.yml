@@ -33,11 +33,11 @@ jobs:
     
     - name: Test package import
       run: |
-        python -c "import img2res; print('Package version:', img2res.__version__)"
+        python -c "import gui_image_studio; print('Package version:', gui_image_studio.__version__)"
     
     - name: Test CLI functionality
       run: |
-        python -m img2res.sample_creator
+        python -m gui_image_studio.cli.sample_creator
         python -c "import os; print('Sample images created:', os.path.exists('sample_images'))"
 
   lint:

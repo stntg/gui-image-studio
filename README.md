@@ -1,6 +1,6 @@
-# img2res
+# GUI Image Studio
 
-A Python package for embedding images as base64 strings with GUI framework support for tkinter and customtkinter.
+A comprehensive Python toolkit for creating, embedding, and managing images in Python GUI applications with support for tkinter and customtkinter.
 
 ## Features
 
@@ -16,14 +16,16 @@ A Python package for embedding images as base64 strings with GUI framework suppo
 ## Installation
 
 ### From PyPI (when published)
+
 ```bash
-pip install img2res
+pip install gui-image-studio
 ```
 
 ### From Source
+
 ```bash
-git clone https://github.com/stntg/img2res.git
-cd img2res
+git clone https://github.com/stntg/gui-image-studio.git
+cd gui-image-studio
 pip install -e .
 ```
 
@@ -32,7 +34,7 @@ pip install -e .
 ### Basic Usage
 
 ```python
-from img2res import get_image, embed_images_from_folder
+from gui_image_studio import get_image, embed_images_from_folder
 
 # Get a single image as PhotoImage object
 image = get_image("my_image.png", framework="tkinter")
@@ -67,10 +69,10 @@ root.mainloop()
 
 ```bash
 # Create sample images for testing
-python -m img2res.sample_creator
+python -m gui_image_studio.sample_creator
 
 # Embed images from a folder
-python -m img2res.cli embed-folder images/ --output embedded_images.py --framework tkinter
+python -m gui_image_studio.cli embed-folder images/ --output embedded_images.py --framework tkinter
 ```
 
 ## Advanced Features
@@ -78,7 +80,7 @@ python -m img2res.cli embed-folder images/ --output embedded_images.py --framewo
 ### Image Transformations
 
 ```python
-from img2res import get_image
+from gui_image_studio import get_image
 
 # Apply transformations
 image = get_image(
@@ -96,7 +98,7 @@ image = get_image(
 ### Animated GIFs
 
 ```python
-from img2res.image_loader import load_animated_gif
+from gui_image_studio.image_loader import load_animated_gif
 
 # Load animated GIF for customtkinter
 frames = load_animated_gif("animation.gif", size=(100, 100))
@@ -118,6 +120,7 @@ Check out the `examples/` directory for comprehensive usage examples:
 - `05_advanced_features.py` - Advanced usage patterns
 
 Run all examples:
+
 ```bash
 python examples/run_examples.py
 ```
@@ -127,9 +130,11 @@ python examples/run_examples.py
 ### Core Functions
 
 #### `get_image(image_path, framework="tkinter", **kwargs)`
+
 Load and return an image object for the specified GUI framework.
 
 **Parameters:**
+
 - `image_path` (str): Path to the image file
 - `framework` (str): GUI framework ("tkinter" or "customtkinter")
 - `size` (tuple): Resize image to (width, height)
@@ -141,9 +146,11 @@ Load and return an image object for the specified GUI framework.
 - `quality` (int): JPEG compression quality (1-100)
 
 #### `embed_images_from_folder(input_folder, output_file, framework="tkinter", **kwargs)`
+
 Process all images in a folder and generate an embedded Python module.
 
 **Parameters:**
+
 - `input_folder` (str): Path to folder containing images
 - `output_file` (str): Output Python file path
 - `framework` (str): Target GUI framework
@@ -153,6 +160,7 @@ Process all images in a folder and generate an embedded Python module.
 ### Sample Creation
 
 #### `create_sample_images(output_dir="sample_images")`
+
 Generate sample images for testing purposes.
 
 ## Development
@@ -160,8 +168,8 @@ Generate sample images for testing purposes.
 ### Setting up Development Environment
 
 ```bash
-git clone https://github.com/stntg/img2res.git
-cd img2res
+git clone https://github.com/stntg/gui-image-studio.git
+cd gui-image-studio
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -e .
@@ -175,9 +183,9 @@ python test_package.py
 
 ### Project Structure
 
-```
-img2res/
-├── src/img2res/           # Main package
+```text
+gui-image-studio/
+├── src/gui_image_studio/  # Main package
 │   ├── __init__.py        # Package initialization
 │   ├── cli.py             # Command line interface
 │   ├── generator.py       # Image embedding generator
@@ -213,6 +221,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Changelog
 
 ### Version 1.0.0
+
 - Initial release
 - Basic image embedding functionality
 - Support for tkinter and customtkinter
@@ -222,7 +231,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-If you encounter any issues or have questions, please [open an issue](https://github.com/stntg/img2res/issues) on GitHub.
+If you encounter any issues or have questions, please [open an issue](https://github.com/stntg/gui-image-studio/issues) on GitHub.
 
 ## Acknowledgments
 

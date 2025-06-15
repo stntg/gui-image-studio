@@ -8,11 +8,14 @@ Before running the examples, make sure you have:
 
 1. **Python 3.7+** installed
 2. **Required packages**:
+
    ```bash
    pip install Pillow
    pip install customtkinter  # Optional, for CustomTkinter examples
    ```
+
 3. **Generated sample images and embedded_images.py**:
+
    ```bash
    python create_sample_images.py
    python generate_embedded_images.py
@@ -21,49 +24,60 @@ Before running the examples, make sure you have:
 ## Example Files Overview
 
 ### 1. Basic Usage (`01_basic_usage.py`)
+
 **What it demonstrates:**
+
 - Fundamental usage with Tkinter and CustomTkinter
 - Loading images with default settings
 - Basic image display in GUI applications
 - Proper reference management to prevent garbage collection
 
 **Key features shown:**
+
 - `get_image()` with minimal parameters
 - Framework selection (`"tkinter"` vs `"customtkinter"`)
 - Basic size specification
 - Theme usage
 
 **Run with:**
+
 ```bash
 python examples/01_basic_usage.py
 ```
 
 ### 2. Theming Examples (`02_theming_examples.py`)
+
 **What it demonstrates:**
+
 - Theme-based image loading
 - Automatic theme fallback
 - Dynamic theme switching
 - Theme comparison visualization
 
 **Key features shown:**
+
 - Theme parameter usage (`"default"`, `"dark"`, `"light"`)
 - Filename-based theme detection (e.g., `dark_icon.png`)
 - Error handling for missing themed images
 - Interactive theme switching
 
 **Run with:**
+
 ```bash
 python examples/02_theming_examples.py
 ```
 
 ### 3. Image Transformations (`03_image_transformations.py`)
+
 **What it demonstrates:**
+
 - All available image transformation options
 - Interactive parameter adjustment
 - Real-time transformation preview
 - Preset transformation combinations
 
 **Key features shown:**
+
 - Size adjustment (`size` parameter)
 - Rotation (`rotate` parameter)
 - Transparency/brightness (`transparency` parameter)
@@ -73,12 +87,15 @@ python examples/02_theming_examples.py
 - Grayscale conversion (`grayscale` parameter)
 
 **Run with:**
+
 ```bash
 python examples/03_image_transformations.py
 ```
 
 ### 4. Animated GIFs (`04_animated_gifs.py`)
+
 **What it demonstrates:**
+
 - Animated GIF loading and playback
 - Animation control (start/stop)
 - Speed adjustment
@@ -86,6 +103,7 @@ python examples/03_image_transformations.py
 - Multiple simultaneous animations
 
 **Key features shown:**
+
 - `animated=True` parameter
 - `frame_delay` parameter
 - Animation data structure handling
@@ -93,12 +111,15 @@ python examples/03_image_transformations.py
 - Transformation effects on animations
 
 **Run with:**
+
 ```bash
 python examples/04_animated_gifs.py
 ```
 
 ### 5. Advanced Features (`05_advanced_features.py`)
+
 **What it demonstrates:**
+
 - Format conversion capabilities
 - Error handling strategies
 - Performance testing
@@ -106,6 +127,7 @@ python examples/04_animated_gifs.py
 - Integration patterns and best practices
 
 **Key features shown:**
+
 - `format_override` parameter
 - Error handling and graceful degradation
 - Performance benchmarking
@@ -113,6 +135,7 @@ python examples/04_animated_gifs.py
 - Advanced integration patterns
 
 **Run with:**
+
 ```bash
 python examples/05_advanced_features.py
 ```
@@ -122,6 +145,7 @@ python examples/05_advanced_features.py
 The examples use a variety of sample images created by `create_sample_images.py`:
 
 ### Default Theme Images
+
 - `icon.png` - House icon for basic demonstrations
 - `button.png` - Play button for UI elements
 - `logo.png` - Sample logo/banner
@@ -130,12 +154,14 @@ The examples use a variety of sample images created by `create_sample_images.py`
 - `circle.png`, `square.png`, `triangle.png` - Simple shapes
 
 ### Themed Images
+
 - `dark_*.png` - Dark theme variants
 - `light_*.png` - Light theme variants
 
 ## Common Usage Patterns
 
 ### Basic Image Loading
+
 ```python
 import image_loader
 
@@ -149,6 +175,7 @@ image = image_loader.get_image(
 ```
 
 ### Themed Image Loading
+
 ```python
 # Load with theme (falls back to default if theme not available)
 image = image_loader.get_image(
@@ -160,6 +187,7 @@ image = image_loader.get_image(
 ```
 
 ### Image Transformations
+
 ```python
 # Apply multiple transformations
 image = image_loader.get_image(
@@ -176,6 +204,7 @@ image = image_loader.get_image(
 ```
 
 ### Animated GIF Loading
+
 ```python
 # Load animated GIF
 anim_data = image_loader.get_image(
@@ -253,6 +282,7 @@ To add your own images to the examples:
 ## Framework Compatibility
 
 The examples work with:
+
 - **Tkinter**: Built into Python, always available
 - **CustomTkinter**: Modern UI library, install separately
 
@@ -269,18 +299,21 @@ python test_tint_visibility.py
 ```
 
 **What it shows:**
+
 - Grid of images with different tint colors and intensities
 - Side-by-side comparison with original image
 - Strong tint effects for easy visual verification
 - Technical parameter information
 
 **Use cases:**
+
 - Verify tinting is working after code changes
 - Visual debugging of tint parameters
 - Demonstration of tint capabilities
 - Quick functional test for developers
 
 This test is particularly useful when:
+
 - Implementing new tint features
 - Debugging tint-related issues
 - Verifying cross-platform tint behavior

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Image embedding generator for img2res package.
+Image embedding generator for gui_image_studio package.
 """
 
 import os

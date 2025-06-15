@@ -7,19 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
+### Planned Additions
+
 - Planned features for future releases
 
 ### Changed
+
 - Planned improvements for future releases
 
 ### Fixed
+
 - Planned bug fixes for future releases
 
 ## [1.0.0] - 2024-01-15
 
 ### Added
-- Initial release of img2res package
+
+- Initial release of gui-image-studio package
 - Core image embedding functionality
 - Support for tkinter and customtkinter frameworks
 - Image transformation features:
@@ -34,7 +38,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive example collection
 - Full documentation and API reference
 
-### Features
+### Feature Details
+
 - **Image Loading**: Load images as PhotoImage objects for GUI frameworks
 - **Batch Embedding**: Process entire folders and generate embedded Python modules
 - **Transformations**: Apply various image transformations on-the-fly
@@ -44,6 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Sample Generation**: Built-in sample image creator for testing
 
 ### Technical Details
+
 - Python 3.7+ compatibility
 - Cross-platform support (Windows, macOS, Linux)
 - Minimal dependencies (Pillow, tkinter)
@@ -52,6 +58,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Memory-efficient image processing
 
 ### Documentation
+
 - Complete README with usage examples
 - API reference documentation
 - Deployment guide for releases and PyPI publishing
@@ -60,6 +67,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - MIT License for open-source compatibility
 
 ### Examples Included
+
 - Basic usage patterns
 - Theme integration examples
 - Image transformation demonstrations
@@ -105,7 +113,9 @@ When creating new releases, use this template:
 ## Migration Guides
 
 ### Upgrading to v1.0.0
+
 - This is the initial release, no migration needed
 
 ### Future Migration Guides
+
 - Will be added here for major version changes that require code updates

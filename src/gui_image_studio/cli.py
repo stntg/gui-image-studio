@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Command-line interface for img2res package.
+Command-line interface for gui_image_studio package.
 """
 
 import argparse
@@ -13,7 +13,7 @@ def generate_embedded_images():
     """Console script entry point for generating embedded images."""
     parser = argparse.ArgumentParser(
         description='Generate embedded images from a folder',
-        prog='img2res-generate'
+        prog='gui-image-studio-generate'
     )
     parser.add_argument('--folder', '-f', default='sample_images', 
                        help='Folder containing images (default: sample_images)')
@@ -41,8 +41,8 @@ def generate_embedded_images():
 def create_sample_images():
     """Console script entry point for creating sample images."""
     parser = argparse.ArgumentParser(
-        description='Create sample images for testing img2res functionality',
-        prog='img2res-create-samples'
+        description='Create sample images for testing gui_image_studio functionality',
+        prog='gui_image_studio-create-samples'
     )
     parser.add_argument('--output-dir', '-o', default='sample_images',
                        help='Output directory for sample images (default: sample_images)')
@@ -78,5 +78,5 @@ if __name__ == "__main__":
     elif len(sys.argv) > 1 and sys.argv[1] == "samples":
         create_sample_images()
     else:
-        print("Usage: python -m img2res.cli [generate|samples]")
+        print("Usage: python -m gui_image_studio.cli [generate|samples]")
         sys.exit(1)

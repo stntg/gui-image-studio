@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Setup script for img2res - Image Resource Manager
+Setup script for gui-image-studio - GUI Image Studio
 """
 
 from setuptools import setup, find_packages
@@ -12,11 +12,11 @@ def read_readme():
     if os.path.exists(readme_path):
         with open(readme_path, 'r', encoding='utf-8') as f:
             return f.read()
-    return "Image Resource Manager - Embed and load images efficiently in Python GUI applications"
+    return "GUI Image Studio - Complete toolkit for creating, embedding, and managing images in Python GUI applications"
 
 # Read version from __init__.py
 def get_version():
-    version_file = os.path.join(os.path.dirname(__file__), 'src', 'img2res', '__init__.py')
+    version_file = os.path.join(os.path.dirname(__file__), 'src', 'gui_image_studio', '__init__.py')
     if os.path.exists(version_file):
         with open(version_file, 'r') as f:
             for line in f:
@@ -25,18 +25,18 @@ def get_version():
     return '1.0.0'
 
 setup(
-    name='img2res',
+    name='gui-image-studio',
     version=get_version(),
-    author='Your Name',  # Replace with your name
-    author_email='your.email@example.com',  # Replace with your email
-    description='Image Resource Manager - Embed and load images efficiently in Python GUI applications',
+    author='Stan Griffiths',  # Replace with your name
+    author_email='stantgriffiths@gmail.com',  # Replace with your email
+    description='GUI Image Studio - Complete toolkit for creating, embedding, and managing images in Python GUI applications',
     long_description=read_readme(),
     long_description_content_type='text/markdown',
-    url='https://github.com/yourusername/img2res',  # Replace with your repository URL
+    url='https://github.com/stntg/gui-image-studio',  # Replace with your repository URL
     project_urls={
-        'Bug Reports': 'https://github.com/yourusername/img2res/issues',
-        'Source': 'https://github.com/yourusername/img2res',
-        'Documentation': 'https://github.com/yourusername/img2res#readme',
+        'Bug Reports': 'https://github.com/stntg/gui-image-studio/issues',
+        'Source': 'https://github.com/stntg/gui-image-studio',
+        'Documentation': 'https://github.com/stntg/gui-image-studio#readme',
     },
     package_dir={'': 'src'},
     packages=find_packages(where='src'),
@@ -76,13 +76,13 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'img2res-generate=img2res.cli:generate_embedded_images',
-            'img2res-create-samples=img2res.cli:create_sample_images',
+            'gui-image-studio-generate=gui_image_studio.cli:generate_embedded_images',
+            'gui-image-studio-create-samples=gui_image_studio.cli:create_sample_images',
         ],
     },
     include_package_data=True,
     package_data={
-        'img2res': ['*.py'],
+        'gui_image_studio': ['*.py'],
     },
     keywords='image gui tkinter customtkinter embed resources PIL Pillow',
     zip_safe=False,

@@ -1,6 +1,6 @@
 """
-img2res - Image Resource Manager
-================================
+gui_image_studio - Image Resource Management for Python GUI Applications
+========================================================================
 
 A Python library for embedding and loading images efficiently in GUI applications.
 Supports both Tkinter and CustomTkinter frameworks with advanced image transformations.
@@ -15,10 +15,10 @@ Key Features:
 - Easy integration
 
 Basic Usage:
-    import img2res
+    import gui_image_studio
     
     # Load an image
-    image = img2res.get_image(
+    image = gui_image_studio.get_image(
         "icon.png",
         framework="tkinter",
         size=(64, 64),
@@ -31,7 +31,7 @@ Basic Usage:
 
 Advanced Usage:
     # Load with transformations
-    image = img2res.get_image(
+    image = gui_image_studio.get_image(
         "button.png",
         framework="customtkinter",
         size=(100, 40),
@@ -42,12 +42,12 @@ Advanced Usage:
     )
 
 For more examples and documentation, see:
-https://github.com/yourusername/img2res
+https://github.com/stntg/gui_image_studio
 """
 
 __version__ = "1.0.0"
-__author__ = "Your Name"
-__email__ = "your.email@example.com"
+__author__ = "Stan Griffiths"
+__email__ = "stantgriffiths@gmail.com"
 __license__ = "MIT"
 
 # Import main functionality
@@ -101,9 +101,9 @@ def check_dependencies():
 
 # Package metadata
 __package_info__ = {
-    'name': 'img2res',
+    'name': 'gui_image_studio',
     'version': __version__,
-    'description': 'Image Resource Manager for Python GUI applications',
+    'description': 'A comprehensive Python toolkit for creating, embedding, and managing images in Python GUI applications with support for tkinter and customtkinter.',
     'author': __author__,
     'license': __license__,
     'frameworks': get_available_frameworks(),
