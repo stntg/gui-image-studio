@@ -1,6 +1,7 @@
 # GUI Image Studio
 
-A comprehensive Python toolkit for creating, embedding, and managing images in Python GUI applications with support for tkinter and customtkinter.
+A comprehensive Python toolkit for creating, embedding, and managing images in
+Python GUI applications with support for tkinter and customtkinter.
 
 ## Features
 
@@ -72,7 +73,9 @@ root.mainloop()
 python -m gui_image_studio.sample_creator
 
 # Embed images from a folder
-python -m gui_image_studio.cli embed-folder images/ --output embedded_images.py --framework tkinter
+python -m gui_image_studio.cli embed-folder images/ \
+  --output embedded_images.py \
+  --framework tkinter
 ```
 
 ## Advanced Features
@@ -216,7 +219,8 @@ gui-image-studio/
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE)
+file for details.
 
 ## Changelog
 
@@ -231,10 +235,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-If you encounter any issues or have questions, please [open an issue](https://github.com/stntg/gui-image-studio/issues) on GitHub.
+If you encounter any issues or have questions, please  
+[open an issue](https://github.com/stntg/gui-image-studio/issues) on GitHub.
 
 ## Acknowledgments
 
 - Built with [Pillow](https://pillow.readthedocs.io/) for image processing
-- Supports [customtkinter](https://github.com/TomSchimansky/CustomTkinter) for modern GUI development
+- Supports [customtkinter](https://github.com/TomSchimansky/CustomTkinter)  
+  for modern GUI development
 - Inspired by the need for easy image embedding in Python GUI applications

@@ -1,13 +1,18 @@
 # GIF Animation Examples - gui_image_studio
 
-This directory contains comprehensive examples demonstrating animated GIF capabilities in gui_image_studio. These examples showcase various animation techniques, performance optimization, and integration patterns for both Tkinter and CustomTkinter applications.
+This directory contains comprehensive examples demonstrating animated GIF
+capabilities in gui_image_studio. These examples showcase various animation
+techniques, performance optimization, and integration patterns for both Tkinter
+and CustomTkinter applications.
 
 ## 📁 Example Files
 
 ### Core Animation Examples
 
 #### `gif_animation_showcase.py`
-**Comprehensive GIF Animation Demonstration**
+
+##### Comprehensive GIF Animation Demonstration
+
 - **Purpose**: Complete showcase of animated GIF capabilities
 - **Features**:
   - Basic animation playback controls (play, pause, stop, reset)
@@ -21,7 +26,9 @@ This directory contains comprehensive examples demonstrating animated GIF capabi
 - **Best For**: Understanding all animation features and performance characteristics
 
 #### `ctk_gif_animations.py`
-**CustomTkinter-Specific Animation Examples**
+
+##### CustomTkinter-Specific Animation Examples
+
 - **Purpose**: Modern UI animations using CustomTkinter
 - **Features**:
   - Loading spinners in multiple sizes
@@ -35,7 +42,9 @@ This directory contains comprehensive examples demonstrating animated GIF capabi
 - **Best For**: CustomTkinter applications requiring polished animations
 
 #### `04_animated_gifs.py`
-**Basic Animation Integration**
+
+##### Basic Animation Integration
+
 - **Purpose**: Simple animated GIF integration examples
 - **Features**:
   - Basic animation loading and playback
@@ -47,7 +56,9 @@ This directory contains comprehensive examples demonstrating animated GIF capabi
 ### Utility Tools
 
 #### `gif_creator.py`
-**Custom GIF Animation Generator**
+
+##### Custom GIF Animation Generator
+
 - **Purpose**: Create custom animated GIFs for testing
 - **Animations Available**:
   - Loading spinners (various styles and colors)
@@ -64,6 +75,7 @@ This directory contains comprehensive examples demonstrating animated GIF capabi
 ## 🚀 Quick Start
 
 ### 1. Basic Animation Example
+
 ```python
 import gui_image_studio
 
@@ -90,6 +102,7 @@ animate()
 ```
 
 ### 2. Animation with Transformations
+
 ```python
 # Load with visual effects
 animation = gui_image_studio.get_image(
@@ -105,6 +118,7 @@ animation = gui_image_studio.get_image(
 ```
 
 ### 3. Speed-Controlled Animation
+
 ```python
 def start_animation_with_speed(speed_multiplier=1.0):
     def animate(frame_index=0):
@@ -119,21 +133,25 @@ def start_animation_with_speed(speed_multiplier=1.0):
 ## 🎯 Animation Types Demonstrated
 
 ### Loading Animations
+
 - **Spinners**: Rotating dots, circles, and geometric shapes
 - **Progress Bars**: Filling bars with shine effects
 - **Pulsing Elements**: Breathing effects for status indicators
 
 ### Interactive Animations
+
 - **Button States**: Play, pause, stop, record animations
 - **Hover Effects**: Mouse-over triggered animations
 - **State Transitions**: Smooth transitions between UI states
 
 ### Visual Effects
+
 - **Color Transformations**: Tint, saturation, contrast adjustments
 - **Geometric Transformations**: Rotation, scaling, positioning
 - **Theme Integration**: Dark/light theme compatible animations
 
 ### Performance Optimized
+
 - **Frame Caching**: Efficient memory usage
 - **Speed Control**: Real-time speed adjustment
 - **Resource Management**: Proper cleanup and disposal
@@ -141,6 +159,7 @@ def start_animation_with_speed(speed_multiplier=1.0):
 ## 🛠️ Running the Examples
 
 ### Prerequisites
+
 ```bash
 # Install required packages
 pip install pillow numpy
@@ -152,26 +171,33 @@ pip install customtkinter
 ### Running Individual Examples
 
 #### Comprehensive Showcase
+
 ```bash
 python gif_animation_showcase.py
 ```
+
 Features:
+
 - Multiple animation tabs
 - Performance monitoring
 - Real-time controls
 - Gallery of effects
 
 #### CustomTkinter Demo
+
 ```bash
 python ctk_gif_animations.py
 ```
+
 Features:
+
 - Modern UI design
 - Theme switching
 - Interactive elements
 - Advanced controls
 
 #### Create Custom GIFs
+
 ```bash
 # Create all sample animations
 python gif_creator.py all
@@ -183,6 +209,7 @@ python gif_creator.py wave
 ```
 
 ### Running All Examples
+
 ```bash
 python run_examples.py
 ```
@@ -190,16 +217,19 @@ python run_examples.py
 ## 📊 Performance Considerations
 
 ### Memory Usage
+
 - **Frame Caching**: Animations cache decoded frames for smooth playback
 - **Size Optimization**: Use appropriate sizes to balance quality and memory
 - **Cleanup**: Properly stop animations to free resources
 
 ### CPU Usage
+
 - **Frame Rate**: Adjust `frame_delay` to balance smoothness and CPU usage
 - **Concurrent Animations**: Monitor performance with multiple simultaneous animations
 - **Transform Caching**: Transformations are cached for repeated use
 
 ### Best Practices
+
 ```python
 # Good: Reasonable size and frame rate
 animation = gui_image_studio.get_image(
@@ -221,6 +251,7 @@ animation = gui_image_studio.get_image(
 ## 🎨 Animation Customization
 
 ### Color Effects
+
 ```python
 # Tint animation with custom color
 animation = gui_image_studio.get_image(
@@ -232,6 +263,7 @@ animation = gui_image_studio.get_image(
 ```
 
 ### Visual Enhancements
+
 ```python
 # Enhanced contrast and saturation
 animation = gui_image_studio.get_image(
@@ -243,6 +275,7 @@ animation = gui_image_studio.get_image(
 ```
 
 ### Size and Rotation
+
 ```python
 # Scaled and rotated animation
 animation = gui_image_studio.get_image(
@@ -256,6 +289,7 @@ animation = gui_image_studio.get_image(
 ## 🔧 Integration Patterns
 
 ### Tkinter Integration
+
 ```python
 import tkinter as tk
 import gui_image_studio
@@ -285,6 +319,7 @@ class AnimatedApp:
 ```
 
 ### CustomTkinter Integration
+
 ```python
 import customtkinter as ctk
 import gui_image_studio
@@ -323,6 +358,7 @@ class ModernAnimatedApp:
 ### Common Issues
 
 #### Animation Not Playing
+
 ```python
 # Check if animated=True is set
 animation = gui_image_studio.get_image(
@@ -337,6 +373,7 @@ if not frames:
 ```
 
 #### Performance Issues
+
 ```python
 # Reduce frame rate
 animation = gui_image_studio.get_image(
@@ -354,6 +391,7 @@ animation = gui_image_studio.get_image(
 ```
 
 #### Memory Leaks
+
 ```python
 # Always stop animations when done
 def cleanup(self):
@@ -364,6 +402,7 @@ def cleanup(self):
 ```
 
 ### Debug Mode
+
 ```python
 # Enable debug logging
 import logging
@@ -380,19 +419,24 @@ animation = gui_image_studio.get_image(
 ## 📚 Additional Resources
 
 ### Related Examples
+
 - `02_theming_examples.py` - Theme integration with animations
 - `03_image_transformations.py` - Static image transformations
 - `05_advanced_features.py` - Advanced gui_image_studio features
 
 ### Documentation
+
 - Main README.md - Project overview
 - API documentation - Detailed function references
 - Performance guide - Optimization techniques
 
 ### Sample Assets
+
 - `sample_images/` - Static test images
 - `sample_gifs/` - Generated animated GIFs (created by gif_creator.py)
 
 ---
 
-**Note**: These examples demonstrate the full capabilities of gui_image_studio's animated GIF support. Start with the basic examples and gradually explore more advanced features as needed for your application.
+**Note**: These examples demonstrate the full capabilities of gui_image_studio's
+animated GIF support. Start with the basic examples and gradually explore more
+advanced features as needed for your application.

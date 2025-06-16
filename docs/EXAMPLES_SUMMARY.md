@@ -2,14 +2,17 @@
 
 ## Overview
 
-I've created a comprehensive set of examples demonstrating all features of the `image_loader` module. These examples showcase real-world usage patterns with both Tkinter and CustomTkinter frameworks.
+I've created a comprehensive set of examples demonstrating all features of the
+`image_loader` module. These examples showcase real-world usage patterns with both
+Tkinter and CustomTkinter frameworks.
 
 ## What Was Created
 
 ### 1. Sample Images and Setup
 
 - **`create_sample_images.py`** - Creates diverse sample images for testing
-- **`generate_embedded_images.py`** - Generates the required `embedded_images.py` file
+- **`generate_embedded_images.py`** - Generates the required
+  `embedded_images.py` file
 - **Sample images created:**
   - Basic icons (house, gear, shapes)
   - Themed variants (dark/light themes)
@@ -231,4 +234,5 @@ This comprehensive example suite provides:
 - **Performance insights** for optimization
 - **Documentation** for easy understanding and maintenance
 
-The examples serve as both learning tools and reference implementations for developers using the image_loader module in their projects.
+The examples serve as both learning tools and reference implementations for
+developers using the image_loader module in their projects.

@@ -1,6 +1,8 @@
 # Image Loader Examples
 
-This directory contains comprehensive examples demonstrating all features of the `image_loader` module. These examples show how to use the module effectively in various scenarios with both Tkinter and CustomTkinter frameworks.
+This directory contains comprehensive examples demonstrating all features of the
+`image_loader` module. These examples show how to use the module effectively in
+various scenarios with both Tkinter and CustomTkinter frameworks.
 
 ## Prerequisites
 
@@ -244,7 +246,8 @@ except ValueError as e:
 1. **Caching**: Consider implementing image caching for frequently used images
 2. **Size optimization**: Use appropriate sizes to balance quality and performance
 3. **Lazy loading**: Load images only when needed
-4. **Memory management**: Keep references to prevent garbage collection, but clean up when no longer needed
+4. **Memory management**: Keep references to prevent garbage collection,
+   but clean up when no longer needed
 
 ## Integration Best Practices
 
@@ -258,10 +261,12 @@ except ValueError as e:
 
 ### Common Issues
 
-1. **"Image not found" errors**: Ensure `embedded_images.py` is generated and in the correct location
+1. **"Image not found" errors**: Ensure `embedded_images.py` is generated and in
+   the correct location
 2. **Garbage collection**: Keep references to images in your GUI code
 3. **CustomTkinter not found**: Install with `pip install customtkinter`
-4. **Animation not working**: Check that the GIF is actually animated and frames are available
+4. **Animation not working**: Check that the GIF is actually animated and
+   frames are available
 
 ### Debugging Tips
 
@@ -286,13 +291,15 @@ The examples work with:
 - **Tkinter**: Built into Python, always available
 - **CustomTkinter**: Modern UI library, install separately
 
-Both frameworks are supported by the same `image_loader` API, just change the `framework` parameter.
+Both frameworks are supported by the same `image_loader` API. Just change the
+`framework` parameter.
 
 ## Developer Testing Tools
 
 ### Tint Visibility Test (`../test_tint_visibility.py`)
 
-A visual testing tool that helps developers verify that the tinting functionality is working correctly:
+A visual testing tool that helps developers verify that the tinting functionality
+is working correctly:
 
 ```bash
 python test_tint_visibility.py

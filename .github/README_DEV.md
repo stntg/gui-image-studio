@@ -7,14 +7,16 @@ This is a quick reference for setting up and using the development workflow.
 ### 1. Repository Configuration (One-time setup)
 
 **Set up branch protection rules** in GitHub:
+
 - Go to **Settings** → **Branches**
 - Add protection for `main` and `develop` branches
 - See [DEVELOPMENT_FLOW.md](DEVELOPMENT_FLOW.md) for detailed instructions
 
 **Add repository secrets**:
+
 - Go to **Settings** → **Secrets and variables** → **Actions**
-- Add `PYPI_API_TOKEN` (from https://pypi.org)
-- Add `TEST_PYPI_API_TOKEN` (from https://test.pypi.org)
+- Add `PYPI_API_TOKEN` (from [https://pypi.org](https://pypi.org))
+- Add `TEST_PYPI_API_TOKEN` (from [https://test.pypi.org](https://test.pypi.org))
 
 ### 2. Local Development Setup
 
@@ -89,7 +91,7 @@ git push -u origin release/v1.0.1
 
 ## 🎯 Branch Strategy
 
-```
+```text
 main (production)
 ├── develop (integration/testing)
 │   ├── feature/new-loader
@@ -139,11 +141,12 @@ black --check src/
 4. **Version conflicts**: Ensure version is incremented in `pyproject.toml`
 
 **Getting Help:**
+
 - Check [DEVELOPMENT_FLOW.md](DEVELOPMENT_FLOW.md) for detailed instructions
 - Check [PYPI_SETUP.md](PYPI_SETUP.md) for PyPI configuration
 - Look at GitHub Actions logs for specific error messages
 
-## 🎉 You're Ready!
+## 🎉 You're Ready
 
 The development workflow is now set up. Start by creating your first feature branch:
 

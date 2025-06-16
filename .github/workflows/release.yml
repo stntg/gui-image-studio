@@ -102,8 +102,10 @@ jobs:
     
     - name: Check PyPI token availability
       id: check-token
+      env:
+        PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
       run: |
-        if [ -z "${{ secrets.PYPI_API_TOKEN }}" ]; then
+        if [ -z "$PYPI_TOKEN" ]; then
           echo "PyPI token not available. Skipping PyPI upload."
           echo "token-available=false" >> $GITHUB_OUTPUT
         else

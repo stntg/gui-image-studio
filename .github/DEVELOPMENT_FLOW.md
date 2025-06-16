@@ -5,6 +5,7 @@ This guide will help you configure GitHub to use the recommended development flo
 ## 🌟 Overview
 
 **Recommended Development Flow:**
+
 1. **Feature Development** → Feature branches (`feature/feature-name`)
 2. **Testing** → Merge to `develop` branch (triggers TestPyPI upload)
 3. **Validation** → Test package from TestPyPI
@@ -22,8 +23,9 @@ This guide will help you configure GitHub to use the recommended development flo
 
 Go to your repository **Settings** → **Branches** and set up these protection rules:
 
-#### For `main` branch:
-```
+#### For `main` branch
+
+```text
 ✅ Require a pull request before merging
 ✅ Require approvals (1 approval minimum)
 ✅ Dismiss stale PR approvals when new commits are pushed
@@ -34,8 +36,9 @@ Go to your repository **Settings** → **Branches** and set up these protection 
 ✅ Restrict pushes that create files larger than 100 MB
 ```
 
-#### For `develop` branch:
-```
+#### For `develop` branch
+
+```text
 ✅ Require a pull request before merging
 ✅ Require status checks to pass before merging
    - Select: CI / test (ubuntu-latest, 3.9)
@@ -54,21 +57,24 @@ Go to your repository **Settings** → **Branches** and set up these protection 
 Go to **Settings** → **Secrets and variables** → **Actions**:
 
 Add these repository secrets:
+
 - **`PYPI_API_TOKEN`** - Your PyPI production token
 - **`TEST_PYPI_API_TOKEN`** - Your TestPyPI testing token
 
 ### Step 4: Set Up Branch Naming Convention
 
 Configure automatic branch naming in your Git client or IDE:
+
 - **Features**: `feature/description` (e.g., `feature/add-new-loader`)
 - **Bugfixes**: `bugfix/description` (e.g., `bugfix/fix-image-scaling`)
 - **Hotfixes**: `hotfix/description` (e.g., `hotfix/critical-security-fix`)
 
 ## 🚀 Development Workflow
 
-### For New Features:
+### For New Features
 
 1. **Create Feature Branch**:
+
    ```bash
    git checkout develop
    git pull origin develop
@@ -76,6 +82,7 @@ Configure automatic branch naming in your Git client or IDE:
    ```
 
 2. **Develop Your Feature**:
+
    ```bash
    # Make your changes
    git add .
@@ -93,9 +100,10 @@ Configure automatic branch naming in your Git client or IDE:
    - **TestPyPI workflow automatically runs**
    - Test the uploaded package from TestPyPI
 
-### For Releases:
+### For Releases
 
 1. **Create Release PR**:
+
    ```bash
    git checkout main
    git pull origin main
@@ -122,9 +130,10 @@ Configure automatic branch naming in your Git client or IDE:
    - **Description**: Release notes
    - **Publish release** → **PyPI workflow automatically runs**
 
-### For Hotfixes:
+### For Hotfixes
 
 1. **Create Hotfix Branch from Main**:
+
    ```bash
    git checkout main
    git pull origin main
@@ -132,6 +141,7 @@ Configure automatic branch naming in your Git client or IDE:
    ```
 
 2. **Fix and Test**:
+
    ```bash
    # Make your fix
    git add .
@@ -146,37 +156,47 @@ Configure automatic branch naming in your Git client or IDE:
 ## 🔄 Automated Workflows
 
 ### TestPyPI Workflow (test-pypi.yml)
+
 **Triggers on**:
+
 - Push to `develop` branch
 - Manual trigger via Actions UI
 
 **What it does**:
+
 - Creates test version with timestamp
 - Uploads to TestPyPI for testing
 - Validates package installation
 
 ### Production PyPI Workflow (release.yml)
+
 **Triggers on**:
+
 - GitHub release creation
 
 **What it does**:
+
 - Uses exact version from `pyproject.toml`
 - Uploads to production PyPI
 - Creates release assets
 
 ### CI Workflow (ci.yml)
+
 **Triggers on**:
+
 - Push to `main` or `develop`
 - Pull requests to `main`
 
 **What it does**:
+
 - Runs tests across multiple Python versions
 - Validates code quality
 - Ensures package can be imported
 
 ## 📋 Quick Reference Commands
 
-### Starting New Feature:
+### Starting New Feature
+
 ```bash
 git checkout develop
 git pull origin develop
@@ -188,12 +208,14 @@ git push -u origin feature/my-new-feature
 # Create PR to develop via GitHub UI
 ```
 
-### Testing from TestPyPI:
+### Testing from TestPyPI
+
 ```bash
 pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ gui-image-studio==1.0.0.dev20241201123456
 ```
 
-### Creating Release:
+### Creating Release
+
 ```bash
 git checkout main
 git pull origin main
@@ -223,7 +245,7 @@ git push origin main
 
 ## 🔧 Troubleshooting
 
-### Common Issues:
+### Common Issues
 
 1. **PR blocked by status checks**:
    - Wait for CI to complete
@@ -240,6 +262,7 @@ git push origin main
    - Verify package builds successfully
 
 4. **Merge conflicts**:
+
    ```bash
    git checkout your-branch
    git pull origin develop

@@ -4,17 +4,19 @@ This document explains how to set up both PyPI (production) and TestPyPI (testin
 
 ## Overview
 
-- **PyPI** (https://pypi.org): Production package repository for real releases
-- **TestPyPI** (https://test.pypi.org): Testing repository for validating packages before production
+- **PyPI** ([https://pypi.org](https://pypi.org)): Production package repository for real releases
+- **TestPyPI** ([https://test.pypi.org](https://test.pypi.org)): Testing repository for validating packages before production
 
 ## Setting up TestPyPI (Testing)
 
 ### 1. Create TestPyPI Account
+
 - Go to [test.pypi.org](https://test.pypi.org) and create an account
 - Verify your email address
 - **Note**: This is separate from your main PyPI account
 
 ### 2. Generate TestPyPI API Token
+
 - Go to [TestPyPI Account Settings](https://test.pypi.org/manage/account/)
 - Scroll down to the "API tokens" section
 - Click "Add API token"
@@ -23,6 +25,7 @@ This document explains how to set up both PyPI (production) and TestPyPI (testin
 - Copy the generated token (starts with `pypi-`)
 
 ### 3. Add TestPyPI Token to GitHub Secrets
+
 - Go to your GitHub repository
 - Navigate to Settings > Secrets and variables > Actions
 - Click "New repository secret"
@@ -33,10 +36,12 @@ This document explains how to set up both PyPI (production) and TestPyPI (testin
 ## Setting up PyPI (Production)
 
 ### 1. Create PyPI Account
+
 - Go to [pypi.org](https://pypi.org) and create an account
 - Verify your email address
 
 ### 2. Generate PyPI API Token
+
 - Go to [PyPI Account Settings](https://pypi.org/manage/account/)
 - Scroll down to the "API tokens" section
 - Click "Add API token"
@@ -45,6 +50,7 @@ This document explains how to set up both PyPI (production) and TestPyPI (testin
 - Copy the generated token (starts with `pypi-`)
 
 ### 3. Add PyPI Token to GitHub Secrets
+
 - Go to your GitHub repository
 - Navigate to Settings > Secrets and variables > Actions
 - Click "New repository secret"
@@ -57,16 +63,19 @@ This document explains how to set up both PyPI (production) and TestPyPI (testin
 ### TestPyPI Workflow (test-pypi.yml)
 
 **Triggers:**
+
 - Manual trigger via GitHub Actions UI (workflow_dispatch)
 - Automatic trigger on pushes to `develop` branch that modify package files
 
 **Features:**
+
 - Creates test versions with timestamps (e.g., `1.0.0.dev20241201123456`)
 - Uploads to TestPyPI for testing
 - Validates package installation
 - Provides installation commands for testing
 
 **Manual Trigger:**
+
 1. Go to Actions tab in your repository
 2. Select "Test PyPI Upload" workflow
 3. Click "Run workflow"
@@ -75,9 +84,11 @@ This document explains how to set up both PyPI (production) and TestPyPI (testin
 ### Production PyPI Workflow (release.yml)
 
 **Triggers:**
+
 - Automatic trigger when you create a GitHub release/tag
 
 **Features:**
+
 - Uses the exact version from `pyproject.toml`
 - Publishes to production PyPI
 - Creates GitHub release assets
@@ -85,6 +96,7 @@ This document explains how to set up both PyPI (production) and TestPyPI (testin
 ## Testing Your Package
 
 ### From TestPyPI
+
 ```bash
 # Install from TestPyPI (includes dependencies from regular PyPI)
 pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ gui-image-studio==1.0.0.dev20241201123456
@@ -94,6 +106,7 @@ python -c "import gui_image_studio; print(gui_image_studio.__version__)"
 ```
 
 ### From Production PyPI
+
 ```bash
 # Install from PyPI
 pip install gui-image-studio
@@ -141,6 +154,7 @@ python -c "import gui_image_studio; print(gui_image_studio.__version__)"
 ## Manual Publishing
 
 ### To TestPyPI
+
 ```bash
 # Build the package
 python -m build
@@ -150,6 +164,7 @@ python -m twine upload --repository testpypi dist/*
 ```
 
 ### To PyPI
+
 ```bash
 # Build the package
 python -m build
