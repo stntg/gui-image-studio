@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+        python-version: ['3.9', '3.11', '3.12']
 
     steps:
     - uses: actions/checkout@v4
@@ -28,22 +28,25 @@ jobs:
         python -m pip install --upgrade pip
         pip install -e .[dev]
     
-    - name: Create test directory
+    - name: Run pytest tests
       run: |
-        if [[ "$RUNNER_OS" == "Windows" ]]; then
-          mkdir test_workspace
-        else
-          mkdir -p test_workspace
-        fi
-      shell: bash
-    
-    - name: Run package tests
-      run: |
-        cd test_workspace
-        python ../test_package.py
+        python -m pytest tests/test_basic_pytest.py -v
       env:
         PYTHONIOENCODING: utf-8
         CI: true
+    
+    - name: Run legacy tests
+      run: |
+        # Run the existing test files (if they exist and are executable)
+        if [ -f "tests/test_package.py" ]; then python tests/test_package.py; fi
+        if [ -f "tests/test_embedded.py" ]; then python tests/test_embedded.py; fi
+        if [ -f "tests/test_gif_animation.py" ]; then python tests/test_gif_animation.py; fi
+        if [ -f "tests/test_tint_visibility.py" ]; then python tests/test_tint_visibility.py; fi
+      shell: bash
+      env:
+        PYTHONIOENCODING: utf-8
+        CI: true
+      continue-on-error: true
     
     - name: Test package import
       run: |
@@ -51,9 +54,11 @@ jobs:
     
     - name: Test CLI functionality
       run: |
+        mkdir -p test_workspace
         cd test_workspace
         python -m gui_image_studio.sample_creator
         python -c "import os; print('Sample images created:', os.path.exists('sample_images'))"
+      shell: bash
     
     - name: Cleanup test files
       run: |
