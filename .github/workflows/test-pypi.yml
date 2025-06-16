@@ -77,24 +77,9 @@ jobs:
     
     - name: Run basic tests
       run: |
-        python -c "
-import gui_image_studio
-print('✅ Package import successful')
-print('Version:', gui_image_studio.__version__)
-
-# Test basic functionality
-try:
-    from gui_image_studio import ImageLoader
-    print('✅ ImageLoader import successful')
-except ImportError as e:
-    print('⚠️ ImageLoader import failed:', e)
-
-try:
-    from gui_image_studio import EmbeddedImageGenerator
-    print('✅ EmbeddedImageGenerator import successful')
-except ImportError as e:
-    print('⚠️ EmbeddedImageGenerator import failed:', e)
-"
+        python -c "import gui_image_studio; print('[OK] Package import successful'); print('Version:', gui_image_studio.__version__)"
+        python -c "try: from gui_image_studio import ImageLoader; print('[OK] ImageLoader import successful'); except ImportError as e: print('[WARN] ImageLoader import failed:', e)"
+        python -c "try: from gui_image_studio import EmbeddedImageGenerator; print('[OK] EmbeddedImageGenerator import successful'); except ImportError as e: print('[WARN] EmbeddedImageGenerator import failed:', e)"
     
     - name: Check TestPyPI token availability
       id: check-token
@@ -113,17 +98,17 @@ except ImportError as e:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
       run: |
-        echo "🚀 Uploading package to TestPyPI..."
+        echo "[UPLOAD] Uploading package to TestPyPI..."
         python -m twine upload --repository testpypi dist/* --verbose
-        echo "✅ Package successfully uploaded to TestPyPI!"
+        echo "[SUCCESS] Package successfully uploaded to TestPyPI!"
         echo ""
-        echo "📦 Test your package with:"
+        echo "[TEST] Test your package with:"
         echo "pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ gui-image-studio==${{ steps.test-version.outputs.test-version }}"
     
     - name: TestPyPI upload skipped
       if: steps.check-token.outputs.token-available == 'false'
       run: |
-        echo "⚠️ TestPyPI upload was skipped because TEST_PYPI_API_TOKEN secret is not configured."
+        echo "[WARN] TestPyPI upload was skipped because TEST_PYPI_API_TOKEN secret is not configured."
         echo ""
         echo "To enable TestPyPI publishing:"
         echo "1. Create an account at https://test.pypi.org"
@@ -136,15 +121,15 @@ except ImportError as e:
     - name: Installation test from TestPyPI
       if: steps.check-token.outputs.token-available == 'true'
       run: |
-        echo "⏳ Waiting 30 seconds for TestPyPI to process the upload..."
+        echo "[WAIT] Waiting 30 seconds for TestPyPI to process the upload..."
         sleep 30
         
         # Test installation from TestPyPI
         python -m venv testpypi_env
         source testpypi_env/bin/activate
         
-        echo "🔍 Attempting to install from TestPyPI..."
-        pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ gui-image-studio==${{ steps.test-version.outputs.test-version }} || echo "⚠️ Installation from TestPyPI failed (this is common due to propagation delays)"
+        echo "[INSTALL] Attempting to install from TestPyPI..."
+        pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ gui-image-studio==${{ steps.test-version.outputs.test-version }} || echo "[WARN] Installation from TestPyPI failed (this is common due to propagation delays)"
         
         deactivate
     
@@ -160,12 +145,12 @@ except ImportError as e:
     - name: Summary
       if: steps.check-token.outputs.token-available == 'true'
       run: |
-        echo "🎉 TestPyPI upload completed!"
+        echo "[COMPLETE] TestPyPI upload completed!"
         echo ""
-        echo "📋 Summary:"
+        echo "[SUMMARY] Summary:"
         echo "- Base version: ${{ steps.test-version.outputs.base-version }}"
         echo "- Test version: ${{ steps.test-version.outputs.test-version }}"
         echo "- TestPyPI URL: https://test.pypi.org/project/gui-image-studio/${{ steps.test-version.outputs.test-version }}/"
         echo ""
-        echo "🧪 To test the uploaded package:"
+        echo "[TEST] To test the uploaded package:"
         echo "pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ gui-image-studio==${{ steps.test-version.outputs.test-version }}"
