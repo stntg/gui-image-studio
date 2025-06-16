@@ -147,3 +147,4 @@ Thumbs.db
 # Project specific
 test_embedded_output.py
 sample_images/
+dev/

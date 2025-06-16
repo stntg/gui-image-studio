@@ -81,8 +81,12 @@ jobs:
     
     - name: Test installation from built package
       run: |
+        # Create a fresh virtual environment for testing
+        python -m venv test_env
+        source test_env/bin/activate || test_env\Scripts\activate
         pip install dist/*.whl
         python -c "import gui_image_studio; print('Installed version:', gui_image_studio.__version__)"
+        deactivate
     
     - name: Run security checks
       run: |
@@ -90,12 +94,42 @@ jobs:
         safety check
         bandit -r src/ -f json || true
     
+    - name: Validate package for PyPI
+      run: |
+        # Perform a dry run to validate the package
+        python -m twine check dist/*
+        echo "Package validation completed successfully"
+    
+    - name: Check PyPI token availability
+      id: check-token
+      run: |
+        if [ -z "${{ secrets.PYPI_API_TOKEN }}" ]; then
+          echo "PyPI token not available. Skipping PyPI upload."
+          echo "token-available=false" >> $GITHUB_OUTPUT
+        else
+          echo "PyPI token available. Proceeding with upload."
+          echo "token-available=true" >> $GITHUB_OUTPUT
+        fi
+    
     - name: Publish to PyPI
+      if: steps.check-token.outputs.token-available == 'true'
       env:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
       run: |
-        python -m twine upload dist/*
+        echo "🚀 Publishing package to PyPI..."
+        python -m twine upload dist/* --verbose
+        echo "✅ Package successfully published to PyPI!"
+    
+    - name: PyPI upload skipped
+      if: steps.check-token.outputs.token-available == 'false'
+      run: |
+        echo "⚠️ PyPI upload was skipped because PYPI_API_TOKEN secret is not configured."
+        echo "To enable PyPI publishing:"
+        echo "1. Go to your repository Settings > Secrets and variables > Actions"
+        echo "2. Add a new repository secret named 'PYPI_API_TOKEN'"
+        echo "3. Set the value to your PyPI API token"
+        echo "4. Re-run this workflow"
     
     - name: Upload release assets
       uses: softprops/action-gh-release@v1

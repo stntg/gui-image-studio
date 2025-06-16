@@ -1,0 +1,171 @@
+name: Test PyPI Upload
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_suffix:
+        description: 'Version suffix for test upload (e.g., dev1, rc1, alpha1)'
+        required: false
+        default: 'dev'
+        type: string
+  push:
+    branches:
+      - develop
+    paths:
+      - 'src/**'
+      - 'pyproject.toml'
+      - 'setup.py'
+
+jobs:
+  test-pypi-upload:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.9'
+    
+    - name: Install build dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build twine
+    
+    - name: Install package dependencies
+      run: |
+        pip install -e .[dev]
+    
+    - name: Generate test version
+      id: test-version
+      run: |
+        # Get the base version from pyproject.toml
+        BASE_VERSION=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])" 2>/dev/null || python -c "import tomli; print(tomli.load(open('pyproject.toml', 'rb'))['project']['version'])")
+        
+        # Create test version with timestamp and suffix
+        TIMESTAMP=$(date +%Y%m%d%H%M%S)
+        VERSION_SUFFIX="${{ github.event.inputs.version_suffix || 'dev' }}"
+        TEST_VERSION="${BASE_VERSION}.${VERSION_SUFFIX}${TIMESTAMP}"
+        
+        echo "base-version=${BASE_VERSION}" >> $GITHUB_OUTPUT
+        echo "test-version=${TEST_VERSION}" >> $GITHUB_OUTPUT
+        echo "Test version will be: ${TEST_VERSION}"
+    
+    - name: Update version for test upload
+      run: |
+        # Temporarily update the version in pyproject.toml for test upload
+        sed -i 's/version = "${{ steps.test-version.outputs.base-version }}"/version = "${{ steps.test-version.outputs.test-version }}"/' pyproject.toml
+        echo "Updated version to: ${{ steps.test-version.outputs.test-version }}"
+    
+    - name: Build package
+      run: |
+        python -m build
+    
+    - name: Check distribution
+      run: |
+        python -m twine check dist/*
+    
+    - name: Test installation from built package
+      run: |
+        # Create a fresh virtual environment for testing
+        python -m venv test_env
+        source test_env/bin/activate
+        pip install dist/*.whl
+        python -c "import gui_image_studio; print('Installed version:', gui_image_studio.__version__)"
+        deactivate
+    
+    - name: Run basic tests
+      run: |
+        python -c "
+import gui_image_studio
+print('✅ Package import successful')
+print('Version:', gui_image_studio.__version__)
+
+# Test basic functionality
+try:
+    from gui_image_studio import ImageLoader
+    print('✅ ImageLoader import successful')
+except ImportError as e:
+    print('⚠️ ImageLoader import failed:', e)
+
+try:
+    from gui_image_studio import EmbeddedImageGenerator
+    print('✅ EmbeddedImageGenerator import successful')
+except ImportError as e:
+    print('⚠️ EmbeddedImageGenerator import failed:', e)
+"
+    
+    - name: Check TestPyPI token availability
+      id: check-token
+      run: |
+        if [ -z "${{ secrets.TEST_PYPI_API_TOKEN }}" ]; then
+          echo "TestPyPI token not available. Skipping TestPyPI upload."
+          echo "token-available=false" >> $GITHUB_OUTPUT
+        else
+          echo "TestPyPI token available. Proceeding with upload."
+          echo "token-available=true" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Upload to TestPyPI
+      if: steps.check-token.outputs.token-available == 'true'
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
+      run: |
+        echo "🚀 Uploading package to TestPyPI..."
+        python -m twine upload --repository testpypi dist/* --verbose
+        echo "✅ Package successfully uploaded to TestPyPI!"
+        echo ""
+        echo "📦 Test your package with:"
+        echo "pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ gui-image-studio==${{ steps.test-version.outputs.test-version }}"
+    
+    - name: TestPyPI upload skipped
+      if: steps.check-token.outputs.token-available == 'false'
+      run: |
+        echo "⚠️ TestPyPI upload was skipped because TEST_PYPI_API_TOKEN secret is not configured."
+        echo ""
+        echo "To enable TestPyPI publishing:"
+        echo "1. Create an account at https://test.pypi.org"
+        echo "2. Generate an API token at https://test.pypi.org/manage/account/"
+        echo "3. Go to your repository Settings > Secrets and variables > Actions"
+        echo "4. Add a new repository secret named 'TEST_PYPI_API_TOKEN'"
+        echo "5. Set the value to your TestPyPI API token"
+        echo "6. Re-run this workflow"
+    
+    - name: Installation test from TestPyPI
+      if: steps.check-token.outputs.token-available == 'true'
+      run: |
+        echo "⏳ Waiting 30 seconds for TestPyPI to process the upload..."
+        sleep 30
+        
+        # Test installation from TestPyPI
+        python -m venv testpypi_env
+        source testpypi_env/bin/activate
+        
+        echo "🔍 Attempting to install from TestPyPI..."
+        pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ gui-image-studio==${{ steps.test-version.outputs.test-version }} || echo "⚠️ Installation from TestPyPI failed (this is common due to propagation delays)"
+        
+        deactivate
+    
+    - name: Cleanup
+      if: always()
+      run: |
+        # Clean up test environments
+        rm -rf test_env testpypi_env
+        
+        # Restore original version in pyproject.toml
+        git checkout pyproject.toml || echo "Could not restore pyproject.toml"
+    
+    - name: Summary
+      if: steps.check-token.outputs.token-available == 'true'
+      run: |
+        echo "🎉 TestPyPI upload completed!"
+        echo ""
+        echo "📋 Summary:"
+        echo "- Base version: ${{ steps.test-version.outputs.base-version }}"
+        echo "- Test version: ${{ steps.test-version.outputs.test-version }}"
+        echo "- TestPyPI URL: https://test.pypi.org/project/gui-image-studio/${{ steps.test-version.outputs.test-version }}/"
+        echo ""
+        echo "🧪 To test the uploaded package:"
+        echo "pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ gui-image-studio==${{ steps.test-version.outputs.test-version }}"

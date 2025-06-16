@@ -11,7 +11,7 @@ Usage: python test_tint_visibility.py
 
 import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 import tkinter as tk
 import image_loader

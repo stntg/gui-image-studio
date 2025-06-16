@@ -7,7 +7,7 @@ import os
 import sys
 
 # Add src directory to path to import gui_image_studio
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 import gui_image_studio
 from gui_image_studio.generator import embed_images_from_folder

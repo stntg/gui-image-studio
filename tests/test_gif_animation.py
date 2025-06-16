@@ -5,7 +5,7 @@ Simple test script for GIF animation functionality
 
 import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 import tkinter as tk
 import gui_image_studio
