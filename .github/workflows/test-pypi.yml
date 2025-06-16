@@ -16,6 +16,10 @@ on:
       - 'pyproject.toml'
       - 'setup.py'
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   test-pypi-upload:
     runs-on: ubuntu-latest
