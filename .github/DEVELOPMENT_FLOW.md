@@ -1,6 +1,7 @@
 # Development Flow Setup Guide
 
-This guide will help you configure GitHub to use the recommended development flow for this project.
+This guide will help you configure GitHub to use the recommended development
+flow for this project.
 
 ## 🌟 Overview
 
@@ -211,7 +212,9 @@ git push -u origin feature/my-new-feature
 ### Testing from TestPyPI
 
 ```bash
-pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ gui-image-studio==1.0.0.dev20241201123456
+pip install --index-url https://test.pypi.org/simple/ \
+  --extra-index-url https://pypi.org/simple/ \
+  gui-image-studio==1.0.0.dev20241201123456
 ```
 
 ### Creating Release
@@ -272,4 +275,5 @@ git push origin main
    git push origin your-branch
    ```
 
-This development flow ensures high code quality, thorough testing, and safe releases! 🚀
+This development flow ensures high code quality, thorough testing, and safe
+releases! 🚀
