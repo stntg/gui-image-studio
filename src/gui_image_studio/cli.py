@@ -88,12 +88,36 @@ def create_sample_images():
         sys.exit(1)
 
 
+def launch_designer():
+    """Console script entry point for launching the image studio GUI."""
+    parser = argparse.ArgumentParser(
+        description="Launch the GUI Image Studio",
+        prog="gui-image-studio-designer",
+    )
+    parser.add_argument("--version", action="version", version="%(prog)s 1.0.0")
+
+    args = parser.parse_args()
+
+    try:
+        from .image_studio import main
+        main()
+    except ImportError as e:
+        print(f"Error importing GUI components: {e}", file=sys.stderr)
+        print("Make sure tkinter is available (usually built-in with Python)", file=sys.stderr)
+        sys.exit(1)
+    except Exception as e:
+        print(f"Error launching studio: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
 if __name__ == "__main__":
     # This allows the module to be run directly for testing
     if len(sys.argv) > 1 and sys.argv[1] == "generate":
         generate_embedded_images()
     elif len(sys.argv) > 1 and sys.argv[1] == "samples":
         create_sample_images()
+    elif len(sys.argv) > 1 and sys.argv[1] == "designer":
+        launch_designer()
     else:
-        print("Usage: python -m gui_image_studio.cli [generate|samples]")
+        print("Usage: python -m gui_image_studio.cli [generate|samples|designer]")
         sys.exit(1)

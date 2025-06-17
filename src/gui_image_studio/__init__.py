@@ -61,8 +61,22 @@ __all__ = [
     "get_image",
     "embed_images_from_folder",
     "create_sample_images",
+    "launch_designer",
     "__version__",
 ]
+
+def launch_designer():
+    """Launch the GUI Image Studio."""
+    try:
+        from .image_studio import main
+        main()
+    except ImportError as e:
+        print(f"Error importing GUI components: {e}")
+        print("Make sure tkinter is available (usually built-in with Python)")
+        raise
+    except Exception as e:
+        print(f"Error launching studio: {e}")
+        raise
 
 # Convenience imports for common use cases
 try:

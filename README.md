@@ -5,6 +5,7 @@ Python GUI applications with support for tkinter and customtkinter.
 
 ## Features
 
+- 🎨 **Visual Image Designer GUI** - Create and edit images with drawing tools
 - 🖼️ Convert images to base64 encoded strings
 - 📁 Batch process entire folders of images
 - 🎨 Support for multiple GUI frameworks (tkinter, customtkinter)
@@ -13,6 +14,7 @@ Python GUI applications with support for tkinter and customtkinter.
 - 🎬 Animated GIF support
 - 🎯 High-quality compression options
 - 📝 Sample image generation for testing
+- 👁️ Real-time code preview and generation
 
 ## Installation
 
@@ -31,6 +33,29 @@ pip install -e .
 ```
 
 ## Quick Start
+
+### Image Designer GUI
+
+Launch the visual image designer to create images with drawing tools:
+
+```bash
+# Launch the designer GUI
+python -m gui_image_studio.cli designer
+
+# Or use the launcher script
+python launch_designer.py
+
+# Or if installed via pip
+gui-image-studio-designer
+```
+
+The Image Designer GUI provides:
+- Drawing tools (brush, eraser, shapes, text)
+- Image transformations and filters
+- Multiple image management
+- Real-time preview
+- Code generation with preview
+- Export capabilities
 
 ### Basic Usage
 
@@ -69,13 +94,17 @@ root.mainloop()
 ### Command Line Interface
 
 ```bash
+# Launch the Image Designer GUI
+python -m gui_image_studio.cli designer
+
 # Create sample images for testing
 python -m gui_image_studio.sample_creator
 
 # Embed images from a folder
-python -m gui_image_studio.cli embed-folder images/ \
+python -m gui_image_studio.cli generate \
+  --folder images/ \
   --output embedded_images.py \
-  --framework tkinter
+  --quality 85
 ```
 
 ## Advanced Features
@@ -121,6 +150,8 @@ Check out the `examples/` directory for comprehensive usage examples:
 - `03_image_transformations.py` - Image manipulation features
 - `04_animated_gifs.py` - Animated GIF handling
 - `05_advanced_features.py` - Advanced usage patterns
+- `06_image_designer_gui.py` - Launch the Image Studio GUI
+- `07_using_designed_images.py` - Use images created with the designer
 
 Run all examples:
 

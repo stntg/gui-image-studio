@@ -78,6 +78,7 @@ setup(
         'console_scripts': [
             'gui-image-studio-generate=gui_image_studio.cli:generate_embedded_images',
             'gui-image-studio-create-samples=gui_image_studio.cli:create_sample_images',
+            'gui-image-studio-designer=gui_image_studio.cli:launch_designer',
         ],
     },
     include_package_data=True,
