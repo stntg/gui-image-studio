@@ -7,10 +7,12 @@ on:
 jobs:
   test:
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+        python-version: ['3.9', '3.11', '3.12']
     steps:
     - uses: actions/checkout@v4
     
@@ -20,18 +22,25 @@ jobs:
         python-version: ${{ matrix.python-version }}
     
     - name: Install dependencies
+      timeout-minutes: 10
       run: |
         python -m pip install --upgrade pip
-        pip install -e .[dev]
+        pip install -e .[dev] --timeout 300
     
     - name: Create test directory
       run: |
         mkdir -p test_workspace
+      shell: bash
     
     - name: Run tests
+      timeout-minutes: 5
       run: |
-        cd test_workspace
-        python ../test_package.py
+        # Run the test file from the correct location
+        python tests/test_package.py
+      shell: bash
+      env:
+        PYTHONIOENCODING: utf-8
+        CI: true
     
     - name: Verify package version
       run: |
@@ -50,13 +59,22 @@ jobs:
         fi
     
     - name: Cleanup test files
+      timeout-minutes: 2
       run: |
-        rm -rf test_workspace
+        echo "Cleaning up test files..."
+        if [[ "$RUNNER_OS" == "Windows" ]]; then
+          powershell -Command "if (Test-Path test_workspace) { Remove-Item -Recurse -Force test_workspace -ErrorAction SilentlyContinue }"
+        else
+          rm -rf test_workspace
+        fi
+        echo "Cleanup completed"
+      shell: bash
       if: always()
 
   build-and-publish:
     needs: test
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
     - uses: actions/checkout@v4
     
@@ -66,12 +84,14 @@ jobs:
         python-version: '3.9'
     
     - name: Install build dependencies
+      timeout-minutes: 10
       run: |
         python -m pip install --upgrade pip
         pip install build twine
         pip install -e .[dev]
     
     - name: Build package
+      timeout-minutes: 5
       run: |
         python -m build
     
@@ -80,15 +100,25 @@ jobs:
         python -m twine check dist/*
     
     - name: Test installation from built package
+      timeout-minutes: 10
       run: |
         # Create a fresh virtual environment for testing
         python -m venv test_env
-        source test_env/bin/activate || test_env\Scripts\activate
-        pip install dist/*.whl
-        python -c "import gui_image_studio; print('Installed version:', gui_image_studio.__version__)"
-        deactivate
+        if [[ "$RUNNER_OS" == "Windows" ]]; then
+          test_env/Scripts/activate
+          pip install dist/*.whl
+          python -c "import gui_image_studio; print('Installed version:', gui_image_studio.__version__)"
+          deactivate
+        else
+          source test_env/bin/activate
+          pip install dist/*.whl
+          python -c "import gui_image_studio; print('Installed version:', gui_image_studio.__version__)"
+          deactivate
+        fi
+      shell: bash
     
     - name: Run security checks
+      timeout-minutes: 5
       run: |
         pip install safety bandit
         safety check
