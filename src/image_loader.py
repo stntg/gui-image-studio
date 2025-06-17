@@ -3,7 +3,15 @@ from io import BytesIO
 
 from PIL import Image, ImageEnhance, ImageOps, ImageSequence
 
-import embedded_images  # This file was generated earlier
+# Try to import embedded_images, create empty dict if not found
+try:
+    from . import embedded_images
+except ImportError:
+    # Create a fallback embedded_images module
+    class EmbeddedImages:
+        embedded_images = {"default": {}}
+
+    embedded_images = EmbeddedImages()
 
 
 def get_image(

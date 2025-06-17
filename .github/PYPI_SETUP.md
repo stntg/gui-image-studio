@@ -1,11 +1,14 @@
 # PyPI and TestPyPI Setup Guide
 
-This document explains how to set up both PyPI (production) and TestPyPI (testing) publishing for this repository.
+This document explains how to set up both PyPI (production) and TestPyPI (testing)
+publishing for this repository.
 
 ## Overview
 
-- **PyPI** ([https://pypi.org](https://pypi.org)): Production package repository for real releases
-- **TestPyPI** ([https://test.pypi.org](https://test.pypi.org)): Testing repository for validating packages before production
+- **PyPI** ([https://pypi.org](https://pypi.org)):
+  Production package repository for real releases
+- **TestPyPI** ([https://test.pypi.org](https://test.pypi.org)):
+  Testing repository for validating packages before production
 
 ## Setting up TestPyPI (Testing)
 
@@ -99,7 +102,10 @@ This document explains how to set up both PyPI (production) and TestPyPI (testin
 
 ```bash
 # Install from TestPyPI (includes dependencies from regular PyPI)
-pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ gui-image-studio==1.0.0.dev20241201123456
+pip install \
+  --index-url https://test.pypi.org/simple/ \
+  --extra-index-url https://pypi.org/simple/ \
+  gui-image-studio==1.0.0.dev20241201123456
 
 # Test the package
 python -c "import gui_image_studio; print(gui_image_studio.__version__)"

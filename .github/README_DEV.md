@@ -68,7 +68,10 @@ git push -u origin feature/my-awesome-feature
 python dev_tools.py test
 
 # After merging to develop, test from TestPyPI
-pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ gui-image-studio==1.0.0.dev20241201123456
+pip install \
+  --index-url https://test.pypi.org/simple/ \
+  --extra-index-url https://pypi.org/simple/ \
+  gui-image-studio==1.0.0.dev20241201123456
 ```
 
 ### Creating a Release

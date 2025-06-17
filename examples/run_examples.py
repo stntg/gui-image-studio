@@ -146,72 +146,109 @@ def show_menu():
     print("9. Exit")
     print()
 
-def main():
-    """Main function."""
-    print("Image Loader Examples Runner")
-    print("============================")
-    
-    # Initial prerequisite check
+def handle_initial_setup():
+    """Handle initial prerequisite checking and setup if needed."""
     issues = check_prerequisites()
     
-    if issues:
-        print("\n⚠ Issues found:")
-        for issue in issues:
-            print(f"  - {issue}")
-        
-        if "embedded_images.py not found" in str(issues) or "Sample images not found" in str(issues):
-            print("\nWould you like to run setup now? (y/n): ", end="")
-            if input().lower().startswith('y'):
-                if run_setup():
-                    issues = check_prerequisites()  # Re-check
-                else:
-                    print("Setup failed. Please resolve issues manually.")
-                    return
-        
-        if issues:
-            print("\nPlease resolve the above issues before running examples.")
-            return
+    if not issues:
+        return True
     
-    examples = [
+    print("\n⚠ Issues found:")
+    for issue in issues:
+        print(f"  - {issue}")
+    
+    # Check if setup is needed and offer to run it
+    setup_needed = ("embedded_images.py not found" in str(issues) or 
+                   "Sample images not found" in str(issues))
+    
+    if setup_needed:
+        print("\nWould you like to run setup now? (y/n): ", end="")
+        if input().lower().startswith('y'):
+            if run_setup():
+                issues = check_prerequisites()  # Re-check
+            else:
+                print("Setup failed. Please resolve issues manually.")
+                return False
+    
+    if issues:
+        print("\nPlease resolve the above issues before running examples.")
+        return False
+    
+    return True
+
+def get_examples_list():
+    """Return the list of available examples."""
+    return [
         ("01_basic_usage.py", "Basic Usage Examples"),
         ("02_theming_examples.py", "Theming Examples"),
         ("03_image_transformations.py", "Image Transformations"),
         ("04_animated_gifs.py", "Animated GIFs"),
         ("05_advanced_features.py", "Advanced Features")
     ]
+
+def handle_prerequisites_check():
+    """Handle the prerequisites check menu option."""
+    issues = check_prerequisites()
+    if not issues:
+        print("✓ All prerequisites are met!")
+    else:
+        print("⚠ Issues found:")
+        for issue in issues:
+            print(f"  - {issue}")
+
+def handle_run_all_examples(examples):
+    """Handle running all examples sequentially."""
+    print("\nRunning all examples sequentially...")
+    for example_file, description in examples:
+        print(f"\n--- {description} ---")
+        if not run_example(example_file):
+            break
+        input("\nPress Enter to continue to next example...")
+
+def handle_single_example(choice, examples):
+    """Handle running a single example."""
+    example_index = int(choice) - 1
+    example_file, description = examples[example_index]
+    run_example(example_file)
+
+def process_user_choice(choice, examples):
+    """Process the user's menu choice."""
+    if choice == "9":
+        print("Goodbye!")
+        return False
+    elif choice == "8":
+        handle_prerequisites_check()
+    elif choice == "7":
+        run_setup()
+    elif choice == "6":
+        handle_run_all_examples(examples)
+    elif choice in ["1", "2", "3", "4", "5"]:
+        handle_single_example(choice, examples)
+    else:
+        print("Invalid choice. Please enter a number between 1-9.")
     
+    return True
+
+def main():
+    """Main function."""
+    print("Image Loader Examples Runner")
+    print("============================")
+    
+    # Initial prerequisite check and setup
+    if not handle_initial_setup():
+        return
+    
+    examples = get_examples_list()
+    
+    # Main menu loop
     while True:
         show_menu()
         
         try:
             choice = input("Enter your choice (1-9): ").strip()
             
-            if choice == "9":
-                print("Goodbye!")
+            if not process_user_choice(choice, examples):
                 break
-            elif choice == "8":
-                issues = check_prerequisites()
-                if not issues:
-                    print("✓ All prerequisites are met!")
-                else:
-                    print("⚠ Issues found:")
-                    for issue in issues:
-                        print(f"  - {issue}")
-            elif choice == "7":
-                run_setup()
-            elif choice == "6":
-                print("\nRunning all examples sequentially...")
-                for example_file, description in examples:
-                    print(f"\n--- {description} ---")
-                    if not run_example(example_file):
-                        break
-                    input("\nPress Enter to continue to next example...")
-            elif choice in ["1", "2", "3", "4", "5"]:
-                example_index = int(choice) - 1
-                example_file, description = examples[example_index]
-                run_example(example_file)
-            else:
-                print("Invalid choice. Please enter a number between 1-9.")
                 
         except KeyboardInterrupt:
             print("\n\nExiting...")
