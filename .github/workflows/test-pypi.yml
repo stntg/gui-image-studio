@@ -165,7 +165,7 @@ jobs:
         TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
       run: |
         echo "[UPLOAD] Uploading package to TestPyPI..."
-        python -m twine upload --repository testpypi dist/* --verbose --timeout 300
+        python -m twine upload --repository testpypi dist/* --verbose
         echo "[SUCCESS] Package successfully uploaded to TestPyPI!"
         echo ""
         echo "[TEST] Test your package with:"

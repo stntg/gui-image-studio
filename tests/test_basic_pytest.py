@@ -30,19 +30,19 @@ def test_package_name():
     assert gui_image_studio.__name__ == 'gui_image_studio'
 
 
-def test_core_modules_import():
-    """Test that core modules can be imported."""
+def test_core_functions_import():
+    """Test that core functions can be imported."""
     try:
-        from gui_image_studio import ImageLoader
-        assert ImageLoader is not None
+        from gui_image_studio import get_image
+        assert get_image is not None
     except ImportError:
-        pytest.skip("ImageLoader not available")
+        pytest.skip("get_image not available")
     
     try:
-        from gui_image_studio import EmbeddedImageGenerator
-        assert EmbeddedImageGenerator is not None
+        from gui_image_studio import embed_images_from_folder
+        assert embed_images_from_folder is not None
     except ImportError:
-        pytest.skip("EmbeddedImageGenerator not available")
+        pytest.skip("embed_images_from_folder not available")
 
 
 def test_sample_creator_import():
