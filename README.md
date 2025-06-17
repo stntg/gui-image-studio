@@ -5,7 +5,7 @@ Python GUI applications with support for tkinter and customtkinter.
 
 ## Features
 
-- 🎨 **Visual Image Designer GUI** - Create and edit images with drawing tools
+- 🎨 **Visual Image Studio GUI** - Create and edit images with drawing tools
 - 🖼️ Convert images to base64 encoded strings
 - 📁 Batch process entire folders of images
 - 🎨 Support for multiple GUI frameworks (tkinter, customtkinter)
@@ -34,12 +34,12 @@ pip install -e .
 
 ## Quick Start
 
-### Image Designer GUI
+### Image Studio GUI
 
-Launch the visual image designer to create images with drawing tools:
+Launch the visual image studio to create images with drawing tools:
 
 ```bash
-# Launch the designer GUI
+# Launch the studio GUI
 python -m gui_image_studio.cli designer
 
 # Or use the launcher script
@@ -49,7 +49,7 @@ python launch_designer.py
 gui-image-studio-designer
 ```
 
-The Image Designer GUI provides:
+The Image Studio GUI provides:
 - Drawing tools (brush, eraser, shapes, text)
 - Image transformations and filters
 - Multiple image management
@@ -94,7 +94,7 @@ root.mainloop()
 ### Command Line Interface
 
 ```bash
-# Launch the Image Designer GUI
+# Launch the Image Studio GUI
 python -m gui_image_studio.cli designer
 
 # Create sample images for testing

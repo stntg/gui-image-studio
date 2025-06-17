@@ -867,7 +867,7 @@ class CodePreviewWindow:
 
 
 def main():
-    """Main entry point for the Image Designer GUI."""
+    """Main entry point for the Image Studio GUI."""
     app = ImageDesignerGUI()
     app.run()
 

@@ -1,7 +1,8 @@
 # Complete Development System Setup Summary
 
 **Date:** December 1, 2024  
-**Task:** Set up complete professional development workflow with automated documentation  
+**Task:** Set up complete professional development workflow  
+with automated documentation  
 **Status:** ✅ Complete
 
 ## 🎯 Complete System Overview
@@ -103,7 +104,9 @@ git push -u origin feature/my-awesome-feature
 python dev_tools.py test
 
 # Test from TestPyPI after merge to develop
-pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ gui-image-studio==1.0.0.dev20241201123456
+pip install --index-url https://test.pypi.org/simple/ \
+  --extra-index-url https://pypi.org/simple/ \
+  gui-image-studio==1.0.0.dev20241201123456
 ```
 
 ### 3. Release Process
@@ -242,7 +245,9 @@ python dev_tools.py summary "Title" "Content" # Create custom summary
 python dev_tools.py test
 
 # TestPyPI testing (after develop merge)
-pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ gui-image-studio==VERSION
+pip install --index-url https://test.pypi.org/simple/ \
+  --extra-index-url https://pypi.org/simple/ \
+  gui-image-studio==VERSION
 ```
 
 ## 🎉 System Benefits

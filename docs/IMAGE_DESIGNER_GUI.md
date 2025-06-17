@@ -1,16 +1,20 @@
 # GUI Image Studio - Image Studio GUI
 
-The Image Studio GUI is a comprehensive visual tool for developers to create, edit, and design images/icons that can then be embedded into Python GUI applications.
+The Image Studio GUI is a comprehensive visual tool for developers to create,
+edit, and design images/icons that can then be embedded into Python GUI
+applications.
 
 ## Features
 
 ### Visual Design Tools
+
 - **Drawing Tools**: Brush, eraser, line, rectangle, circle, text, and fill tools
 - **Customizable Properties**: Adjustable brush size, color picker, and tool-specific settings
 - **Real-time Canvas**: Interactive drawing canvas with zoom controls
 - **Multiple Images**: Manage multiple images in a single project
 
 ### Image Management
+
 - **Create New Images**: Start with blank canvases of custom sizes
 - **Load Existing Images**: Import images from files (PNG, JPG, GIF, etc.)
 - **Duplicate Images**: Copy existing images for variations
@@ -18,12 +22,14 @@ The Image Studio GUI is a comprehensive visual tool for developers to create, ed
 - **Delete Images**: Remove unwanted images from projects
 
 ### Image Transformations
+
 - **Resize**: Change image dimensions
 - **Rotate**: Rotate images by any angle
 - **Filters**: Apply blur, sharpen, and emboss effects
 - **Real-time Preview**: See changes immediately
 
 ### Code Generation
+
 - **Framework Support**: Generate code for tkinter or customtkinter
 - **Quality Control**: Adjustable compression quality (1-100)
 - **Code Preview**: Preview generated code before saving
@@ -57,20 +63,23 @@ The Image Studio GUI is a comprehensive visual tool for developers to create, ed
 
 ### Interface Overview
 
-The Image Designer GUI is divided into three main panels:
+The Image Studio GUI is divided into three main panels:
 
 #### Left Panel - Tools & Image Management
+
 - **Design Tools**: Select drawing tools (brush, eraser, shapes, etc.)
 - **Tool Properties**: Adjust size, color, and other tool settings
 - **Image List**: View and manage all images in your project
 - **Management Buttons**: Create, load, duplicate, and delete images
 
 #### Center Panel - Drawing Canvas
+
 - **Interactive Canvas**: Main drawing area with zoom and scroll support
 - **Zoom Controls**: Zoom in, zoom out, and fit-to-window options
 - **Real-time Updates**: See your changes as you draw
 
 #### Right Panel - Properties & Code Generation
+
 - **Image Properties**: Name, size, and transformation settings
 - **Transformations**: Rotation, filters, and effects
 - **Code Generation**: Framework selection, quality settings, and export options
@@ -165,18 +174,21 @@ root.mainloop()
 ## Tips and Best Practices
 
 ### Design Tips
+
 1. **Start with the Right Size**: Consider your final use case when setting image dimensions
 2. **Use Appropriate Colors**: Consider your GUI theme and color scheme
 3. **Test Different Sizes**: Create variations for different UI contexts
 4. **Keep It Simple**: Simple, clear designs work best for icons and UI elements
 
 ### Performance Tips
+
 1. **Optimize Image Sizes**: Larger images result in larger embedded files
 2. **Adjust Quality**: Balance file size vs. image quality using the quality slider
 3. **Use Appropriate Formats**: The tool automatically optimizes format selection
 4. **Group Related Images**: Keep related images in the same project for organization
 
 ### Code Generation Tips
+
 1. **Choose the Right Framework**: Select tkinter or customtkinter based on your project
 2. **Preview Before Generating**: Always preview code to ensure it meets your needs
 3. **Use Descriptive Names**: Give your images meaningful names for easier code maintenance
@@ -215,16 +227,19 @@ If you encounter issues:
 ## Advanced Features
 
 ### Custom Themes
+
 The generated code supports theme-based image organization. Images can be categorized by theme for different UI modes (light, dark, etc.).
 
 ### Integration with Existing Projects
-The Image Designer GUI integrates seamlessly with existing gui_image_studio workflows. You can:
+
+The Image Studio GUI integrates seamlessly with existing gui_image_studio workflows. You can:
 - Load images created with other tools
 - Combine designer-created images with programmatically generated ones
 - Use the same embedded code format across all tools
 
 ### Extensibility
-The Image Designer GUI is built with extensibility in mind. Advanced users can:
+
+The Image Studio GUI is built with extensibility in mind. Advanced users can:
 - Add custom drawing tools
 - Implement additional image filters
 - Extend the code generation templates
@@ -241,12 +256,14 @@ See the `examples/` directory for complete usage examples:
 The Image Studio GUI is primarily a visual tool, but it also exposes programmatic interfaces:
 
 ### ImageDesignerGUI Class
+
 Main application class with methods for:
 - Image management (create, load, save, delete)
 - Drawing operations (tool selection, canvas interaction)
 - Code generation (preview, export)
 
 ### Integration Functions
+
 - `launch_designer()` - Launch the GUI from code
 - `embed_images_from_folder()` - Generate embedded code from image files
 
