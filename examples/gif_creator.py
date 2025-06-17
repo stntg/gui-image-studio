@@ -277,7 +277,7 @@ def create_text_animation(filepath, text="LOADING", size=(128, 64), frames=20):
             # Draw character
             try:
                 draw.text((x, y), char, fill=color)
-            except:
+            except (OSError, IOError, AttributeError):
                 # Fallback if font issues
                 draw.rectangle([x, y, x + 10, y + 15], fill=color)
         

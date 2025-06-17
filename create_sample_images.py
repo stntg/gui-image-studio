@@ -146,7 +146,7 @@ def create_button_icon(filepath, text, theme="default"):
         x = (80 - text_width) // 2
         y = (32 - text_height) // 2
         draw.text((x, y), text, fill=text_color)
-    except:
+    except (AttributeError, TypeError):
         # Fallback if textbbox is not available
         draw.text((10, 10), text, fill=text_color)
     

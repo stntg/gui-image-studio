@@ -1,6 +1,7 @@
 # Development Summaries
 
-This folder contains summary files that document development activities, setups, and changes made to the project.
+This folder contains summary files that document development activities,
+setups, and changes made to the project.
 
 ## 📋 Summary Types
 
@@ -146,4 +147,5 @@ mv dev/SUMMARY_*202411* dev/archive/  # Archive November summaries
 
 ---
 
-This summary system helps maintain a clear record of all development activities and makes it easy to track project evolution over time.
+This summary system helps maintain a clear record of all development activities and
+makes it easy to track project evolution over time.
