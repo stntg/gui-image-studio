@@ -8,24 +8,32 @@ This script provides helpful commands for the development workflow.
 import subprocess
 import sys
 import re
+import shlex
+import glob
 from pathlib import Path
 from datetime import datetime
 
 
 def run_command(cmd, check=True):
-    """Run a shell command and return the result."""
+    """Run a command safely without shell injection vulnerabilities."""
     try:
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, check=check)
+        # If cmd is a string, split it safely; if it's already a list, use as-is
+        if isinstance(cmd, str):
+            cmd_list = shlex.split(cmd)
+        else:
+            cmd_list = cmd
+        
+        result = subprocess.run(cmd_list, capture_output=True, text=True, check=check)
         return result.stdout.strip(), result.stderr.strip()
     except subprocess.CalledProcessError as e:
-        print(f"Error running command: {cmd}")
+        print(f"Error running command: {' '.join(cmd_list) if isinstance(cmd_list, list) else cmd}")
         print(f"Error: {e.stderr}")
         return None, e.stderr
 
 
 def get_current_branch():
     """Get the current git branch."""
-    stdout, _ = run_command("git branch --show-current")
+    stdout, _ = run_command(["git", "branch", "--show-current"])
     return stdout
 
 
@@ -48,12 +56,12 @@ def create_feature_branch(feature_name):
     
     # Switch to develop and pull latest
     print("Switching to develop branch...")
-    run_command("git checkout develop")
-    run_command("git pull origin develop")
+    run_command(["git", "checkout", "develop"])
+    run_command(["git", "pull", "origin", "develop"])
     
     # Create and switch to feature branch
     branch_name = f"feature/{feature_name}"
-    run_command(f"git checkout -b {branch_name}")
+    run_command(["git", "checkout", "-b", branch_name])
     
     print(f"✅ Created and switched to branch: {branch_name}")
     print(f"💡 When ready, push with: git push -u origin {branch_name}")
@@ -65,16 +73,16 @@ def start_release(version):
     
     # Switch to main and pull latest
     print("Switching to main branch...")
-    run_command("git checkout main")
-    run_command("git pull origin main")
+    run_command(["git", "checkout", "main"])
+    run_command(["git", "pull", "origin", "main"])
     
     # Create release branch
     branch_name = f"release/v{version}"
-    run_command(f"git checkout -b {branch_name}")
+    run_command(["git", "checkout", "-b", branch_name])
     
     # Merge develop
     print("Merging develop branch...")
-    run_command("git merge develop")
+    run_command(["git", "merge", "develop"])
     
     # Update version in pyproject.toml
     print(f"Updating version to {version}...")
@@ -90,8 +98,8 @@ def start_release(version):
     with open("pyproject.toml", "w") as f:
         f.write(updated_content)
     
-    run_command("git add pyproject.toml")
-    run_command(f'git commit -m "Bump version to {version}"')
+    run_command(["git", "add", "pyproject.toml"])
+    run_command(["git", "commit", "-m", f"Bump version to {version}"])
     
     print(f"✅ Release branch created: {branch_name}")
     print(f"💡 Next steps:")
@@ -106,36 +114,47 @@ def test_package_locally():
     
     # Build package
     print("Building package...")
-    run_command("python -m build")
+    run_command(["python", "-m", "build"])
     
     # Check with twine
     print("Checking package with twine...")
-    run_command("python -m twine check dist/*")
+    # Use glob to find wheel files safely
+    dist_files = glob.glob("dist/*")
+    if dist_files:
+        run_command(["python", "-m", "twine", "check"] + dist_files)
+    else:
+        print("No distribution files found in dist/")
+        return
     
     # Test installation
     print("Testing installation...")
-    run_command("python -m venv test_env")
+    run_command(["python", "-m", "venv", "test_env"])
     
-    # Activate virtual environment and test
+    # Test installation in virtual environment
     if sys.platform == "win32":
-        activate_cmd = "test_env\\Scripts\\activate"
+        python_exe = "test_env\\Scripts\\python.exe"
+        pip_exe = "test_env\\Scripts\\pip.exe"
     else:
-        activate_cmd = "source test_env/bin/activate"
+        python_exe = "test_env/bin/python"
+        pip_exe = "test_env/bin/pip"
     
-    test_commands = [
-        f"{activate_cmd} && pip install dist/*.whl",
-        f"{activate_cmd} && python -c \"import gui_image_studio; print('Version:', gui_image_studio.__version__)\"",
-    ]
-    
-    for cmd in test_commands:
-        stdout, stderr = run_command(cmd)
-        if stdout:
-            print(stdout)
-        if stderr:
-            print(stderr)
+    # Find wheel file
+    wheel_files = glob.glob("dist/*.whl")
+    if wheel_files:
+        print("Installing package in test environment...")
+        run_command([pip_exe, "install", wheel_files[0]])
+        
+        print("Testing package import...")
+        run_command([python_exe, "-c", "import gui_image_studio; print('Version:', gui_image_studio.__version__)"])
+    else:
+        print("No wheel file found for testing")
     
     # Cleanup
-    run_command("rmdir /s test_env" if sys.platform == "win32" else "rm -rf test_env", check=False)
+    print("Cleaning up test environment...")
+    if sys.platform == "win32":
+        run_command(["rmdir", "/s", "/q", "test_env"], check=False)
+    else:
+        run_command(["rm", "-rf", "test_env"], check=False)
     
     print("✅ Local package test completed")
 
@@ -154,14 +173,14 @@ def show_status():
     print(f"Current version: {version}")
     
     # Git status
-    stdout, _ = run_command("git status --porcelain")
+    stdout, _ = run_command(["git", "status", "--porcelain"])
     if stdout:
         print(f"Uncommitted changes: {len(stdout.splitlines())} files")
     else:
         print("Working directory clean")
     
     # Check if branches exist
-    stdout, _ = run_command("git branch -r")
+    stdout, _ = run_command(["git", "branch", "-r"])
     remote_branches = stdout.splitlines()
     
     has_develop = any("origin/develop" in branch for branch in remote_branches)
