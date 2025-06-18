@@ -1,4 +1,5 @@
 # GUI Image Studio
+[![CodeFactor](https://www.codefactor.io/repository/github/stntg/gui-image-studio/badge)](https://www.codefactor.io/repository/github/stntg/gui-image-studio)
 
 A comprehensive Python toolkit for creating, embedding, and managing images in
 Python GUI applications with support for tkinter and customtkinter.
