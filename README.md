@@ -1,5 +1,10 @@
 # GUI Image Studio
+[![PyPI version](https://img.shields.io/pypi/v/gui-image-studio.svg)](https://pypi.org/project/gui-image-studio/)
+[![Python versions](https://img.shields.io/pypi/pyversions/gui-image-studio.svg)](https://pypi.org/project/gui-image-studio/)
+[![CI Status](https://github.com/stntg/gui-image-studio/workflows/CI/badge.svg)](https://github.com/stntg/gui-image-studio/actions)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![CodeFactor](https://www.codefactor.io/repository/github/stntg/gui-image-studio/badge)](https://www.codefactor.io/repository/github/stntg/gui-image-studio)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A comprehensive Python toolkit for creating, embedding, and managing images in
 Python GUI applications with support for tkinter and customtkinter.
