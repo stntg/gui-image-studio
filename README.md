@@ -1,7 +1,11 @@
 # GUI Image Studio
-
-[![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://yourusername.github.io/gui-image-studio/)
-[![Build Status](https://github.com/yourusername/gui-image-studio/workflows/Documentation/badge.svg)](https://github.com/yourusername/gui-image-studio/actions)
+[![PyPI version](https://img.shields.io/pypi/v/gui-image-studio.svg)](https://pypi.org/project/gui-image-studio/)
+[![Python versions](https://img.shields.io/pypi/pyversions/gui-image-studio.svg)](https://pypi.org/project/gui-image-studio/)
+[![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://stntg.github.io/gui-image-studio/)
+[![CI Status](https://github.com/stntg/gui-image-studio/workflows/CI/badge.svg)](https://github.com/stntg/gui-image-studio/actions)
+[![Documentation Build](https://github.com/stntg/gui-image-studio/workflows/Documentation/badge.svg)](https://github.com/stntg/gui-image-studio/actions)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![CodeFactor](https://www.codefactor.io/repository/github/stntg/gui-image-studio/badge)](https://www.codefactor.io/repository/github/stntg/gui-image-studio)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A comprehensive Python toolkit for creating, embedding, and managing images in
@@ -9,19 +13,13 @@ Python GUI applications with support for tkinter and customtkinter.
 
 ## 📚 Documentation
 
-**[📖 Full Documentation](https://yourusername.github.io/gui-image-studio/)** - Complete guides, API reference, and examples
+**[📖 Full Documentation](https://stntg.github.io/gui-image-studio/)** - Complete guides, API reference, and examples
 
 Quick links:
-- [🚀 Quick Start Guide](https://yourusername.github.io/gui-image-studio/quickstart.html)
-- [📖 API Reference](https://yourusername.github.io/gui-image-studio/api/)
-- [💡 Examples](https://yourusername.github.io/gui-image-studio/examples/)
-- [🛠️ Installation Guide](https://yourusername.github.io/gui-image-studio/installation.html)
-
-Quick links:
-- [🚀 Quick Start Guide](https://yourusername.github.io/gui-image-studio/quickstart.html)
-- [📖 API Reference](https://yourusername.github.io/gui-image-studio/api/)
-- [💡 Examples](https://yourusername.github.io/gui-image-studio/examples/)
-- [🛠️ Installation Guide](https://yourusername.github.io/gui-image-studio/installation.html)
+- [🚀 Quick Start Guide](https://stntg.github.io/gui-image-studio/quickstart.html)
+- [📖 API Reference](https://stntg.github.io/gui-image-studio/api/)
+- [💡 Examples](https://stntg.github.io/gui-image-studio/examples/)
+- [🛠️ Installation Guide](https://stntg.github.io/gui-image-studio/installation.html)
 
 ## Features
 
