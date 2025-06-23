@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-CustomTkinter Contrast & Saturation Example - image_loader
+CustomTkinter Contrast & Saturation Example - gui_image_studio
 ==========================================================
 
 This example demonstrates contrast and saturation adjustments using CustomTkinter.
@@ -13,7 +13,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 import customtkinter as ctk
 import tkinter as tk
-import image_loader
+import gui_image_studio
 
 class ContrastSaturationDemo:
     def __init__(self):
@@ -164,7 +164,7 @@ class ContrastSaturationDemo:
                 params["tint_intensity"] = tint_intensity
             
             # Load and display image
-            image = image_loader.get_image(self.image_var.get(), **params)
+            image = gui_image_studio.get_image(self.image_var.get(), **params)
             self.image_label.configure(image=image, text="")
             
         except Exception as e:

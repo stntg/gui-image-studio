@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Image Loader Examples Runner
-============================
+GUI Image Studio Examples Runner
+===============================
 
-This script provides an easy way to run all the image_loader examples.
+This script provides an easy way to run all the gui_image_studio examples.
 It checks prerequisites and guides users through the available examples.
 """
 
@@ -65,14 +65,14 @@ def run_setup():
         os.chdir(project_root)
         
         print("Creating sample images...")
-        result = subprocess.run([sys.executable, "create_sample_images.py"], 
+        result = subprocess.run(["gui-image-studio-create-samples"], 
                               capture_output=True, text=True)
         if result.returncode != 0:
             print(f"Error creating sample images: {result.stderr}")
             return False
         
         print("Generating embedded_images.py...")
-        result = subprocess.run([sys.executable, "generate_embedded_images.py"], 
+        result = subprocess.run(["gui-image-studio-generate", "--folder", "sample_images", "--output", "embedded_images.py"], 
                               capture_output=True, text=True)
         if result.returncode != 0:
             print(f"Error generating embedded images: {result.stderr}")
@@ -231,7 +231,7 @@ def process_user_choice(choice, examples):
 
 def main():
     """Main function."""
-    print("Image Loader Examples Runner")
+    print("GUI Image Studio Examples Runner")
     print("============================")
     
     # Initial prerequisite check and setup

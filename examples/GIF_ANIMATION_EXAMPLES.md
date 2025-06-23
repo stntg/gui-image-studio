@@ -298,20 +298,20 @@ class AnimatedApp:
     def __init__(self):
         self.root = tk.Tk()
         self.animation_jobs = {}
-        
+
     def start_animation(self, key, label, animation_data):
         frames = animation_data["animated_frames"]
         delay = animation_data["frame_delay"]
-        
+
         def animate(frame_index=0):
             if key in self.animation_jobs:
                 label.configure(image=frames[frame_index])
                 frame_index = (frame_index + 1) % len(frames)
                 job_id = self.root.after(delay, animate, frame_index)
                 self.animation_jobs[key] = job_id
-        
+
         animate()
-    
+
     def stop_animation(self, key):
         if key in self.animation_jobs:
             self.root.after_cancel(self.animation_jobs[key])
@@ -329,10 +329,10 @@ class ModernAnimatedApp:
         ctk.set_appearance_mode("dark")
         self.root = ctk.CTk()
         self.animation_states = {}
-        
+
     def create_animated_button(self, parent, animation_file):
         frame = ctk.CTkFrame(parent)
-        
+
         # Load animation
         animation = gui_image_studio.get_image(
             animation_file,
@@ -340,16 +340,16 @@ class ModernAnimatedApp:
             size=(32, 32),
             animated=True
         )
-        
+
         # Create animated label
         label = ctk.CTkLabel(frame, text="")
         label.pack(pady=5)
-        
+
         # Control button
-        button = ctk.CTkButton(frame, text="Toggle", 
+        button = ctk.CTkButton(frame, text="Toggle",
                               command=lambda: self.toggle_animation(label, animation))
         button.pack(pady=5)
-        
+
         return frame
 ```
 

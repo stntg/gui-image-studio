@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Basic Usage Examples - image_loader
+Basic Usage Examples - gui_image_studio
 ====================================
 
-This example demonstrates the fundamental usage of image_loader with both
+This example demonstrates the fundamental usage of gui_image_studio with both
 Tkinter and CustomTkinter frameworks.
 """
 
@@ -12,7 +12,7 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 import tkinter as tk
-import image_loader
+import gui_image_studio
 
 def tkinter_example():
     """Basic Tkinter example with default settings."""
@@ -28,7 +28,7 @@ def tkinter_example():
     status_label.pack(pady=10)
     
     # Load a basic icon with default settings
-    icon_image = image_loader.get_image(
+    icon_image = gui_image_studio.get_image(
         "icon.png",
         framework="tkinter",
         size=(64, 64),
@@ -40,7 +40,7 @@ def tkinter_example():
     icon_label.pack(pady=10)
     
     # Load a button image
-    button_image = image_loader.get_image(
+    button_image = gui_image_studio.get_image(
         "button.png",
         framework="tkinter",
         size=(80, 32)
@@ -57,7 +57,7 @@ def tkinter_example():
     def load_different_image():
         """Load a different image to show dynamic loading."""
         try:
-            new_image = image_loader.get_image(
+            new_image = gui_image_studio.get_image(
                 "colorful.png",
                 framework="tkinter",
                 size=(64, 64)
@@ -122,14 +122,14 @@ def customtkinter_example():
         status_label.pack(pady=15)
         
         # Load images for CustomTkinter
-        icon_image = image_loader.get_image(
+        icon_image = gui_image_studio.get_image(
             "icon.png",
             framework="customtkinter",
             size=(64, 64),
             theme="default"
         )
         
-        button_image = image_loader.get_image(
+        button_image = gui_image_studio.get_image(
             "button.png",
             framework="customtkinter",
             size=(80, 32)
@@ -150,7 +150,7 @@ def customtkinter_example():
         def load_different_image():
             """Load a different image to show dynamic loading."""
             try:
-                new_image = image_loader.get_image(
+                new_image = gui_image_studio.get_image(
                     "colorful.png",
                     framework="customtkinter",
                     size=(64, 64)

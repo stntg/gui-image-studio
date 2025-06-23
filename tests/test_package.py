@@ -74,7 +74,7 @@ def test_image_loading():
         
         # Import the embedded images
         sys.path.insert(0, '.')
-        import test_embedded_output
+        import tests.test_local.test_embedded_output as test_embedded_output
         
         # Test basic image loading (this will fail gracefully if no embedded images)
         try:

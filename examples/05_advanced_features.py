@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Advanced Features Examples - image_loader
+Advanced Features Examples - gui_image_studio
 =========================================
 
 This example demonstrates advanced features and edge cases:
@@ -19,7 +19,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import time
 import threading
-import image_loader
+import gui_image_studio
 
 class AdvancedFeaturesDemo:
     def __init__(self):
@@ -251,7 +251,7 @@ INTEGRATION PATTERNS & BEST PRACTICES
        def get_image(self, name, **kwargs):
            key = (name, frozenset(kwargs.items()))
            if key not in self._cache:
-               self._cache[key] = image_loader.get_image(name, **kwargs)
+               self._cache[key] = gui_image_studio.get_image(name, **kwargs)
            return self._cache[key]
 
 2. THEME-AWARE COMPONENT PATTERN
@@ -267,7 +267,7 @@ INTEGRATION PATTERNS & BEST PRACTICES
        def update_theme(self, theme="default"):
            if theme != self.current_theme:
                self.current_theme = theme
-               image = image_loader.get_image(
+               image = gui_image_studio.get_image(
                    self.image_name, 
                    framework="tkinter",
                    theme=theme
@@ -281,7 +281,7 @@ INTEGRATION PATTERNS & BEST PRACTICES
    def load_image_async(image_name, callback, **kwargs):
        def load():
            try:
-               image = image_loader.get_image(image_name, **kwargs)
+               image = gui_image_studio.get_image(image_name, **kwargs)
                callback(image, None)
            except Exception as e:
                callback(None, e)
@@ -321,7 +321,7 @@ INTEGRATION PATTERNS & BEST PRACTICES
    
    def safe_get_image(image_name, fallback_text="Image not available", **kwargs):
        try:
-           return image_loader.get_image(image_name, **kwargs)
+           return gui_image_studio.get_image(image_name, **kwargs)
        except Exception as e:
            print(f"Failed to load {image_name}: {e}")
            # Return a placeholder or None
@@ -342,7 +342,7 @@ INTEGRATION PATTERNS & BEST PRACTICES
            self.images = []  # Keep references
        
        def set_image(self, image_name, **kwargs):
-           image = image_loader.get_image(image_name, **kwargs)
+           image = gui_image_studio.get_image(image_name, **kwargs)
            self.images.append(image)  # Prevent GC
            return image
        
@@ -366,7 +366,7 @@ INTEGRATION PATTERNS & BEST PRACTICES
    def load_configured_image(image_name, config_key, **overrides):
        config = IMAGE_CONFIG.get(config_key, {})
        config.update(overrides)
-       return image_loader.get_image(image_name, **config)
+       return gui_image_studio.get_image(image_name, **config)
         """
         
         patterns_text.insert(tk.END, patterns_content)
@@ -384,7 +384,7 @@ INTEGRATION PATTERNS & BEST PRACTICES
             start_time = time.time()
             
             # Load image with format conversion
-            image = image_loader.get_image(
+            image = gui_image_studio.get_image(
                 "colorful.png",
                 framework="tkinter",
                 size=(128, 128),
@@ -419,21 +419,21 @@ INTEGRATION PATTERNS & BEST PRACTICES
     def test_nonexistent_image(self):
         """Test loading a non-existent image."""
         try:
-            image = image_loader.get_image("nonexistent.png", framework="tkinter")
+            image = gui_image_studio.get_image("nonexistent.png", framework="tkinter")
         except Exception as e:
             self.log_error(f"Non-existent image test: {str(e)}")
     
     def test_invalid_theme(self):
         """Test using an invalid theme."""
         try:
-            image = image_loader.get_image("icon.png", framework="tkinter", theme="invalid_theme")
+            image = gui_image_studio.get_image("icon.png", framework="tkinter", theme="invalid_theme")
         except Exception as e:
             self.log_error(f"Invalid theme test: {str(e)}")
     
     def test_invalid_parameters(self):
         """Test using invalid parameters."""
         try:
-            image = image_loader.get_image("icon.png", framework="tkinter", 
+            image = gui_image_studio.get_image("icon.png", framework="tkinter", 
                                          size=(-10, -10), contrast=-5.0)
         except Exception as e:
             self.log_error(f"Invalid parameters test: {str(e)}")
@@ -465,7 +465,7 @@ INTEGRATION PATTERNS & BEST PRACTICES
                 for size in sizes:
                     try:
                         load_start = time.time()
-                        image = image_loader.get_image(image_name, framework="tkinter", size=size)
+                        image = gui_image_studio.get_image(image_name, framework="tkinter", size=size)
                         load_time = time.time() - load_start
                         
                         self.perf_results.insert(tk.END, 
@@ -506,7 +506,7 @@ INTEGRATION PATTERNS & BEST PRACTICES
             for i, (name, params) in enumerate(transformations):
                 try:
                     start_time = time.time()
-                    image = image_loader.get_image("colorful.png", framework="tkinter", 
+                    image = gui_image_studio.get_image("colorful.png", framework="tkinter", 
                                                  size=(128, 128), **params)
                     load_time = time.time() - start_time
                     
@@ -532,7 +532,7 @@ INTEGRATION PATTERNS & BEST PRACTICES
         try:
             images = []
             for i in range(10):
-                image = image_loader.get_image("colorful.png", framework="tkinter", 
+                image = gui_image_studio.get_image("colorful.png", framework="tkinter", 
                                              size=(256, 256))
                 images.append(image)
                 self.perf_results.insert(tk.END, f"Loaded image {i+1}/10\n")
@@ -552,7 +552,7 @@ INTEGRATION PATTERNS & BEST PRACTICES
     def apply_complex_transformation(self, preset):
         """Apply a complex transformation preset."""
         try:
-            image = image_loader.get_image("colorful.png", framework="tkinter", 
+            image = gui_image_studio.get_image("colorful.png", framework="tkinter", 
                                          size=(100, 100), **preset["params"])
             
             label = self.complex_labels[preset["name"]]
@@ -576,7 +576,7 @@ INTEGRATION PATTERNS & BEST PRACTICES
             def get_image(self, name, **kwargs):
                 key = (name, frozenset(kwargs.items()))
                 if key not in self._cache:
-                    self._cache[key] = image_loader.get_image(name, **kwargs)
+                    self._cache[key] = gui_image_studio.get_image(name, **kwargs)
                 return self._cache[key]
         
         manager = LazyImageManager()

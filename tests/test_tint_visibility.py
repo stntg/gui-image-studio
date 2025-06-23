@@ -14,7 +14,7 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 import tkinter as tk
-import image_loader
+import gui_image_studio
 
 def test_tint_visibility():
     """Test tint with strong, clearly visible effects."""
@@ -48,7 +48,7 @@ def test_tint_visibility():
         
         try:
             # Load image with tint
-            image = image_loader.get_image(
+            image = gui_image_studio.get_image(
                 "colorful.png",
                 framework="tkinter",
                 size=(96, 96),
@@ -77,7 +77,7 @@ def test_tint_visibility():
     
     # Instructions
     instructions = tk.Label(root, 
-                           text="Compare the original image with the tinted versions.\nTinting should be clearly visible with these strong intensities.\nThis test verifies that image_loader.get_image() tint parameters work correctly.",
+                           text="Compare the original image with the tinted versions.\nTinting should be clearly visible with these strong intensities.\nThis test verifies that gui_image_studio.get_image() tint parameters work correctly.",
                            font=("Arial", 11), pady=10, justify=tk.CENTER)
     instructions.grid(row=2, column=0, columnspan=4)
     

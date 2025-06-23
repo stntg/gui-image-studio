@@ -1,18 +1,20 @@
-# Image Loader - Comprehensive Examples Summary
+# GUI Image Studio - Comprehensive Examples Summary
 
 ## Overview
 
 I've created a comprehensive set of examples demonstrating all features of the
-`image_loader` module. These examples showcase real-world usage patterns with both
+`gui_image_studio` package. These examples showcase real-world usage patterns with
+both
 Tkinter and CustomTkinter frameworks.
 
 ## What Was Created
 
 ### 1. Sample Images and Setup
 
-- **`create_sample_images.py`** - Creates diverse sample images for testing
-- **`generate_embedded_images.py`** - Generates the required
-  `embedded_images.py` file
+- **`gui_image_studio.create_sample_images()`** - Creates diverse sample images
+  for testing
+- **`gui_image_studio.embed_images_from_folder()`** - Generates embedded images
+  from folders
 - **Sample images created:**
   - Basic icons (house, gear, shapes)
   - Themed variants (dark/light themes)
@@ -84,47 +86,47 @@ Tkinter and CustomTkinter frameworks.
 
 ### Core Functionality
 
-✅ **Basic image loading** - Simple `get_image()` calls  
-✅ **Framework support** - Both Tkinter and CustomTkinter  
-✅ **Size specification** - Custom dimensions with quality preservation  
-✅ **Theme system** - Automatic theme selection and fallback  
+✅ **Basic image loading** - Simple `get_image()` calls
+✅ **Framework support** - Both Tkinter and CustomTkinter
+✅ **Size specification** - Custom dimensions with quality preservation
+✅ **Theme system** - Automatic theme selection and fallback
 
 ### Image Transformations
 
-✅ **Rotation** - Any angle with automatic expansion  
-✅ **Grayscale conversion** - Color to black-and-white  
-✅ **Transparency adjustment** - Brightness/opacity control  
-✅ **Contrast enhancement** - From subtle to dramatic  
-✅ **Saturation control** - From desaturated to vivid  
-✅ **Color tinting** - RGB overlay with intensity control  
-✅ **Format conversion** - On-the-fly format changes  
+✅ **Rotation** - Any angle with automatic expansion
+✅ **Grayscale conversion** - Color to black-and-white
+✅ **Transparency adjustment** - Brightness/opacity control
+✅ **Contrast enhancement** - From subtle to dramatic
+✅ **Saturation control** - From desaturated to vivid
+✅ **Color tinting** - RGB overlay with intensity control
+✅ **Format conversion** - On-the-fly format changes
 
 ### Advanced Features
 
-✅ **Animated GIF support** - Full animation with frame control  
-✅ **Error handling** - Graceful failure and fallback strategies  
-✅ **Performance optimization** - Caching and async loading patterns  
-✅ **Memory management** - Proper resource cleanup  
-✅ **Integration patterns** - Real-world usage examples  
+✅ **Animated GIF support** - Full animation with frame control
+✅ **Error handling** - Graceful failure and fallback strategies
+✅ **Performance optimization** - Caching and async loading patterns
+✅ **Memory management** - Proper resource cleanup
+✅ **Integration patterns** - Real-world usage examples
 
 ## Usage Patterns Covered
 
 ### 1. Basic Loading
 
 ```python
-image = image_loader.get_image("icon.png", framework="tkinter", size=(64, 64))
+image = gui_image_studio.get_image("icon.png", framework="tkinter", size=(64, 64))
 ```
 
 ### 2. Themed Loading
 
 ```python
-image = image_loader.get_image("icon.png", framework="customtkinter", theme="dark")
+image = gui_image_studio.get_image("icon.png", framework="customtkinter", theme="dark")
 ```
 
 ### 3. Complex Transformations
 
 ```python
-image = image_loader.get_image(
+image = gui_image_studio.get_image(
     "colorful.png",
     framework="tkinter",
     size=(128, 128),
@@ -139,7 +141,7 @@ image = image_loader.get_image(
 ### 4. Animated GIFs
 
 ```python
-anim_data = image_loader.get_image(
+anim_data = gui_image_studio.get_image(
     "animation.gif",
     framework="tkinter",
     animated=True,
@@ -152,7 +154,7 @@ frames = anim_data["animated_frames"]
 
 ```python
 try:
-    image = image_loader.get_image("image.png", framework="tkinter")
+    image = gui_image_studio.get_image("image.png", framework="tkinter")
 except ValueError as e:
     # Handle missing image gracefully
     print(f"Image not found: {e}")
@@ -165,8 +167,8 @@ except ValueError as e:
 1. **Run setup:**
 
    ```bash
-   python create_sample_images.py
-   python generate_embedded_images.py
+   gui-image-studio-create-samples
+   gui-image-studio-generate --folder sample_images --output embedded_images.py
    ```
 
 2. **Use the example runner:**
@@ -227,7 +229,7 @@ The examples test:
 
 This comprehensive example suite provides:
 
-- **Complete feature coverage** of the image_loader module
+- **Complete feature coverage** of the gui_image_studio module
 - **Real-world usage patterns** for practical implementation
 - **Interactive demonstrations** for learning and testing
 - **Best practices** for integration and error handling
@@ -235,4 +237,4 @@ This comprehensive example suite provides:
 - **Documentation** for easy understanding and maintenance
 
 The examples serve as both learning tools and reference implementations for
-developers using the image_loader module in their projects.
+developers using the gui_image_studio module in their projects.

@@ -1,5 +1,5 @@
 import customtkinter as ctk
-import image_loader
+import gui_image_studio
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
@@ -7,7 +7,7 @@ ctk.set_default_color_theme("blue")
 root = ctk.CTk()
 
 # Retrieve an animated GIF with a mild green tint, increased contrast, and lowered saturation.
-anim_data = image_loader.get_image(
+anim_data = gui_image_studio.get_image(
     "animation.gif", 
     framework="customtkinter", 
     size=(64, 64),

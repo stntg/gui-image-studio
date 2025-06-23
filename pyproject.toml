@@ -39,11 +39,29 @@ dependencies = [
 [project.optional-dependencies]
 customtkinter = ["customtkinter>=5.0.0"]
 dev = [
-    "pytest>=6.0",
-    "pytest-cov",
-    "black",
-    "flake8",
-    "mypy",
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "pytest-xvfb>=2.0; sys_platform=='linux'",
+    "black>=22.0",
+    "flake8>=5.0",
+    "mypy>=1.0",
+    "isort>=5.0",
+    "pre-commit>=2.20",
+    "bandit>=1.7",
+    "safety>=2.0",
+    "tox>=4.0",
+]
+docs = [
+    "sphinx>=5.0",
+    "sphinx-rtd-theme>=1.0",
+    "myst-parser>=0.18",
+    "sphinx-autodoc-typehints>=1.19",
+    "sphinx-copybutton>=0.5",
+]
+test = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "pytest-xvfb>=2.0; sys_platform=='linux'",
 ]
 examples = [
     "customtkinter>=5.0.0",
@@ -58,6 +76,7 @@ Repository = "https://github.com/stntg/gui-image-studio"
 [project.scripts]
 gui-image-studio-generate = "gui_image_studio.cli:generate_embedded_images"
 gui-image-studio-create-samples = "gui_image_studio.cli:create_sample_images"
+gui-image-studio-designer = "gui_image_studio.cli:launch_designer"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
@@ -66,5 +85,110 @@ package-dir = {"" = "src"}
 where = ["src"]
 
 [tool.setuptools.package-data]
-gui_image_studio = ["*.py"]
+gui_image_studio = ["*.py", "py.typed"]
+
+[tool.black]
+line-length = 88
+target-version = ['py38', 'py39', 'py310', 'py311', 'py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+  | dev_files
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["gui_image_studio"]
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = "tkinter.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "customtkinter.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "PIL.*"
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--cov=gui_image_studio",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-report=xml",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "visual: marks tests requiring visual inspection",
+    "integration: marks tests as integration tests",
+    "gui: marks tests requiring GUI/Tkinter",
+    "image: marks tests requiring image processing",
+]
+filterwarnings = [
+    "error",
+    "ignore::UserWarning",
+    "ignore::DeprecationWarning",
+]
+
+[tool.coverage.run]
+source = ["gui_image_studio"]
+omit = [
+    "*/tests/*",
+    "*/test_*.py",
+    "setup.py",
+    "dev_files/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+
+[tool.bandit]
+exclude_dirs = ["tests", "dev_files"]
+skips = ["B101"]  # Skip assert_used test
 

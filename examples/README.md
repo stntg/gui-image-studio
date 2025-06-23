@@ -1,26 +1,28 @@
-# Image Loader Examples
+# GUI Image Studio Examples
 
 This directory contains comprehensive examples demonstrating all features of the
-`image_loader` module. These examples show how to use the module effectively in
+`gui_image_studio` package. These examples show how to use the package effectively in
 various scenarios with both Tkinter and CustomTkinter frameworks.
 
 ## Prerequisites
 
 Before running the examples, make sure you have:
 
-1. **Python 3.7+** installed
+1. **Python 3.8+** installed
 2. **Required packages**:
 
    ```bash
-   pip install Pillow
-   pip install customtkinter  # Optional, for CustomTkinter examples
+   pip install gui-image-studio
+   # Or install from source:
+   pip install -e .
    ```
 
-3. **Generated sample images and embedded_images.py**:
+3. **Generate sample images** (optional, for testing):
 
    ```bash
-   python create_sample_images.py
-   python generate_embedded_images.py
+   gui-image-studio-create-samples
+   # Or programmatically:
+   python -c "import gui_image_studio; gui_image_studio.create_sample_images()"
    ```
 
 ## Example Files Overview
@@ -36,10 +38,10 @@ Before running the examples, make sure you have:
 
 **Key features shown:**
 
-- `get_image()` with minimal parameters
+- `gui_image_studio.get_image()` with minimal parameters
 - Framework selection (`"tkinter"` vs `"customtkinter"`)
 - Basic size specification
-- Theme usage
+- Theme usage (`"default"`, `"dark"`, `"light"`)
 
 **Run with:**
 
@@ -165,10 +167,10 @@ The examples use a variety of sample images created by `create_sample_images.py`
 ### Basic Image Loading
 
 ```python
-import image_loader
+import gui_image_studio
 
 # Load a simple image
-image = image_loader.get_image(
+image = gui_image_studio.get_image(
     "icon.png",
     framework="tkinter",
     size=(64, 64),
@@ -180,7 +182,7 @@ image = image_loader.get_image(
 
 ```python
 # Load with theme (falls back to default if theme not available)
-image = image_loader.get_image(
+image = gui_image_studio.get_image(
     "icon.png",
     framework="customtkinter",
     size=(32, 32),
@@ -192,7 +194,7 @@ image = image_loader.get_image(
 
 ```python
 # Apply multiple transformations
-image = image_loader.get_image(
+image = gui_image_studio.get_image(
     "colorful.png",
     framework="tkinter",
     size=(128, 128),
@@ -209,7 +211,7 @@ image = image_loader.get_image(
 
 ```python
 # Load animated GIF
-anim_data = image_loader.get_image(
+anim_data = gui_image_studio.get_image(
     "animation.gif",
     framework="tkinter",
     size=(64, 64),
@@ -233,7 +235,7 @@ The examples demonstrate proper error handling:
 
 ```python
 try:
-    image = image_loader.get_image("image.png", framework="tkinter")
+    image = gui_image_studio.get_image("image.png", framework="tkinter")
     label.configure(image=image)
     label.image = image  # Keep reference
 except ValueError as e:
@@ -281,7 +283,8 @@ To add your own images to the examples:
 
 1. Place images in the `sample_images` directory
 2. Use naming convention: `theme_imagename.ext` (e.g., `dark_myicon.png`)
-3. Run `python generate_embedded_images.py` to update the embedded images
+3. Run `gui-image-studio-generate --folder sample_images --output embedded_images.py`
+   to update the embedded images
 4. Use the image name (without theme prefix) in your code
 
 ## Framework Compatibility
@@ -291,7 +294,7 @@ The examples work with:
 - **Tkinter**: Built into Python, always available
 - **CustomTkinter**: Modern UI library, install separately
 
-Both frameworks are supported by the same `image_loader` API. Just change the
+Both frameworks are supported by the same `gui_image_studio` API. Just change the
 `framework` parameter.
 
 ## Developer Testing Tools

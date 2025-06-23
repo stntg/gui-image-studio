@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Image Transformations Examples - image_loader
+Image Transformations Examples - gui_image_studio
 =============================================
 
 This example demonstrates various image transformation capabilities:
@@ -18,7 +18,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 import tkinter as tk
 from tkinter import ttk, Scale
-import image_loader
+import gui_image_studio
 
 class TransformationDemo:
     def __init__(self):
@@ -193,7 +193,7 @@ class TransformationDemo:
                 tint_color = (self.tint_r.get(), self.tint_g.get(), self.tint_b.get())
             
             # Load transformed image
-            image = image_loader.get_image(
+            image = gui_image_studio.get_image(
                 self.current_image_name,
                 framework="tkinter",
                 size=size,
@@ -273,7 +273,7 @@ def preset_transformations_example():
         col = i % 3
         
         try:
-            image = image_loader.get_image("colorful.png", framework="tkinter", **preset["params"])
+            image = gui_image_studio.get_image("colorful.png", framework="tkinter", **preset["params"])
             
             frame = ttk.Frame(root)
             frame.grid(row=row, column=col, padx=20, pady=20)

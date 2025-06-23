@@ -1,7 +1,7 @@
 # Development Flow Setup Summary
 
-**Date:** December 1, 2024  
-**Task:** Set up GitHub repository with recommended development flow  
+**Date:** December 1, 2024
+**Task:** Set up GitHub repository with recommended development flow
 **Status:** ✅ Complete
 
 ## 🎯 What Was Accomplished
@@ -149,7 +149,10 @@ git push -u origin feature/my-awesome-feature
 
 ```bash
 # After merge to develop, test from TestPyPI
-pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ gui-image-studio==1.0.0.dev20241201123456
+pip install \
+  --index-url https://test.pypi.org/simple/ \
+  --extra-index-url https://pypi.org/simple/ \
+  gui-image-studio==1.0.0.dev20241201123456
 ```
 
 ### Releasing
@@ -211,6 +214,6 @@ For issues with this setup:
 
 ---
 
-**Setup completed by:** AI Assistant  
-**Repository:** gui-image-studio  
+**Setup completed by:** AI Assistant
+**Repository:** gui-image-studio
 **Workflow Type:** GitFlow with automated PyPI publishing

@@ -27,6 +27,8 @@ cd gui-image-studio
 
 # Install development dependencies
 pip install -e .[dev]
+# Or install manually:
+pip install pillow>=8.0.0 customtkinter>=5.0.0 pytest>=6.0
 
 # Check development status
 python dev_tools.py status

@@ -145,11 +145,47 @@ ehthumbs.db
 Thumbs.db
 
 # Project specific
-test_embedded_output.py
+test_local/
 sample_images/
+*.bak
 
 # Dev folder - allow documentation but ignore temporary files
 !dev/
 dev/temp/
 dev/*.tmp
 dev/test_env/
+
+# Local testing files
+test_embedded_output.py
+
+# Development files folder
+dev_files/
+
+# Release files
+RELEASE_NOTES_*.md
+
+# Temporary files
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+
+# Coverage files
+.coverage.*
+coverage.xml
+htmlcov/
+
+# Documentation build
+docs/_build/
+docs/.doctrees/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# pytest-benchmark
+.benchmarks/

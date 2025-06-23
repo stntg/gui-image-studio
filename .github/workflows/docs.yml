@@ -1,0 +1,362 @@
+name: Documentation
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'docs/**'
+      - 'src/**'
+      - '.github/workflows/docs.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'docs/**'
+      - 'src/**'
+      - '.github/workflows/docs.yml'
+  release:
+    types: [published]
+
+# Allow manual triggering
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # Build documentation
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Full history for version info
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        cache: 'pip'
+    
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          pandoc \
+          texlive-latex-recommended \
+          texlive-latex-extra \
+          texlive-fonts-recommended \
+          latexmk
+    
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r docs/requirements-docs.txt
+        # Install the package itself for autodoc
+        pip install -e .
+    
+    - name: Create sample images for documentation
+      run: |
+        # Create sample images that documentation examples reference
+        python -c "
+        try:
+            from gui_image_studio.sample_creator import SampleCreator
+            creator = SampleCreator('sample_images', count=3)
+            creator.create_all_samples()
+            print('Sample images created successfully')
+        except Exception as e:
+            print(f'Could not create samples: {e}')
+            # Create minimal samples manually if needed
+            import os
+            os.makedirs('sample_images', exist_ok=True)
+        "
+    
+    - name: Build HTML documentation
+      run: |
+        cd docs
+        make clean
+        make html
+        
+        # Check for build warnings
+        if [ -f _build/html/.buildinfo ]; then
+          echo "✅ HTML documentation built successfully"
+        else
+          echo "❌ HTML documentation build failed"
+          exit 1
+        fi
+    
+    - name: Build PDF documentation
+      run: |
+        cd docs
+        make pdf || echo "⚠️ PDF build failed, continuing..."
+    
+    - name: Run documentation tests
+      run: |
+        cd docs
+        
+        # Test doctests in documentation
+        make doctest || echo "⚠️ Some doctests failed"
+        
+        # Check for broken links
+        make linkcheck || echo "⚠️ Some links may be broken"
+        
+        # Validate HTML
+        python -c "
+        import os
+        html_dir = '_build/html'
+        if os.path.exists(html_dir):
+            html_files = []
+            for root, dirs, files in os.walk(html_dir):
+                html_files.extend([f for f in files if f.endswith('.html')])
+            print(f'✅ Generated {len(html_files)} HTML files')
+            
+            # Check for essential files
+            essential_files = ['index.html', 'api/index.html', 'examples/index.html']
+            for file in essential_files:
+                if os.path.exists(os.path.join(html_dir, file)):
+                    print(f'✅ {file} exists')
+                else:
+                    print(f'❌ {file} missing')
+        else:
+            print('❌ HTML build directory not found')
+            exit(1)
+        "
+    
+    - name: Upload documentation artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: documentation
+        path: docs/_build/html/
+        retention-days: 30
+    
+    - name: Upload PDF artifact
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: documentation-pdf
+        path: docs/_build/latex/*.pdf
+        retention-days: 30
+    
+    - name: Setup Pages
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      uses: actions/configure-pages@v3
+    
+    - name: Upload to GitHub Pages
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      uses: actions/upload-pages-artifact@v2
+      with:
+        path: docs/_build/html
+
+  # Deploy to GitHub Pages (only on main branch)
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    
+    steps:
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v2
+
+  # Quality checks
+  quality:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r docs/requirements-docs.txt
+        pip install -e .
+    
+    - name: Check documentation style
+      run: |
+        cd docs
+        
+        # Check RST syntax
+        python -c "
+        import os
+        import docutils.core
+        
+        rst_files = []
+        for root, dirs, files in os.walk('.'):
+            if '_build' in root:
+                continue
+            rst_files.extend([os.path.join(root, f) for f in files if f.endswith('.rst')])
+        
+        print(f'Checking {len(rst_files)} RST files...')
+        errors = 0
+        
+        for rst_file in rst_files:
+            try:
+                with open(rst_file, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                docutils.core.publish_doctree(content)
+                print(f'✅ {rst_file}')
+            except Exception as e:
+                print(f'❌ {rst_file}: {e}')
+                errors += 1
+        
+        if errors > 0:
+            print(f'❌ {errors} files have RST syntax errors')
+            exit(1)
+        else:
+            print('✅ All RST files are valid')
+        "
+    
+    - name: Check code examples
+      run: |
+        cd docs
+        
+        # Extract and validate Python code blocks
+        python -c "
+        import os
+        import re
+        import ast
+        
+        def extract_python_code(rst_content):
+            # Find Python code blocks
+            pattern = r'.. code-block:: python\n\n((?:    .*\n)*)'
+            matches = re.findall(pattern, rst_content, re.MULTILINE)
+            return [re.sub(r'^    ', '', match, flags=re.MULTILINE) for match in matches]
+        
+        rst_files = []
+        for root, dirs, files in os.walk('.'):
+            if '_build' in root:
+                continue
+            rst_files.extend([os.path.join(root, f) for f in files if f.endswith('.rst')])
+        
+        total_code_blocks = 0
+        syntax_errors = 0
+        
+        for rst_file in rst_files:
+            try:
+                with open(rst_file, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                
+                code_blocks = extract_python_code(content)
+                total_code_blocks += len(code_blocks)
+                
+                for i, code in enumerate(code_blocks):
+                    if code.strip():
+                        try:
+                            # Try to parse the code
+                            ast.parse(code)
+                        except SyntaxError as e:
+                            print(f'❌ Syntax error in {rst_file} block {i+1}: {e}')
+                            syntax_errors += 1
+                        except Exception:
+                            # Some code blocks might be incomplete examples
+                            pass
+            except Exception as e:
+                print(f'⚠️ Could not process {rst_file}: {e}')
+        
+        print(f'Checked {total_code_blocks} Python code blocks')
+        if syntax_errors > 0:
+            print(f'❌ {syntax_errors} code blocks have syntax errors')
+            exit(1)
+        else:
+            print('✅ All code blocks have valid syntax')
+        "
+
+  # Coverage check
+  coverage:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r docs/requirements-docs.txt
+        pip install -e .
+    
+    - name: Check documentation coverage
+      run: |
+        cd docs
+        
+        # Build with coverage checking
+        make coverage || true
+        
+        # Analyze coverage results
+        python -c "
+        import os
+        
+        coverage_file = '_build/coverage/python.txt'
+        if os.path.exists(coverage_file):
+            with open(coverage_file, 'r') as f:
+                content = f.read()
+            
+            print('📊 Documentation Coverage Report:')
+            print(content)
+            
+            # Look for undocumented items
+            if 'undocumented' in content.lower():
+                print('⚠️ Some items are undocumented')
+            else:
+                print('✅ All items appear to be documented')
+        else:
+            print('⚠️ Coverage report not generated')
+        "
+
+  # Notification
+  notify:
+    if: always()
+    needs: [build, quality, coverage]
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Documentation Status
+      run: |
+        echo "📚 Documentation Workflow Summary:"
+        echo "Build: ${{ needs.build.result }}"
+        echo "Quality: ${{ needs.quality.result }}"
+        echo "Coverage: ${{ needs.coverage.result }}"
+        
+        if [[ "${{ needs.build.result }}" == "success" ]]; then
+          echo "✅ Documentation built successfully"
+          if [[ "${{ github.ref }}" == "refs/heads/main" && "${{ github.event_name }}" == "push" ]]; then
+            echo "🚀 Documentation deployed to GitHub Pages"
+          fi
+        else
+          echo "❌ Documentation build failed"
+        fi
+        
+        if [[ "${{ needs.quality.result }}" == "success" ]]; then
+          echo "✅ Quality checks passed"
+        else
+          echo "⚠️ Quality checks failed"
+        fi
+        
+        if [[ "${{ needs.coverage.result }}" == "success" ]]; then
+          echo "✅ Coverage checks completed"
+        else
+          echo "⚠️ Coverage checks failed"
+        fi

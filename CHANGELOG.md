@@ -19,29 +19,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Planned bug fixes for future releases
 
-## [1.0.0] - 2024-01-15
+## [1.0.0] - 2024-12-19
 
 ### Added
 
 - Initial release of gui-image-studio package
-- Core image embedding functionality
+- **GUI Image Studio**: Visual image editor with drawing tools
+- Core image embedding functionality with `embed_images_from_folder()`
+- Advanced image loading with `get_image()` function
 - Support for tkinter and customtkinter frameworks
 - Image transformation features:
-  - Resize, rotate, flip operations
-  - Color tinting and adjustments
-  - Contrast and saturation controls
+  - Resize, rotate operations
+  - Color tinting with RGB values and intensity control
+  - Contrast and saturation adjustments
+  - Grayscale conversion
+  - Transparency control
+- Theme support (default, dark, light)
+- Animated GIF support with frame processing
 - Batch processing of image folders
-- Command line interface (CLI)
+- Command line interface with console scripts:
+  - `gui-image-studio-generate`
+  - `gui-image-studio-create-samples`
+  - `gui-image-studio-designer`
 - Sample image generation for testing
-- Animated GIF support for customtkinter
-- High-quality JPEG compression options
+- High-quality compression options (JPEG/WebP)
 - Comprehensive example collection
 - Full documentation and API reference
 
 ### Feature Details
 
 - **Image Loading**: Load images as PhotoImage objects for GUI frameworks
-- **Batch Embedding**: Process entire folders and generate embedded Python modules
+- **Batch Embedding**: Process entire folders and generate embedded Python
+  modules
 - **Transformations**: Apply various image transformations on-the-fly
 - **Framework Support**: Native support for tkinter and customtkinter
 - **CLI Tools**: Command-line utilities for common tasks
@@ -50,12 +59,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Technical Details
 
-- Python 3.7+ compatibility
+- Python 3.8+ compatibility
 - Cross-platform support (Windows, macOS, Linux)
-- Minimal dependencies (Pillow, tkinter)
-- Modular architecture for easy extension
-- Comprehensive error handling
-- Memory-efficient image processing
+- Dependencies: Pillow >= 8.0.0, customtkinter >= 5.0.0 (optional)
+- Modular architecture with separate modules:
+  - `image_studio.py`: GUI application
+  - `image_loader.py`: Image loading with transformations
+  - `generator.py`: Image embedding utilities
+  - `sample_creator.py`: Sample image generation
+  - `cli.py`: Command line interface
+- Comprehensive error handling and fallbacks
+- Memory-efficient image processing with caching
+- Configuration-based image processing with `ImageConfig` dataclass
 
 ### Documentation
 

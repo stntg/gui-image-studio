@@ -6,11 +6,32 @@
 [![CodeFactor](https://www.codefactor.io/repository/github/stntg/gui-image-studio/badge)](https://www.codefactor.io/repository/github/stntg/gui-image-studio)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+[![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://yourusername.github.io/gui-image-studio/)
+[![Build Status](https://github.com/yourusername/gui-image-studio/workflows/Documentation/badge.svg)](https://github.com/yourusername/gui-image-studio/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 A comprehensive Python toolkit for creating, embedding, and managing images in
 Python GUI applications with support for tkinter and customtkinter.
 
+## 📚 Documentation
+
+**[📖 Full Documentation](https://yourusername.github.io/gui-image-studio/)** - Complete guides, API reference, and examples
+
+Quick links:
+- [🚀 Quick Start Guide](https://yourusername.github.io/gui-image-studio/quickstart.html)
+- [📖 API Reference](https://yourusername.github.io/gui-image-studio/api/)
+- [💡 Examples](https://yourusername.github.io/gui-image-studio/examples/)
+- [🛠️ Installation Guide](https://yourusername.github.io/gui-image-studio/installation.html)
+
+Quick links:
+- [🚀 Quick Start Guide](https://yourusername.github.io/gui-image-studio/quickstart.html)
+- [📖 API Reference](https://yourusername.github.io/gui-image-studio/api/)
+- [💡 Examples](https://yourusername.github.io/gui-image-studio/examples/)
+- [🛠️ Installation Guide](https://yourusername.github.io/gui-image-studio/installation.html)
+
 ## Features
 
+- 🎨 **Visual Image Studio GUI** - Create and edit images with drawing tools
 - 🖼️ Convert images to base64 encoded strings
 - 📁 Batch process entire folders of images
 - 🎨 Support for multiple GUI frameworks (tkinter, customtkinter)
@@ -19,6 +40,7 @@ Python GUI applications with support for tkinter and customtkinter.
 - 🎬 Animated GIF support
 - 🎯 High-quality compression options
 - 📝 Sample image generation for testing
+- 👁️ Real-time code preview and generation
 
 ## Installation
 
@@ -38,20 +60,47 @@ pip install -e .
 
 ## Quick Start
 
+### Image Studio GUI
+
+Launch the visual image studio to create images with drawing tools:
+
+```bash
+# Launch the studio GUI
+python -m gui_image_studio
+
+# Or use the launcher script
+python launch_designer.py
+
+# Or programmatically
+python -c "import gui_image_studio; gui_image_studio.launch_designer()"
+```
+
+The Image Studio GUI provides:
+- Drawing tools (brush, eraser, shapes, text)
+- Image transformations and filters
+- Multiple image management
+- Real-time preview
+- Code generation with preview
+- Export capabilities
+
 ### Basic Usage
 
 ```python
 from gui_image_studio import get_image, embed_images_from_folder
 
-# Get a single image as PhotoImage object
-image = get_image("my_image.png", framework="tkinter")
+# Get a single image with transformations
+image = get_image(
+    "my_image.png",
+    framework="tkinter",
+    size=(64, 64),
+    theme="default"
+)
 
 # Embed all images from a folder
 embed_images_from_folder(
-    input_folder="images/",
+    folder_path="images/",
     output_file="embedded_images.py",
-    framework="tkinter",
-    quality=90
+    compression_quality=85
 )
 ```
 
@@ -59,13 +108,18 @@ embed_images_from_folder(
 
 ```python
 # After embedding images, use them in your GUI
-from embedded_images import get_image
-
+import gui_image_studio
 import tkinter as tk
+
 root = tk.Tk()
 
-# Load embedded image
-photo = get_image("my_image.png")
+# Load embedded image with transformations
+photo = gui_image_studio.get_image(
+    "my_image.png",
+    framework="tkinter",
+    size=(100, 100),
+    theme="default"
+)
 label = tk.Label(root, image=photo)
 label.pack()
 
@@ -75,13 +129,19 @@ root.mainloop()
 ### Command Line Interface
 
 ```bash
+# Launch the Image Studio GUI
+python -m gui_image_studio
+# Or use the dedicated command
+gui-image-studio-designer
+
 # Create sample images for testing
-python -m gui_image_studio.sample_creator
+gui-image-studio-create-samples
 
 # Embed images from a folder
-python -m gui_image_studio.cli embed-folder images/ \
+gui-image-studio-generate \
+  --folder images/ \
   --output embedded_images.py \
-  --framework tkinter
+  --quality 85
 ```
 
 ## Advanced Features
@@ -96,21 +156,33 @@ image = get_image(
     "photo.jpg",
     framework="customtkinter",
     size=(200, 200),
-    rotation=45,
-    flip="horizontal",
-    tint_color="#FF0000",
+    rotate=45,
+    tint_color=(255, 0, 0),
+    tint_intensity=0.3,
     contrast=1.2,
-    saturation=1.5
+    saturation=1.5,
+    grayscale=False,
+    transparency=1.0
 )
 ```
 
 ### Animated GIFs
 
 ```python
-from gui_image_studio.image_loader import load_animated_gif
+from gui_image_studio import get_image
 
-# Load animated GIF for customtkinter
-frames = load_animated_gif("animation.gif", size=(100, 100))
+# Load animated GIF
+animation_data = get_image(
+    "animation.gif",
+    framework="customtkinter",
+    size=(100, 100),
+    animated=True,
+    frame_delay=100
+)
+
+# Use the frames in your application
+frames = animation_data["animated_frames"]
+delay = animation_data["frame_delay"]
 ```
 
 ## Supported Frameworks
@@ -127,6 +199,8 @@ Check out the `examples/` directory for comprehensive usage examples:
 - `03_image_transformations.py` - Image manipulation features
 - `04_animated_gifs.py` - Animated GIF handling
 - `05_advanced_features.py` - Advanced usage patterns
+- `06_image_designer_gui.py` - Launch the Image Studio GUI
+- `07_using_designed_images.py` - Use images created with the designer
 
 Run all examples:
 
@@ -138,33 +212,39 @@ python examples/run_examples.py
 
 ### Core Functions
 
-#### `get_image(image_path, framework="tkinter", **kwargs)`
+#### `get_image(image_name, framework="tkinter", **kwargs)`
 
 Load and return an image object for the specified GUI framework.
 
 **Parameters:**
 
-- `image_path` (str): Path to the image file
+- `image_name` (str): Name of the embedded image (e.g., 'icon.png')
 - `framework` (str): GUI framework ("tkinter" or "customtkinter")
-- `size` (tuple): Resize image to (width, height)
-- `rotation` (int): Rotate image by degrees
-- `flip` (str): Flip image ("horizontal", "vertical", or "both")
-- `tint_color` (str): Apply color tint (hex color)
-- `contrast` (float): Adjust contrast (1.0 = normal)
-- `saturation` (float): Adjust saturation (1.0 = normal)
-- `quality` (int): JPEG compression quality (1-100)
+- `size` (tuple): Resize image to (width, height), default (32, 32)
+- `theme` (str): Theme name ("default", "dark", "light"), default "default"
+- `rotate` (int): Rotate image by degrees, default 0
+- `grayscale` (bool): Convert to grayscale, default False
+- `tint_color` (tuple): Apply color tint as (R, G, B), default None
+- `tint_intensity` (float): Tint blending factor (0.0-1.0), default 0.0
+- `contrast` (float): Adjust contrast (1.0 = normal), default 1.0
+- `saturation` (float): Adjust saturation (1.0 = normal), default 1.0
+- `transparency` (float): Adjust transparency (0.0-1.0), default 1.0
+- `animated` (bool): Process animated GIFs, default False
+- `frame_delay` (int): Animation frame delay in ms, default 100
+- `format_override` (str): Convert to format ("PNG", "JPEG", etc.), default None
 
-#### `embed_images_from_folder(input_folder, output_file, framework="tkinter", **kwargs)`
+#### `embed_images_from_folder(folder_path, output_file="embedded_images.py", compression_quality=85)`
 
 Process all images in a folder and generate an embedded Python module.
 
 **Parameters:**
 
-- `input_folder` (str): Path to folder containing images
-- `output_file` (str): Output Python file path
-- `framework` (str): Target GUI framework
-- `quality` (int): Compression quality (1-100)
-- Additional transformation parameters as above
+- `folder_path` (str): Path to folder containing images
+- `output_file` (str): Output Python file path, default "embedded_images.py"
+- `compression_quality` (int): JPEG/WebP compression quality (1-100), default 85
+
+**Supported Formats:**
+- PNG, JPG, JPEG, BMP, TIFF, GIF, WebP, ICO
 
 ### Sample Creation
 
@@ -194,26 +274,31 @@ python test_package.py
 
 ```text
 gui-image-studio/
-├── src/gui_image_studio/  # Main package
-│   ├── __init__.py        # Package initialization
-│   ├── cli.py             # Command line interface
-│   ├── generator.py       # Image embedding generator
-│   ├── image_loader.py    # Image loading utilities
-│   └── sample_creator.py  # Sample image creation
-├── examples/              # Usage examples
-├── tests/                 # Test files
-├── README.md             # This file
-├── LICENSE               # License file
-├── pyproject.toml        # Modern Python packaging
-└── setup.py              # Legacy packaging support
+├── src/gui_image_studio/     # Main package
+│   ├── __init__.py           # Package initialization
+│   ├── __main__.py           # Module entry point
+│   ├── cli.py                # Command line interface
+│   ├── generator.py          # Image embedding generator
+│   ├── image_loader.py       # Image loading utilities
+│   ├── image_studio.py       # GUI Image Studio application
+│   ├── sample_creator.py     # Sample image creation
+│   └── embedded_images.py    # Default embedded images
+├── examples/                 # Usage examples
+├── tests/                    # Test files
+├── docs/                     # Documentation
+├── README.md                 # This file
+├── LICENSE                   # License file
+├── pyproject.toml            # Modern Python packaging
+├── setup.py                  # Legacy packaging support
+└── launch_designer.py        # GUI launcher script
 ```
 
 ## Requirements
 
-- Python 3.7+
-- Pillow (PIL)
+- Python 3.8+
+- Pillow (PIL) >= 8.0.0
 - tkinter (usually included with Python)
-- customtkinter (optional, for customtkinter support)
+- customtkinter >= 5.0.0 (optional, for customtkinter support)
 
 ## Contributing
 
@@ -241,12 +326,12 @@ file for details.
 
 ## Support
 
-If you encounter any issues or have questions, please  
+If you encounter any issues or have questions, please
 [open an issue](https://github.com/stntg/gui-image-studio/issues) on GitHub.
 
 ## Acknowledgments
 
 - Built with [Pillow](https://pillow.readthedocs.io/) for image processing
-- Supports [customtkinter](https://github.com/TomSchimansky/CustomTkinter)  
+- Supports [customtkinter](https://github.com/TomSchimansky/CustomTkinter)
   for modern GUI development
 - Inspired by the need for easy image embedding in Python GUI applications
