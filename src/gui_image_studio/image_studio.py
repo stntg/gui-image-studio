@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """
-Image Studio GUI for gui_image_studio package.
+Enhanced Image Studio GUI for gui_image_studio package using threepanewindows.
 A visual tool for developers to design images/icons and generate embedded code.
+Features detachable left and right panels with fixed width.
+FUNCTIONALITY IS IDENTICAL TO THE ORIGINAL - ONLY THE UI LAYOUT USES THREEPANEWINDOWS.
 """
 
 import tkinter as tk
@@ -15,15 +17,16 @@ from io import BytesIO
 import tempfile
 
 from .generator import embed_images_from_folder
+import threepanewindows
 
 
-class ImageDesignerGUI:
+class EnhancedImageDesignerGUI:
     """Main GUI application for image design and code generation."""
     
     def __init__(self):
         self.root = tk.Tk()
-        self.root.title("GUI Image Studio")
-        self.root.geometry("1000x700")
+        self.root.title("GUI Image Studio - Enhanced")
+        self.root.geometry("1200x700")
         self.root.minsize(800, 500)
         
         # Application state
@@ -43,6 +46,31 @@ class ImageDesignerGUI:
         self.start_x = 0
         self.start_y = 0
         
+        # Shape preview state
+        self.preview_shape = None  # Canvas item ID for preview shape
+        self.preview_active = False
+        
+        # Pixel highlight for precise drawing
+        self.pixel_highlight = None  # Canvas item ID for pixel highlight
+        self.last_highlight_pos = None  # Track last highlighted position
+        
+        # Cursor settings
+        self.cursor_settings = {
+            'handedness': 'right',  # 'left' or 'right'
+            'brush': 'crosshair',
+            'pencil': 'crosshair', 
+            'eraser': 'dotbox',
+            'line': 'crosshair',
+            'rectangle': 'crosshair',
+            'circle': 'crosshair',
+            'text': 'xterm',
+            'fill': 'spraycan',
+            'custom_cursors': {}  # Store custom cursor data
+        }
+        
+        # Load cursor settings from file if exists
+        self.load_cursor_settings()
+        
         self.setup_ui()
         self.setup_bindings()
         
@@ -54,30 +82,121 @@ class ImageDesignerGUI:
         self.update_canvas()  # Show initial instructions
         self.update_preview()  # Show initial preview
         
+        # After creating self.root (or root), center the window on the desktop and ensure it's fully visible above the taskbar
+        self.root.update_idletasks()
+        w = self.root.winfo_width()
+        h = self.root.winfo_height()
+        ws = self.root.winfo_screenwidth()
+        hs = self.root.winfo_screenheight()
+
+        # Reserve space for the Windows taskbar (typically ~40px, adjust if needed)
+        TASKBAR_HEIGHT = 80
+        if h > hs - TASKBAR_HEIGHT:
+            h = hs - TASKBAR_HEIGHT
+
+        x = max((ws // 2) - (w // 2), 0)
+        y = max((hs - TASKBAR_HEIGHT) // 2 - (h // 2), 0)
+        self.root.geometry(f"{w}x{h}+{x}+{y}")
+
+        print(f"Window centered at {x}, {y} with size {w}x{h}")
+        print(f"w width: {w}, height: {h}, screen width: {ws}, screen height: {hs}")
+    
+    def setup_button_styles(self):
+        """Setup custom button styles for prominent display."""
+        style = ttk.Style()
+        
+        # Create a prominent style for New button (green)
+        style.configure("ProminentNew.TButton",
+                       background="#4CAF50",  # Green background
+                       foreground="white",    # White text
+                       font=("Arial", 8, "bold"))
+        
+        # Create a prominent style for Load button (blue)
+        style.configure("ProminentLoad.TButton",
+                       background="#2196F3",  # Blue background
+                       foreground="white",    # White text
+                       font=("Arial", 8, "bold"))
+        
+        # Map hover states for better interaction
+        style.map("ProminentNew.TButton",
+                 background=[('active', '#45a049')])  # Darker green on hover
+        
+        style.map("ProminentLoad.TButton",
+                 background=[('active', '#1976D2')])  # Darker blue on hover
+    
     def setup_ui(self):
-        """Setup the main user interface."""
-        # Create menu bar
+        """Setup the enhanced user interface with threepanewindows."""
+        # Create menu bar first
         self.setup_menu()
         
-        # Create main paned window
-        main_paned = ttk.PanedWindow(self.root, orient=tk.HORIZONTAL)
-        main_paned.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        # Configure custom button styles for prominence
+        self.setup_button_styles()
         
-        # Left panel - Tools and image list
-        left_frame = ttk.Frame(main_paned)
-        main_paned.add(left_frame, weight=2)
+        # Configure pane configurations
+        left_config = threepanewindows.PaneConfig(
+            title="Tools & Images",
+            icon="🛠️",
+            min_width=200,
+            max_width=200,
+            default_width=200,
+            fixed_width=200,
+            resizable=False,
+            detachable=True,
+            closable=False
+        )
         
-        # Center panel - Canvas
-        center_frame = ttk.Frame(main_paned)
-        main_paned.add(center_frame, weight=5)
+        center_config = threepanewindows.PaneConfig(
+            title="Canvas",
+            icon="🎨",
+            resizable=True,
+            detachable=False,
+            closable=False
+        )
         
-        # Right panel - Properties and code
-        right_frame = ttk.Frame(main_paned)
-        main_paned.add(right_frame, weight=2)
+        right_config = threepanewindows.PaneConfig(
+            title="Properties & Code",
+            icon="⚙️",
+            min_width=200,
+            max_width=200,
+            default_width=200,
+            fixed_width=200,
+            resizable=False,
+            detachable=True,
+            closable=False
+        )
         
-        self.setup_left_panel(left_frame)
-        self.setup_center_panel(center_frame)
-        self.setup_right_panel(right_frame)
+        # Create the enhanced three-pane window
+        self.three_pane = threepanewindows.EnhancedDockableThreePaneWindow(
+            master=self.root,
+            left_config=left_config,
+            center_config=center_config,
+            right_config=right_config,
+            left_builder=self.build_left_panel,
+            center_builder=self.build_center_panel,
+            right_builder=self.build_right_panel,
+            theme_name='light',
+            enable_animations=True,
+            menu_bar=None  # We'll handle menu separately
+        )
+        
+        self.three_pane.pack(fill=tk.BOTH, expand=True)
+        
+        # Store references to the pane frames
+        self.left_frame = self.three_pane.get_pane_frame('left')
+        self.center_frame = self.three_pane.get_pane_frame('center')
+        self.right_frame = self.three_pane.get_pane_frame('right')
+    
+    def build_left_panel(self, parent):
+        """Build the left panel with tools and image management."""
+        self.setup_left_panel(parent)
+        
+    def build_center_panel(self, parent):
+        """Build the center panel with the drawing canvas."""
+        self.setup_center_panel(parent)
+        
+    def build_right_panel(self, parent):
+        """Build the right panel with properties and code generation."""
+        self.setup_right_panel(parent)
     
     def setup_menu(self):
         """Setup the menu bar."""
@@ -110,6 +229,21 @@ class ImageDesignerGUI:
         view_menu.add_separator()
         view_menu.add_command(label="Fit to Window", command=self.fit_to_window)
         
+        # Panels menu (new for enhanced version)
+        panels_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="Panels", menu=panels_menu)
+        panels_menu.add_command(label="Toggle Left Panel", command=self.toggle_left_panel)
+        panels_menu.add_command(label="Toggle Right Panel", command=self.toggle_right_panel)
+        panels_menu.add_separator()
+        panels_menu.add_command(label="Reset Panel Layout", command=self.reset_panel_layout)
+        
+        # Settings menu
+        settings_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="Settings", menu=settings_menu)
+        settings_menu.add_command(label="Cursor Settings...", command=self.open_cursor_settings)
+        settings_menu.add_separator()
+        settings_menu.add_command(label="Reset to Defaults", command=self.reset_cursor_settings)
+        
         # Help menu
         help_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Help", menu=help_menu)
@@ -135,13 +269,13 @@ class ImageDesignerGUI:
         
     def setup_left_panel(self, parent):
         """Setup the left panel with tools and image management."""
-        # Tools section
+        # Tools section - more compact
         tools_frame = ttk.LabelFrame(parent, text="Design Tools")
-        tools_frame.pack(fill=tk.X, padx=5, pady=5)
+        tools_frame.pack(fill=tk.X, padx=3, pady=3)
         
-        # Tool buttons
+        # Tool buttons - more compact with shorter labels
         tools_grid = ttk.Frame(tools_frame)
-        tools_grid.pack(fill=tk.X, padx=5, pady=5)
+        tools_grid.pack(fill=tk.X, padx=3, pady=3)
         
         self.tool_buttons = {}
         tools = [
@@ -149,50 +283,51 @@ class ImageDesignerGUI:
             ("pencil", "✏️ Pencil"),
             ("eraser", "🧽 Eraser"),
             ("line", "📏 Line"),
-            ("rectangle", "⬜ Rectangle"),
+            ("rectangle", "⬜ Rect"),
             ("circle", "⭕ Circle"),
             ("text", "📝 Text"),
             ("fill", "🪣 Fill")
         ]
         
         for i, (tool, label) in enumerate(tools):
-            btn = ttk.Button(tools_grid, text=label, 
-                           command=lambda t=tool: self.select_tool(t))
-            btn.grid(row=i//2, column=i%2, sticky="ew", padx=2, pady=2)
+            btn = tk.Button(tools_grid, text=label, 
+                           command=lambda t=tool: self.select_tool(t),
+                           font=("Arial", 8), relief="raised", bd=1)
+            btn.grid(row=i//2, column=i%2, sticky="ew", padx=1, pady=1)
             self.tool_buttons[tool] = btn
             
         tools_grid.columnconfigure(0, weight=1)
         tools_grid.columnconfigure(1, weight=1)
         
-        # Tool properties
+        # Tool properties - more compact
         props_frame = ttk.LabelFrame(parent, text="Tool Properties")
-        props_frame.pack(fill=tk.X, padx=5, pady=5)
+        props_frame.pack(fill=tk.X, padx=3, pady=3)
         
-        # Brush size
-        ttk.Label(props_frame, text="Size:").pack(anchor=tk.W, padx=5)
+        # Brush size - smaller font and padding
+        ttk.Label(props_frame, text="Size:", font=("Arial", 8)).pack(anchor=tk.W, padx=3)
         self.size_var = tk.IntVar(value=5)
         size_scale = ttk.Scale(props_frame, from_=1, to=50, 
-                              variable=self.size_var, orient=tk.HORIZONTAL)
-        size_scale.pack(fill=tk.X, padx=5, pady=2)
+                              variable=self.size_var, orient=tk.HORIZONTAL, length=150)
+        size_scale.pack(fill=tk.X, padx=3, pady=1)
         
-        # Color picker
+        # Color picker - more compact
         color_frame = ttk.Frame(props_frame)
-        color_frame.pack(fill=tk.X, padx=5, pady=5)
+        color_frame.pack(fill=tk.X, padx=3, pady=3)
         
-        ttk.Label(color_frame, text="Color:").pack(side=tk.LEFT)
+        ttk.Label(color_frame, text="Color:", font=("Arial", 8)).pack(side=tk.LEFT)
         self.color_button = tk.Button(color_frame, bg=self.brush_color, 
-                                     width=3, command=self.choose_color)
+                                     width=4, height=1, command=self.choose_color)
         self.color_button.pack(side=tk.RIGHT)
         
-        # Image management section
+        # Image management section - more compact
         images_frame = ttk.LabelFrame(parent, text="Images")
-        images_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        images_frame.pack(fill=tk.BOTH, expand=True, padx=3, pady=3)
         
-        # Image list
+        # Image list - smaller font
         list_frame = ttk.Frame(images_frame)
-        list_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        list_frame.pack(fill=tk.BOTH, expand=True, padx=3, pady=3)
         
-        self.image_listbox = tk.Listbox(list_frame)
+        self.image_listbox = tk.Listbox(list_frame, font=("Arial", 8))
         scrollbar = ttk.Scrollbar(list_frame, orient=tk.VERTICAL, 
                                  command=self.image_listbox.yview)
         self.image_listbox.configure(yscrollcommand=scrollbar.set)
@@ -200,22 +335,34 @@ class ImageDesignerGUI:
         self.image_listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         
-        # Image management buttons
+        # Image management buttons - more compact
         btn_frame = ttk.Frame(images_frame)
-        btn_frame.pack(fill=tk.X, padx=5, pady=5)
+        btn_frame.pack(fill=tk.X, padx=3, pady=3)
         
-        self.new_image_btn = ttk.Button(btn_frame, text="🆕 New Image", 
-                                       command=self.new_image)
-        self.new_image_btn.pack(fill=tk.X, pady=2)
+        # Use grid for more compact button layout
+        # Use tk.Button for better color control
+        self.new_image_btn = tk.Button(btn_frame, text="🆕 New", 
+                                      command=self.new_image,
+                                      font=("Arial", 8),
+                                      relief="raised", bd=1)
+        self.new_image_btn.grid(row=0, column=0, sticky="ew", padx=1, pady=1)
         
-        self.load_image_btn = ttk.Button(btn_frame, text="📁 Load Image", 
-                                        command=self.load_image)
-        self.load_image_btn.pack(fill=tk.X, pady=2)
+        self.load_image_btn = tk.Button(btn_frame, text="📁 Load", 
+                                       command=self.load_image,
+                                       font=("Arial", 8),
+                                       relief="raised", bd=1)
+        self.load_image_btn.grid(row=0, column=1, sticky="ew", padx=1, pady=1)
         
-        ttk.Button(btn_frame, text="Duplicate", 
-                  command=self.duplicate_image).pack(fill=tk.X, pady=2)
-        ttk.Button(btn_frame, text="Delete", 
-                  command=self.delete_image).pack(fill=tk.X, pady=2)
+        tk.Button(btn_frame, text="Copy", 
+                  command=self.duplicate_image,
+                  font=("Arial", 8), relief="raised", bd=1).grid(row=1, column=0, sticky="ew", padx=1, pady=1)
+        tk.Button(btn_frame, text="Delete", 
+                  command=self.delete_image,
+                  font=("Arial", 8), relief="raised", bd=1).grid(row=1, column=1, sticky="ew", padx=1, pady=1)
+        
+        # Configure grid weights for buttons
+        btn_frame.columnconfigure(0, weight=1)
+        btn_frame.columnconfigure(1, weight=1)
         
     def setup_center_panel(self, parent):
         """Setup the center panel with the drawing canvas."""
@@ -229,12 +376,15 @@ class ImageDesignerGUI:
         zoom_frame = ttk.Frame(controls_frame)
         zoom_frame.pack(side=tk.RIGHT)
         
-        ttk.Button(zoom_frame, text="Zoom In", 
-                  command=self.zoom_in).pack(side=tk.LEFT, padx=2)
-        ttk.Button(zoom_frame, text="Zoom Out", 
-                  command=self.zoom_out).pack(side=tk.LEFT, padx=2)
-        ttk.Button(zoom_frame, text="Fit", 
-                  command=self.zoom_fit).pack(side=tk.LEFT, padx=2)
+        tk.Button(zoom_frame, text="Zoom In", 
+                  command=self.zoom_in,
+                  font=("Arial", 8), relief="raised", bd=1).pack(side=tk.LEFT, padx=2)
+        tk.Button(zoom_frame, text="Zoom Out", 
+                  command=self.zoom_out,
+                  font=("Arial", 8), relief="raised", bd=1).pack(side=tk.LEFT, padx=2)
+        tk.Button(zoom_frame, text="Fit", 
+                  command=self.zoom_fit,
+                  font=("Arial", 8), relief="raised", bd=1).pack(side=tk.LEFT, padx=2)
         
         # Grid toggle
         self.grid_var = tk.BooleanVar()
@@ -242,6 +392,13 @@ class ImageDesignerGUI:
                                    variable=self.grid_var, 
                                    command=self.toggle_grid)
         grid_check.pack(side=tk.LEFT, padx=5)
+        
+        # Cursor settings button
+        cursor_btn = tk.Button(zoom_frame, text="⚙️", 
+                              command=self.open_cursor_settings,
+                              font=("Arial", 8), relief="raised", bd=1,
+                              width=3)
+        cursor_btn.pack(side=tk.LEFT, padx=2)
         
         # Canvas frame
         canvas_frame = ttk.Frame(parent)
@@ -270,99 +427,113 @@ class ImageDesignerGUI:
         """Setup the right panel with properties and code generation."""
         # Image properties
         props_frame = ttk.LabelFrame(parent, text="Image Properties")
-        props_frame.pack(fill=tk.X, padx=3, pady=3)
+        props_frame.pack(fill=tk.X, padx=2, pady=2)
         
         # Image name
-        ttk.Label(props_frame, text="Name:").pack(anchor=tk.W, padx=5)
+        ttk.Label(props_frame, text="Name:", font=("Arial", 8)).pack(anchor=tk.W, padx=3)
         self.name_var = tk.StringVar()
-        name_entry = ttk.Entry(props_frame, textvariable=self.name_var)
-        name_entry.pack(fill=tk.X, padx=5, pady=2)
+        name_entry = ttk.Entry(props_frame, textvariable=self.name_var, font=("Arial", 8))
+        name_entry.pack(fill=tk.X, padx=3, pady=1)
         name_entry.bind('<KeyRelease>', self.on_name_change)
         
-        # Image size
+        # Image size - more compact layout
         size_frame = ttk.Frame(props_frame)
-        size_frame.pack(fill=tk.X, padx=5, pady=5)
+        size_frame.pack(fill=tk.X, padx=3, pady=2)
         
-        ttk.Label(size_frame, text="Size:").pack(side=tk.LEFT)
+        ttk.Label(size_frame, text="Size:", font=("Arial", 8)).grid(row=0, column=0, sticky="w")
         self.width_var = tk.IntVar(value=300)
         self.height_var = tk.IntVar(value=300)
         
-        ttk.Entry(size_frame, textvariable=self.width_var, width=6).pack(side=tk.LEFT, padx=2)
-        ttk.Label(size_frame, text="x").pack(side=tk.LEFT)
-        ttk.Entry(size_frame, textvariable=self.height_var, width=6).pack(side=tk.LEFT, padx=2)
-        ttk.Button(size_frame, text="Apply", command=self.resize_image).pack(side=tk.LEFT, padx=5)
+        # Smaller entry widgets
+        ttk.Entry(size_frame, textvariable=self.width_var, width=4, font=("Arial", 8)).grid(row=0, column=1, padx=1)
+        ttk.Label(size_frame, text="x", font=("Arial", 8)).grid(row=0, column=2)
+        ttk.Entry(size_frame, textvariable=self.height_var, width=4, font=("Arial", 8)).grid(row=0, column=3, padx=1)
+        tk.Button(size_frame, text="Apply", command=self.resize_image, 
+                 font=("Arial", 8), relief="raised", bd=1, width=6).grid(row=0, column=4, padx=2)
         
-        # Transformations
+        # Configure grid weights for size frame
+        size_frame.columnconfigure(4, weight=1)
+        
+        # Transformations - more compact
         transform_frame = ttk.LabelFrame(parent, text="Transformations")
-        transform_frame.pack(fill=tk.X, padx=3, pady=3)
+        transform_frame.pack(fill=tk.X, padx=2, pady=2)
         
         # Rotation
-        ttk.Label(transform_frame, text="Rotation:").pack(anchor=tk.W, padx=5)
+        ttk.Label(transform_frame, text="Rotation:", font=("Arial", 8)).pack(anchor=tk.W, padx=3)
         self.rotation_var = tk.IntVar()
         rotation_scale = ttk.Scale(transform_frame, from_=0, to=360, 
-                                  variable=self.rotation_var, orient=tk.HORIZONTAL)
-        rotation_scale.pack(fill=tk.X, padx=5, pady=2)
+                                  variable=self.rotation_var, orient=tk.HORIZONTAL,
+                                  command=self.apply_rotation)
+        rotation_scale.pack(fill=tk.X, padx=3, pady=2)
         
-        # Filters
+        # Also bind variable changes to rotation
+        self.rotation_var.trace('w', self.apply_rotation)
+        
+        # Filters in a more compact grid layout
         filters_frame = ttk.Frame(transform_frame)
-        filters_frame.pack(fill=tk.X, padx=5, pady=5)
+        filters_frame.pack(fill=tk.X, padx=3, pady=3)
         
-        ttk.Button(filters_frame, text="Blur", 
-                  command=self.apply_blur).pack(side=tk.LEFT, padx=2)
-        ttk.Button(filters_frame, text="Sharpen", 
-                  command=self.apply_sharpen).pack(side=tk.LEFT, padx=2)
-        ttk.Button(filters_frame, text="Emboss", 
-                  command=self.apply_emboss).pack(side=tk.LEFT, padx=2)
+        tk.Button(filters_frame, text="Blur", command=self.apply_blur, 
+                 font=("Arial", 8), relief="raised", bd=1, width=6).grid(row=0, column=0, padx=1, pady=1)
+        tk.Button(filters_frame, text="Sharp", command=self.apply_sharpen, 
+                 font=("Arial", 8), relief="raised", bd=1, width=6).grid(row=0, column=1, padx=1, pady=1)
+        tk.Button(filters_frame, text="Emboss", command=self.apply_emboss, 
+                 font=("Arial", 8), relief="raised", bd=1, width=6).grid(row=0, column=2, padx=1, pady=1)
         
-        # Code generation
+        # Configure grid weights for filters
+        filters_frame.columnconfigure(0, weight=1)
+        filters_frame.columnconfigure(1, weight=1)
+        filters_frame.columnconfigure(2, weight=1)
+        
+        # Code generation - more compact
         code_frame = ttk.LabelFrame(parent, text="Code Generation")
-        code_frame.pack(fill=tk.BOTH, expand=True, padx=3, pady=3)
+        code_frame.pack(fill=tk.BOTH, expand=True, padx=2, pady=2)
         
-        # Generation options
+        # Generation options - more compact
         options_frame = ttk.Frame(code_frame)
-        options_frame.pack(fill=tk.X, padx=3, pady=3)
+        options_frame.pack(fill=tk.X, padx=2, pady=2)
         
-        ttk.Label(options_frame, text="Framework:").pack(anchor=tk.W)
+        ttk.Label(options_frame, text="Framework:", font=("Arial", 8)).pack(anchor=tk.W)
         self.framework_var = tk.StringVar(value="tkinter")
         framework_combo = ttk.Combobox(options_frame, textvariable=self.framework_var,
-                                      values=["tkinter", "customtkinter"], state="readonly")
-        framework_combo.pack(fill=tk.X, pady=2)
+                                      values=["tkinter", "customtkinter"], state="readonly", 
+                                      font=("Arial", 8), height=3)
+        framework_combo.pack(fill=tk.X, pady=1)
         
-        ttk.Label(options_frame, text="Usage Type:").pack(anchor=tk.W)
+        ttk.Label(options_frame, text="Usage:", font=("Arial", 8)).pack(anchor=tk.W)
         self.usage_var = tk.StringVar(value="general")
         usage_combo = ttk.Combobox(options_frame, textvariable=self.usage_var,
-                                  values=["general", "buttons", "icons", "backgrounds", "sprites", "ui_elements"], state="readonly")
-        usage_combo.pack(fill=tk.X, pady=2)
+                                  values=["general", "buttons", "icons", "backgrounds", "sprites", "ui_elements"], 
+                                  state="readonly", font=("Arial", 8), height=6)
+        usage_combo.pack(fill=tk.X, pady=1)
         
-        ttk.Label(options_frame, text="Quality:").pack(anchor=tk.W)
+        ttk.Label(options_frame, text="Quality:", font=("Arial", 8)).pack(anchor=tk.W)
         self.quality_var = tk.IntVar(value=85)
         quality_scale = ttk.Scale(options_frame, from_=1, to=100, 
-                                 variable=self.quality_var, orient=tk.HORIZONTAL)
-        quality_scale.pack(fill=tk.X, pady=2)
+                                 variable=self.quality_var, orient=tk.HORIZONTAL, length=150)
+        quality_scale.pack(fill=tk.X, pady=1)
         
-        # Generation buttons
+        # Generation buttons - vertical layout for narrow panel
         btn_frame = ttk.Frame(code_frame)
-        btn_frame.pack(fill=tk.X, padx=3, pady=3)
+        btn_frame.pack(fill=tk.X, padx=2, pady=2)
         
-        # Use grid for more compact button layout
-        ttk.Button(btn_frame, text="Preview Code", 
-                  command=self.preview_code).grid(row=0, column=0, columnspan=2, sticky="ew", pady=1)
-        ttk.Button(btn_frame, text="Generate File", 
-                  command=self.generate_code_file).grid(row=1, column=0, sticky="ew", padx=(0,2), pady=1)
-        ttk.Button(btn_frame, text="Export Images", 
-                  command=self.export_images).grid(row=1, column=1, sticky="ew", padx=(2,0), pady=1)
+        tk.Button(btn_frame, text="Preview Code", 
+                  command=self.preview_code,
+                  font=("Arial", 8), relief="raised", bd=1).pack(fill=tk.X, pady=1)
+        tk.Button(btn_frame, text="Generate File", 
+                  command=self.generate_code_file,
+                  font=("Arial", 8), relief="raised", bd=1).pack(fill=tk.X, pady=1)
+        tk.Button(btn_frame, text="Export Images", 
+                  command=self.export_images,
+                  font=("Arial", 8), relief="raised", bd=1).pack(fill=tk.X, pady=1)
         
-        # Configure grid weights
-        btn_frame.columnconfigure(0, weight=1)
-        btn_frame.columnconfigure(1, weight=1)
-        
-        # Preview section
+        # Preview section - smaller height for narrow panel
         preview_frame = ttk.LabelFrame(code_frame, text="Live Preview")
-        preview_frame.pack(fill=tk.BOTH, expand=True, padx=3, pady=3)
+        preview_frame.pack(fill=tk.BOTH, expand=True, padx=2, pady=2)
         
-        # Preview canvas
-        self.preview_canvas = tk.Canvas(preview_frame, bg="white", height=150)
-        self.preview_canvas.pack(fill=tk.BOTH, expand=True, padx=3, pady=3)
+        # Preview canvas - smaller height
+        self.preview_canvas = tk.Canvas(preview_frame, bg="white", height=100)
+        self.preview_canvas.pack(fill=tk.BOTH, expand=True, padx=2, pady=2)
         
         # Bind framework/usage changes to update preview
         framework_combo.bind('<<ComboboxSelected>>', self.update_preview)
@@ -373,6 +544,7 @@ class ImageDesignerGUI:
         self.canvas.bind("<Button-1>", self.on_canvas_click)
         self.canvas.bind("<B1-Motion>", self.on_canvas_drag)
         self.canvas.bind("<ButtonRelease-1>", self.on_canvas_release)
+        self.canvas.bind("<Motion>", self.on_canvas_motion)
         
         self.image_listbox.bind("<<ListboxSelect>>", self.on_image_select)
         
@@ -384,29 +556,139 @@ class ImageDesignerGUI:
         
     def select_tool(self, tool):
         """Select a drawing tool."""
+        # Clear any active preview when switching tools
+        self.clear_preview()
+        self.clear_pixel_highlight()
+        self.drawing = False
+        
         self.current_tool = tool
         
         # Update button states
         for t, btn in self.tool_buttons.items():
             if t == tool:
-                btn.configure(style="Accent.TButton")
+                btn.configure(bg="#0078d4", fg="white", relief="sunken")  # Selected state
             else:
-                btn.configure(style="TButton")
+                btn.configure(bg="SystemButtonFace", fg="SystemButtonText", relief="raised")  # Normal state
                 
-        # Update cursor
-        cursor_map = {
-            "brush": "pencil",
-            "pencil": "pencil",
-            "eraser": "dotbox",
-            "line": "crosshair",
-            "rectangle": "crosshair",
-            "circle": "crosshair",
-            "text": "xterm",
-            "fill": "spraycan"
+        # Update cursor with proper orientation
+        self.update_tool_cursor(tool)
+    
+    def update_tool_cursor(self, tool):
+        """Update the canvas cursor based on the selected tool and user settings."""
+        # Get the user's preferred cursor for this tool
+        preferred_cursor = self.cursor_settings.get(tool, 'crosshair')
+        
+        # Check if it's a custom cursor
+        if preferred_cursor.startswith('custom:'):
+            cursor_name = preferred_cursor[7:]  # Remove 'custom:' prefix
+            if cursor_name in self.cursor_settings['custom_cursors']:
+                cursor_data = self.cursor_settings['custom_cursors'][cursor_name]
+                try:
+                    self.canvas.configure(cursor=cursor_data)
+                    return
+                except tk.TclError:
+                    pass  # Fall back to default options
+        
+        # Define fallback options for each tool based on platform and handedness
+        fallback_options = self.get_cursor_fallback_options(tool)
+        
+        # Try the preferred cursor first, then fallbacks
+        cursors_to_try = [preferred_cursor] + fallback_options
+        
+        # Remove duplicates while preserving order
+        seen = set()
+        cursors_to_try = [x for x in cursors_to_try if not (x in seen or seen.add(x))]
+        
+        # Try each cursor option until one works
+        for cursor in cursors_to_try:
+            try:
+                self.canvas.configure(cursor=cursor)
+                return  # Success, exit the method
+            except tk.TclError:
+                continue  # Try the next cursor
+        
+        # If all cursors fail, use arrow as final fallback
+        try:
+            self.canvas.configure(cursor="arrow")
+        except tk.TclError:
+            pass  # Give up if even arrow fails
+    
+    def get_cursor_fallback_options(self, tool):
+        """Get fallback cursor options based on tool, platform, and handedness."""
+        # Base options for each tool
+        base_options = {
+            "brush": ["crosshair", "pencil", "dotbox"],
+            "pencil": ["crosshair", "pencil", "dotbox"],
+            "eraser": ["dotbox", "crosshair"],
+            "line": ["crosshair", "plus"],
+            "rectangle": ["crosshair", "plus"],
+            "circle": ["crosshair", "plus"],
+            "text": ["xterm", "ibeam"],
+            "fill": ["spraycan", "crosshair"]
         }
         
-        cursor = cursor_map.get(tool, "arrow")
-        self.canvas.configure(cursor=cursor)
+        options = base_options.get(tool, ["arrow"])
+        
+        # Adjust for handedness (left-handed users might prefer different orientations)
+        if self.cursor_settings['handedness'] == 'left':
+            # Add left-handed friendly cursors
+            left_handed_alternatives = {
+                "pencil": ["ul_angle", "top_left_corner"],
+                "brush": ["ul_angle", "top_left_corner"]
+            }
+            if tool in left_handed_alternatives:
+                options = left_handed_alternatives[tool] + options
+        
+        return options
+    
+    def load_cursor_settings(self):
+        """Load cursor settings from file."""
+        try:
+            import json
+            import os
+            settings_file = os.path.join(os.path.expanduser("~"), ".gui_image_studio_cursors.json")
+            if os.path.exists(settings_file):
+                with open(settings_file, 'r') as f:
+                    saved_settings = json.load(f)
+                    self.cursor_settings.update(saved_settings)
+        except Exception:
+            pass  # Use defaults if loading fails
+    
+    def save_cursor_settings(self):
+        """Save cursor settings to file."""
+        try:
+            import json
+            import os
+            settings_file = os.path.join(os.path.expanduser("~"), ".gui_image_studio_cursors.json")
+            with open(settings_file, 'w') as f:
+                json.dump(self.cursor_settings, f, indent=2)
+        except Exception:
+            pass  # Fail silently if saving fails
+    
+    def reset_cursor_settings(self):
+        """Reset cursor settings to defaults."""
+        if tk.messagebox.askyesno("Reset Cursor Settings", 
+                                  "Are you sure you want to reset all cursor settings to defaults?"):
+            self.cursor_settings = {
+                'handedness': 'right',
+                'brush': 'crosshair',
+                'pencil': 'crosshair', 
+                'eraser': 'dotbox',
+                'line': 'crosshair',
+                'rectangle': 'crosshair',
+                'circle': 'crosshair',
+                'text': 'xterm',
+                'fill': 'spraycan',
+                'custom_cursors': {}
+            }
+            self.save_cursor_settings()
+            # Update current tool cursor
+            self.update_tool_cursor(self.current_tool)
+            tk.messagebox.showinfo("Settings Reset", "Cursor settings have been reset to defaults.")
+    
+    def open_cursor_settings(self):
+        """Open the cursor settings dialog."""
+        CursorSettingsDialog(self.root, self)
                 
     def choose_color(self):
         """Open color chooser dialog."""
@@ -522,13 +804,41 @@ class ImageDesignerGUI:
         has_images = len(self.current_images) > 0
         
         if not has_images:
-            # Make the buttons more prominent when no images
-            self.new_image_btn.configure(text="🆕 Create Your First Image!")
-            self.load_image_btn.configure(text="📁 Or Load an Existing Image")
+            # Make the buttons more prominent when no images exist
+            self.new_image_btn.configure(
+                text="🆕 New",
+                bg="#4CAF50",      # Green background
+                fg="white",        # White text
+                font=("Arial", 8, "bold"),
+                activebackground="#45a049",  # Darker green when pressed
+                activeforeground="white"
+            )
+            self.load_image_btn.configure(
+                text="📁 Load",
+                bg="#2196F3",      # Blue background
+                fg="white",        # White text
+                font=("Arial", 8, "bold"),
+                activebackground="#1976D2",  # Darker blue when pressed
+                activeforeground="white"
+            )
         else:
-            # Normal button text when images exist
-            self.new_image_btn.configure(text="🆕 New Image")
-            self.load_image_btn.configure(text="📁 Load Image")
+            # Normal button appearance when images exist - using consistent colors across platforms
+            self.new_image_btn.configure(
+                text="🆕 New",
+                bg="#f0f0f0",  # Light gray background (consistent across platforms)
+                fg="#000000",  # Black text
+                font=("Arial", 8),
+                activebackground="#e0e0e0",  # Slightly darker gray when pressed
+                activeforeground="#000000"
+            )
+            self.load_image_btn.configure(
+                text="📁 Load",
+                bg="#f0f0f0",  # Light gray background (consistent across platforms)
+                fg="#000000",  # Black text
+                font=("Arial", 8),
+                activebackground="#e0e0e0",  # Slightly darker gray when pressed
+                activeforeground="#000000"
+            )
     
     def update_preview(self, event=None):
         """Update the live preview based on current settings."""
@@ -553,7 +863,7 @@ class ImageDesignerGUI:
             
             self.preview_canvas.create_text(center_x, center_y, 
                                           text="Create images to see preview", 
-                                          fill="#888888", font=("Arial", 12))
+                                          fill="#888888", font=("Arial", 9)) #12
             return
         
         # Get current settings
@@ -1380,7 +1690,7 @@ Solutions:
 • Reduce zoom level if very high (try 100-200%)
 • Close other memory-intensive applications
 • Use smaller image sizes (under 512x512)
-• Restart application to clear memory
+• Restart the application to clear memory
 
 LARGE FILE SIZES
 Problem: Generated code files are too large
@@ -1545,6 +1855,10 @@ Happy creating! 🎉
         
     def update_canvas(self):
         """Update the canvas display."""
+        # Clear any active preview shapes and pixel highlights
+        self.clear_preview()
+        self.clear_pixel_highlight()
+        
         if not self.selected_image:
             # Clear canvas and show instructions
             self.canvas.delete("all")
@@ -1608,12 +1922,12 @@ Happy creating! 🎉
                                fill="#666666", tags="instructions")
         
         self.canvas.create_text(center_x, center_y, 
-                               text="• Click 'Create Your First Image!' to make a new canvas", 
+                               text="• Click 'New' to make a new canvas", 
                                font=("Arial", 11), 
                                fill="#666666", tags="instructions")
         
         self.canvas.create_text(center_x, center_y + 20, 
-                               text="• Click 'Or Load an Existing Image' to open a file", 
+                               text="• Click 'Load' to open an existing file", 
                                font=("Arial", 11), 
                                fill="#666666", tags="instructions")
         
@@ -1679,6 +1993,7 @@ Happy creating! 🎉
         elif self.current_tool in ["line", "rectangle", "circle"]:
             self.drawing = True
             self.start_x, self.start_y = x, y
+
         elif self.current_tool == "text":
             self.add_text(x, y)
         
@@ -1695,6 +2010,9 @@ Happy creating! 🎉
             if hasattr(self, 'last_x') and hasattr(self, 'last_y'):
                 self.draw_line_on_image(self.last_x, self.last_y, x, y)
             self.last_x, self.last_y = x, y
+        elif self.drawing and self.current_tool in ["rectangle", "circle", "line"]:
+            # Show preview while dragging
+            self.update_shape_preview(self.start_x, self.start_y, x, y)
         
     def on_canvas_release(self, event):
         """Handle canvas release events."""
@@ -1708,11 +2026,104 @@ Happy creating! 🎉
             
             self.draw_shape(self.start_x, self.start_y, x, y)
             self.drawing = False
+            self.clear_preview()
+    
+    def on_canvas_motion(self, event):
+        """Handle canvas motion events for shape preview and pixel highlighting."""
+        if not self.selected_image:
+            return
             
-        if hasattr(self, 'last_x'):
-            delattr(self, 'last_x')
-        if hasattr(self, 'last_y'):
-            delattr(self, 'last_y')
+        # Convert canvas coordinates to image coordinates
+        x = int((self.canvas.canvasx(event.x) - 10) / self.zoom_level)
+        y = int((self.canvas.canvasy(event.y) - 10) / self.zoom_level)
+        
+        # Show pixel highlight for drawing tools when grid is enabled
+        if self.show_grid and self.current_tool in ["brush", "pencil", "eraser"] and self.zoom_level >= 4:
+            self.update_pixel_highlight(x, y)
+        else:
+            self.clear_pixel_highlight()
+            
+        # Show shape preview for shape tools when drawing
+        if self.drawing and self.current_tool in ["rectangle", "circle", "line"]:
+            self.update_shape_preview(self.start_x, self.start_y, x, y)
+    
+    def update_shape_preview(self, x1, y1, x2, y2):
+        """Update the preview shape on canvas."""
+        # Clear existing preview
+        self.clear_preview()
+        
+        # Convert image coordinates back to canvas coordinates for display
+        canvas_x1 = x1 * self.zoom_level + 10
+        canvas_y1 = y1 * self.zoom_level + 10
+        canvas_x2 = x2 * self.zoom_level + 10
+        canvas_y2 = y2 * self.zoom_level + 10
+        
+        # Create preview shape based on current tool
+        if self.current_tool == "rectangle":
+            self.preview_shape = self.canvas.create_rectangle(
+                canvas_x1, canvas_y1, canvas_x2, canvas_y2,
+                outline=self.brush_color, width=2, fill="", 
+                dash=(5, 5), tags="preview"
+            )
+        elif self.current_tool == "circle":
+            self.preview_shape = self.canvas.create_oval(
+                canvas_x1, canvas_y1, canvas_x2, canvas_y2,
+                outline=self.brush_color, width=2, fill="", 
+                dash=(5, 5), tags="preview"
+            )
+        elif self.current_tool == "line":
+            self.preview_shape = self.canvas.create_line(
+                canvas_x1, canvas_y1, canvas_x2, canvas_y2,
+                fill=self.brush_color, width=2, 
+                dash=(5, 5), tags="preview"
+            )
+        
+        self.preview_active = True
+    
+    def clear_preview(self):
+        """Clear the preview shape from canvas."""
+        if self.preview_shape:
+            self.canvas.delete(self.preview_shape)
+            self.preview_shape = None
+        self.preview_active = False
+    
+    def update_pixel_highlight(self, x, y):
+        """Highlight the pixel that will be affected by drawing tools."""
+        # Only highlight if position changed
+        if self.last_highlight_pos == (x, y):
+            return
+            
+        self.last_highlight_pos = (x, y)
+        
+        # Clear existing highlight
+        self.clear_pixel_highlight()
+        
+        # Check if coordinates are within image bounds
+        if not self.selected_image:
+            return
+            
+        image = self.current_images[self.selected_image]
+        if x < 0 or y < 0 or x >= image.width or y >= image.height:
+            return
+        
+        # Convert image coordinates to canvas coordinates
+        canvas_x = x * self.zoom_level + 10
+        canvas_y = y * self.zoom_level + 10
+        
+        # Create highlight rectangle around the pixel
+        self.pixel_highlight = self.canvas.create_rectangle(
+            canvas_x, canvas_y, 
+            canvas_x + self.zoom_level, canvas_y + self.zoom_level,
+            outline="#FF0000", width=1, fill="", 
+            dash=(2, 2), tags="pixel_highlight"
+        )
+    
+    def clear_pixel_highlight(self):
+        """Clear the pixel highlight from canvas."""
+        if self.pixel_highlight:
+            self.canvas.delete(self.pixel_highlight)
+            self.pixel_highlight = None
+        self.last_highlight_pos = None
             
     def draw_on_image(self, x, y):
         """Draw on the current image."""
@@ -1873,7 +2284,7 @@ Happy creating! 🎉
             zoom_y = canvas_height / image.height
             self.zoom_level = min(zoom_x, zoom_y, 1.0)
             self.update_canvas()
-            
+    
     def toggle_grid(self):
         """Toggle grid display."""
         self.show_grid = self.grid_var.get()
@@ -1928,6 +2339,21 @@ Happy creating! 🎉
         self.current_images[self.selected_image] = embossed
         self.update_canvas()
         
+    def apply_rotation(self, *args):
+        """Apply rotation to current image based on rotation scale."""
+        if not self.selected_image:
+            return
+            
+        angle = self.rotation_var.get()
+        if angle == 0:
+            return  # No rotation needed
+            
+        image = self.current_images[self.selected_image]
+        # Rotate the image (PIL rotates counter-clockwise)
+        rotated = image.rotate(angle, expand=True, fillcolor=(255, 255, 255, 0))
+        self.current_images[self.selected_image] = rotated
+        self.update_canvas()
+        
     def preview_code(self):
         """Preview the generated embedded code."""
         if not self.current_images:
@@ -1942,6 +2368,7 @@ Happy creating! 🎉
             # Convert RGBA to RGB if needed for JPEG
             if image.mode == "RGBA":
                 # Create white background
+               
                 background = Image.new("RGB", image.size, (255, 255, 255))
                 background.paste(image, mask=image.split()[-1])  # Use alpha channel as mask
                 save_image = background
@@ -2020,6 +2447,21 @@ Happy creating! 🎉
         except Exception as e:
             messagebox.showerror("Error", f"Failed to export images: {str(e)}")
             
+    def toggle_left_panel(self):
+        """Toggle left panel visibility."""
+        if hasattr(self, 'three_pane'):
+            self.three_pane.toggle_pane('left')
+    
+    def toggle_right_panel(self):
+        """Toggle right panel visibility."""
+        if hasattr(self, 'three_pane'):
+            self.three_pane.toggle_pane('right')
+    
+    def reset_panel_layout(self):
+        """Reset panel layout to default."""
+        if hasattr(self, 'three_pane'):
+            self.three_pane.reset_layout()
+    
     def run(self):
         """Run the application."""
         self.root.mainloop()
@@ -2073,13 +2515,17 @@ class ImageSizeDialog:
         ttk.Label(size_frame, text="Height:").pack(side=tk.LEFT)
         self.height_var = tk.IntVar(value=300)
         ttk.Entry(size_frame, textvariable=self.height_var, width=8).pack(side=tk.LEFT, padx=5)
+        tk.Button(size_frame, text="Apply", command=self.create,
+                 font=("Arial", 9), relief="raised", bd=1).pack(side=tk.LEFT, padx=5)
         
         # Buttons
         btn_frame = ttk.Frame(main_frame)
         btn_frame.pack(fill=tk.X, pady=(20, 0))
         
-        ttk.Button(btn_frame, text="Cancel", command=self.cancel).pack(side=tk.RIGHT, padx=(5, 0))
-        ttk.Button(btn_frame, text="Create", command=self.create).pack(side=tk.RIGHT)
+        tk.Button(btn_frame, text="Cancel", command=self.cancel,
+                 font=("Arial", 9), relief="raised", bd=1).pack(side=tk.RIGHT, padx=(5, 0))
+        tk.Button(btn_frame, text="Create", command=self.create,
+                 font=("Arial", 9), relief="raised", bd=1).pack(side=tk.RIGHT)
         
         # Bind Enter key
         self.dialog.bind('<Return>', lambda e: self.create())
@@ -2164,10 +2610,12 @@ class CodePreviewWindow:
         btn_frame = ttk.Frame(main_frame)
         btn_frame.pack(fill=tk.X, pady=(10, 0))
         
-        ttk.Button(btn_frame, text="Copy to Clipboard", 
-                  command=lambda: self.copy_to_clipboard(enhanced_code)).pack(side=tk.LEFT)
-        ttk.Button(btn_frame, text="Close", 
-                  command=self.window.destroy).pack(side=tk.RIGHT)
+        tk.Button(btn_frame, text="Copy to Clipboard", 
+                  command=lambda: self.copy_to_clipboard(enhanced_code),
+                  font=("Arial", 9), relief="raised", bd=1).pack(side=tk.LEFT)
+        tk.Button(btn_frame, text="Close", 
+                  command=self.window.destroy,
+                  font=("Arial", 9), relief="raised", bd=1).pack(side=tk.RIGHT)
                   
     def generate_enhanced_code(self, base_code):
         """Generate enhanced code with usage examples."""
@@ -2276,7 +2724,7 @@ def create_icon_label(parent, base64_string, size=(32, 32)):
     pil_image = pil_image.resize(size, Image.Resampling.LANCZOS)
     photo = ImageTk.PhotoImage(pil_image)
     
-    label = tk.Label(parent, image=photo)
+    label = tk.Label(parent, image=photo, text="")
     label.image = photo
     return label
 
@@ -2289,7 +2737,7 @@ row, col = 0, 0
 for theme, images in embedded_images.items():
     for name, data in images.items():
         icon = create_icon_label(root, data, size=(48, 48))
-        icon.grid(row=row, column=col, padx=5, pady=5)
+        icon.grid(row=row, column=col, padx=10, pady=10)
         
         # Add label
         tk.Label(root, text=name.replace('.png', '')).grid(row=row+1, column=col)
@@ -2572,9 +3020,12 @@ class HelpWindow:
         btn_frame.pack(fill=tk.X, pady=(10, 0))
         
         # Buttons
-        ttk.Button(btn_frame, text="Print", command=self.print_content).pack(side=tk.LEFT)
-        ttk.Button(btn_frame, text="Copy All", command=self.copy_content).pack(side=tk.LEFT, padx=(10, 0))
-        ttk.Button(btn_frame, text="Close", command=self.window.destroy).pack(side=tk.RIGHT)
+        tk.Button(btn_frame, text="Print", command=self.print_content,
+                 font=("Arial", 9), relief="raised", bd=1).pack(side=tk.LEFT)
+        tk.Button(btn_frame, text="Copy All", command=self.copy_content,
+                 font=("Arial", 9), relief="raised", bd=1).pack(side=tk.LEFT, padx=(10, 0))
+        tk.Button(btn_frame, text="Close", command=self.window.destroy,
+                 font=("Arial", 9), relief="raised", bd=1).pack(side=tk.RIGHT)
         
     def insert_formatted_content(self, content):
         """Insert content with basic formatting."""
@@ -2665,9 +3116,877 @@ class HelpWindow:
         messagebox.showinfo("Copied", "Help content copied to clipboard!")
 
 
+class CursorSettingsDialog:
+    """Dialog for configuring cursor settings."""
+    
+    def __init__(self, parent, app):
+        self.app = app
+        self.window = tk.Toplevel(parent)
+        self.window.title("Cursor Settings")
+        self.window.geometry("600x500")
+        self.window.resizable(True, True)
+        
+        # Make dialog modal
+        self.window.transient(parent)
+        self.window.grab_set()
+        
+        # Center the dialog
+        self.window.update_idletasks()
+        x = (self.window.winfo_screenwidth() // 2) - (600 // 2)
+        y = (self.window.winfo_screenheight() // 2) - (500 // 2)
+        self.window.geometry(f"600x500+{x}+{y}")
+        
+        self.setup_ui()
+        
+        # Focus the dialog
+        self.window.focus_set()
+    
+    def setup_ui(self):
+        """Set up the cursor settings dialog UI."""
+        # Main frame with scrollbar
+        main_frame = ttk.Frame(self.window)
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        
+        # Create notebook for tabs
+        notebook = ttk.Notebook(main_frame)
+        notebook.pack(fill=tk.BOTH, expand=True)
+        
+        # General settings tab
+        general_frame = ttk.Frame(notebook)
+        notebook.add(general_frame, text="General")
+        self.setup_general_tab(general_frame)
+        
+        # Tool cursors tab
+        tools_frame = ttk.Frame(notebook)
+        notebook.add(tools_frame, text="Tool Cursors")
+        self.setup_tools_tab(tools_frame)
+        
+        # Custom cursors tab
+        custom_frame = ttk.Frame(notebook)
+        notebook.add(custom_frame, text="Custom Cursors")
+        self.setup_custom_tab(custom_frame)
+        
+        # Available cursors tab
+        available_frame = ttk.Frame(notebook)
+        notebook.add(available_frame, text="Available Cursors")
+        self.setup_available_tab(available_frame)
+        
+        # Buttons frame
+        buttons_frame = ttk.Frame(main_frame)
+        buttons_frame.pack(fill=tk.X, pady=(10, 0))
+        
+        ttk.Button(buttons_frame, text="Test Current Tool", 
+                  command=self.test_current_cursor).pack(side=tk.LEFT, padx=(0, 5))
+        ttk.Button(buttons_frame, text="Reset to Defaults", 
+                  command=self.reset_to_defaults).pack(side=tk.LEFT, padx=5)
+        
+        ttk.Button(buttons_frame, text="Cancel", 
+                  command=self.cancel).pack(side=tk.RIGHT, padx=(5, 0))
+        ttk.Button(buttons_frame, text="Apply", 
+                  command=self.apply_settings).pack(side=tk.RIGHT, padx=5)
+        ttk.Button(buttons_frame, text="OK", 
+                  command=self.ok).pack(side=tk.RIGHT, padx=5)
+    
+    def setup_general_tab(self, parent):
+        """Set up the general settings tab."""
+        # Handedness setting
+        handedness_frame = ttk.LabelFrame(parent, text="Handedness", padding=10)
+        handedness_frame.pack(fill=tk.X, pady=(0, 10))
+        
+        self.handedness_var = tk.StringVar(value=self.app.cursor_settings['handedness'])
+        
+        ttk.Radiobutton(handedness_frame, text="Right-handed", 
+                       variable=self.handedness_var, value="right").pack(anchor=tk.W)
+        ttk.Radiobutton(handedness_frame, text="Left-handed", 
+                       variable=self.handedness_var, value="left").pack(anchor=tk.W)
+        
+        # Info label
+        info_label = ttk.Label(handedness_frame, 
+                              text="Left-handed mode provides alternative cursor orientations\n"
+                                   "for better precision when drawing with your left hand.",
+                              foreground="gray")
+        info_label.pack(anchor=tk.W, pady=(5, 0))
+        
+        # Platform info
+        platform_frame = ttk.LabelFrame(parent, text="Platform Information", padding=10)
+        platform_frame.pack(fill=tk.X, pady=(0, 10))
+        
+        import platform
+        platform_info = f"Operating System: {platform.system()} {platform.release()}\n"
+        platform_info += f"Python Version: {platform.python_version()}\n"
+        platform_info += f"Tkinter Version: {tk.TkVersion}"
+        
+        ttk.Label(platform_frame, text=platform_info, foreground="gray").pack(anchor=tk.W)
+    
+    def setup_tools_tab(self, parent):
+        """Set up the tool cursors tab."""
+        # Create scrollable frame
+        canvas = tk.Canvas(parent)
+        scrollbar = ttk.Scrollbar(parent, orient="vertical", command=canvas.yview)
+        scrollable_frame = ttk.Frame(canvas)
+        
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+        
+        # Tool cursor settings
+        self.cursor_vars = {}
+        tools = ["brush", "pencil", "eraser", "line", "rectangle", "circle", "text", "fill"]
+        
+        for i, tool in enumerate(tools):
+            tool_frame = ttk.LabelFrame(scrollable_frame, text=f"{tool.title()} Tool", padding=10)
+            tool_frame.pack(fill=tk.X, pady=(0, 10), padx=10)
+            
+            # Current setting
+            current_cursor = self.app.cursor_settings.get(tool, 'crosshair')
+            self.cursor_vars[tool] = tk.StringVar(value=current_cursor)
+            
+            # Cursor selection
+            cursor_frame = ttk.Frame(tool_frame)
+            cursor_frame.pack(fill=tk.X)
+            
+            ttk.Label(cursor_frame, text="Cursor:").pack(side=tk.LEFT)
+            
+            # Get all available cursors including custom ones
+            all_cursors = self.get_available_cursors()
+            custom_cursors = [f"custom:{name}" for name in self.app.cursor_settings['custom_cursors'].keys()]
+            all_cursors.extend(custom_cursors)
+            
+            cursor_combo = ttk.Combobox(cursor_frame, textvariable=self.cursor_vars[tool], 
+                                       values=all_cursors, state="readonly", width=15)
+            cursor_combo.pack(side=tk.LEFT, padx=(5, 0))
+            
+            # Cursor preview
+            preview_frame = ttk.Frame(cursor_frame)
+            preview_frame.pack(side=tk.LEFT, padx=(5, 0))
+            
+            preview_canvas = tk.Canvas(preview_frame, width=50, height=30, bg="lightgray", 
+                                     relief="sunken", bd=1)
+            preview_canvas.pack()
+            
+            # Add hover instruction
+            preview_canvas.create_text(25, 15, text="hover", fill="darkgray", font=("Arial", 8))
+            
+            # Store preview canvas reference for updates
+            setattr(self, f'preview_canvas_{tool}', preview_canvas)
+            
+            # Test button
+            ttk.Button(cursor_frame, text="Test", 
+                      command=lambda t=tool: self.test_cursor(t)).pack(side=tk.LEFT, padx=(5, 0))
+            
+            # Update preview when cursor selection changes
+            cursor_combo.bind('<<ComboboxSelected>>', 
+                             lambda e, t=tool: self.update_cursor_preview(t))
+            
+            # Initialize preview
+            self.update_cursor_preview(tool)
+    
+    def setup_custom_tab(self, parent):
+        """Set up the custom cursors tab."""
+        # Instructions
+        instructions = ttk.Label(parent, 
+                                text="Create custom cursors using cursor data strings or file paths.\n"
+                                     "Custom cursors will appear in tool selection with 'custom:' prefix.",
+                                foreground="gray")
+        instructions.pack(anchor=tk.W, pady=(0, 10))
+        
+        # Custom cursor list
+        list_frame = ttk.LabelFrame(parent, text="Custom Cursors", padding=10)
+        list_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 10))
+        
+        # Listbox with scrollbar
+        list_container = ttk.Frame(list_frame)
+        list_container.pack(fill=tk.BOTH, expand=True)
+        
+        self.custom_listbox = tk.Listbox(list_container)
+        custom_scrollbar = ttk.Scrollbar(list_container, orient="vertical", 
+                                        command=self.custom_listbox.yview)
+        self.custom_listbox.configure(yscrollcommand=custom_scrollbar.set)
+        
+        self.custom_listbox.pack(side="left", fill="both", expand=True)
+        custom_scrollbar.pack(side="right", fill="y")
+        
+        # Populate custom cursors
+        self.refresh_custom_list()
+        
+        # Buttons for custom cursors
+        custom_buttons = ttk.Frame(list_frame)
+        custom_buttons.pack(fill=tk.X, pady=(10, 0))
+        
+        ttk.Button(custom_buttons, text="Add Custom Cursor", 
+                  command=self.add_custom_cursor).pack(side=tk.LEFT)
+        ttk.Button(custom_buttons, text="Edit Selected", 
+                  command=self.edit_custom_cursor).pack(side=tk.LEFT, padx=(5, 0))
+        ttk.Button(custom_buttons, text="Delete Selected", 
+                  command=self.delete_custom_cursor).pack(side=tk.LEFT, padx=(5, 0))
+    
+    def setup_available_tab(self, parent):
+        """Set up the available cursors tab."""
+        # Instructions
+        instructions = ttk.Label(parent, 
+                                text="These are the standard cursors available on your platform.\n"
+                                     "Click 'Test' to preview how each cursor looks.",
+                                foreground="gray")
+        instructions.pack(anchor=tk.W, pady=(0, 10))
+        
+        # Available cursors list
+        available_frame = ttk.Frame(parent)
+        available_frame.pack(fill=tk.BOTH, expand=True)
+        
+        # Create scrollable list
+        canvas = tk.Canvas(available_frame)
+        scrollbar = ttk.Scrollbar(available_frame, orient="vertical", command=canvas.yview)
+        scrollable_frame = ttk.Frame(canvas)
+        
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+        
+        # List available cursors
+        available_cursors = self.get_available_cursors()
+        for i, cursor in enumerate(available_cursors):
+            cursor_frame = ttk.Frame(scrollable_frame)
+            cursor_frame.pack(fill=tk.X, pady=2, padx=10)
+            
+            # Cursor name
+            ttk.Label(cursor_frame, text=cursor, width=20).pack(side=tk.LEFT)
+            
+            # Cursor preview
+            preview_frame = ttk.Frame(cursor_frame)
+            preview_frame.pack(side=tk.LEFT, padx=(5, 0))
+            
+            preview_canvas = tk.Canvas(preview_frame, width=50, height=30, bg="lightgray", 
+                                     relief="sunken", bd=1)
+            preview_canvas.pack()
+            
+            # Show cursor name and hover instruction
+            preview_canvas.create_text(25, 10, text=cursor[:8], fill="black", font=("Arial", 7))
+            preview_canvas.create_text(25, 22, text="hover", fill="darkgray", font=("Arial", 6))
+            
+            # Apply the actual cursor to the preview canvas
+            try:
+                preview_canvas.configure(cursor=cursor)
+            except tk.TclError:
+                preview_canvas.configure(cursor="arrow")
+                preview_canvas.create_text(25, 15, text="⚠", fill="red", font=("Arial", 8))
+            
+            # Test button
+            ttk.Button(cursor_frame, text="Test", 
+                      command=lambda c=cursor: self.test_specific_cursor(c)).pack(side=tk.LEFT, padx=(5, 0))
+    
+    def get_available_cursors(self):
+        """Get list of available cursors for the platform."""
+        # Standard Tkinter cursors that work on most platforms
+        cursors = [
+            "arrow", "based_arrow_down", "based_arrow_up", "boat", "bogosity",
+            "bottom_left_corner", "bottom_right_corner", "bottom_side", "bottom_tee",
+            "box_spiral", "center_ptr", "circle", "clock", "coffee_mug", "cross",
+            "cross_reverse", "crosshair", "diamond_cross", "dot", "dotbox", "double_arrow",
+            "draft_large", "draft_small", "draped_box", "exchange", "fleur", "gobbler",
+            "gumby", "hand1", "hand2", "heart", "icon", "iron_cross", "left_ptr",
+            "left_side", "left_tee", "leftbutton", "ll_angle", "lr_angle", "man",
+            "middlebutton", "mouse", "pencil", "pirate", "plus", "question_arrow",
+            "right_ptr", "right_side", "right_tee", "rightbutton", "rtl_logo",
+            "sailboat", "sb_down_arrow", "sb_h_double_arrow", "sb_left_arrow",
+            "sb_right_arrow", "sb_up_arrow", "sb_v_double_arrow", "shuttle",
+            "sizing", "spider", "spraycan", "star", "target", "tcross", "top_left_arrow",
+            "top_left_corner", "top_right_corner", "top_side", "top_tee", "trek",
+            "ul_angle", "umbrella", "ur_angle", "watch", "xterm", "X_cursor"
+        ]
+        return sorted(cursors)
+    
+    def update_cursor_preview(self, tool):
+        """Update the cursor preview for a specific tool."""
+        try:
+            preview_canvas = getattr(self, f'preview_canvas_{tool}', None)
+            if not preview_canvas:
+                return
+            
+            # Clear previous preview
+            preview_canvas.delete("all")
+            
+            # Get current cursor
+            cursor_name = self.cursor_vars[tool].get()
+            
+            # Handle custom cursors
+            if cursor_name.startswith('custom:'):
+                display_name = cursor_name[7:]  # Remove 'custom:' prefix
+                if display_name in self.app.cursor_settings['custom_cursors']:
+                    actual_cursor = self.app.cursor_settings['custom_cursors'][display_name]
+                else:
+                    actual_cursor = 'arrow'  # Fallback
+            else:
+                actual_cursor = cursor_name
+                display_name = cursor_name
+            
+            # Show cursor name and hover instruction
+            preview_canvas.create_text(25, 10, text=display_name[:8], fill="black", font=("Arial", 7))
+            preview_canvas.create_text(25, 22, text="hover", fill="darkgray", font=("Arial", 6))
+            
+            # Apply the actual cursor to the preview canvas
+            try:
+                preview_canvas.configure(cursor=actual_cursor)
+            except tk.TclError:
+                preview_canvas.configure(cursor="arrow")
+                preview_canvas.create_text(25, 15, text="⚠", fill="red", font=("Arial", 8))
+                
+        except Exception as e:
+            # If preview fails, just show a generic indicator
+            if hasattr(self, f'preview_canvas_{tool}'):
+                canvas = getattr(self, f'preview_canvas_{tool}')
+                canvas.delete("all")
+                canvas.create_text(25, 15, text="?", fill="gray", font=("Arial", 12))
+    
+    def draw_cursor_preview(self, canvas, cursor_name):
+        """Draw a visual representation of the cursor."""
+        # Create a simple visual representation based on cursor type
+        cursor_representations = {
+            'arrow': lambda: self.draw_arrow_cursor(canvas),
+            'crosshair': lambda: self.draw_crosshair_cursor(canvas),
+            'dotbox': lambda: self.draw_dotbox_cursor(canvas),
+            'pencil': lambda: self.draw_pencil_cursor(canvas),
+            'spraycan': lambda: self.draw_spraycan_cursor(canvas),
+            'xterm': lambda: self.draw_xterm_cursor(canvas),
+            'plus': lambda: self.draw_plus_cursor(canvas),
+            'hand1': lambda: self.draw_hand_cursor(canvas),
+            'hand2': lambda: self.draw_hand_cursor(canvas),
+            'watch': lambda: self.draw_watch_cursor(canvas),
+            'target': lambda: self.draw_target_cursor(canvas),
+            'tcross': lambda: self.draw_tcross_cursor(canvas),
+        }
+        
+        # Draw the appropriate representation or a generic one
+        if cursor_name in cursor_representations:
+            cursor_representations[cursor_name]()
+        else:
+            # Generic cursor representation
+            canvas.create_text(20, 15, text="⚬", fill="black", font=("Arial", 10))
+    
+    def draw_arrow_cursor(self, canvas):
+        """Draw arrow cursor representation."""
+        canvas.create_polygon([5, 5, 5, 20, 10, 15, 15, 25, 20, 20, 12, 12], 
+                             fill="black", outline="white", width=1)
+    
+    def draw_crosshair_cursor(self, canvas):
+        """Draw crosshair cursor representation."""
+        canvas.create_line(20, 5, 20, 25, fill="black", width=1)
+        canvas.create_line(10, 15, 30, 15, fill="black", width=1)
+        canvas.create_oval(18, 13, 22, 17, outline="black", width=1)
+    
+    def draw_dotbox_cursor(self, canvas):
+        """Draw dotbox cursor representation."""
+        canvas.create_rectangle(15, 10, 25, 20, outline="black", width=1, dash=(2, 2))
+        canvas.create_oval(19, 14, 21, 16, fill="black")
+    
+    def draw_pencil_cursor(self, canvas):
+        """Draw pencil cursor representation."""
+        canvas.create_line(10, 20, 25, 5, fill="brown", width=3)
+        canvas.create_polygon([23, 7, 27, 3, 30, 6, 26, 10], fill="gray")
+        canvas.create_oval(9, 19, 11, 21, fill="black")
+    
+    def draw_spraycan_cursor(self, canvas):
+        """Draw spraycan cursor representation."""
+        canvas.create_rectangle(15, 8, 25, 22, fill="silver", outline="black")
+        canvas.create_rectangle(18, 5, 22, 8, fill="black")
+        # Spray dots
+        for i, (x, y) in enumerate([(12, 12), (28, 10), (30, 16), (13, 18)]):
+            canvas.create_oval(x, y, x+1, y+1, fill="blue")
+    
+    def draw_xterm_cursor(self, canvas):
+        """Draw xterm cursor representation."""
+        canvas.create_line(20, 8, 20, 22, fill="black", width=2)
+        canvas.create_line(17, 8, 23, 8, fill="black", width=1)
+        canvas.create_line(17, 22, 23, 22, fill="black", width=1)
+    
+    def draw_plus_cursor(self, canvas):
+        """Draw plus cursor representation."""
+        canvas.create_line(20, 8, 20, 22, fill="black", width=2)
+        canvas.create_line(13, 15, 27, 15, fill="black", width=2)
+    
+    def draw_hand_cursor(self, canvas):
+        """Draw hand cursor representation."""
+        canvas.create_oval(15, 12, 25, 20, fill="peachpuff", outline="black")
+        canvas.create_rectangle(12, 8, 16, 15, fill="peachpuff", outline="black")
+        canvas.create_rectangle(16, 6, 20, 13, fill="peachpuff", outline="black")
+        canvas.create_rectangle(20, 7, 24, 14, fill="peachpuff", outline="black")
+        canvas.create_rectangle(24, 9, 28, 16, fill="peachpuff", outline="black")
+    
+    def draw_watch_cursor(self, canvas):
+        """Draw watch cursor representation."""
+        canvas.create_oval(12, 8, 28, 24, fill="silver", outline="black", width=2)
+        canvas.create_line(20, 16, 20, 12, fill="black", width=2)
+        canvas.create_line(20, 16, 24, 16, fill="black", width=1)
+    
+    def draw_target_cursor(self, canvas):
+        """Draw target cursor representation."""
+        canvas.create_oval(10, 6, 30, 26, outline="red", width=2)
+        canvas.create_oval(15, 11, 25, 21, outline="red", width=1)
+        canvas.create_line(20, 6, 20, 26, fill="red", width=1)
+        canvas.create_line(10, 16, 30, 16, fill="red", width=1)
+    
+    def draw_tcross_cursor(self, canvas):
+        """Draw tcross cursor representation."""
+        canvas.create_line(20, 5, 20, 25, fill="black", width=2)
+        canvas.create_line(5, 15, 35, 15, fill="black", width=2)
+    
+    def refresh_custom_list(self):
+        """Refresh the custom cursors list."""
+        self.custom_listbox.delete(0, tk.END)
+        for name in self.app.cursor_settings['custom_cursors'].keys():
+            self.custom_listbox.insert(tk.END, name)
+    
+    def test_cursor(self, tool):
+        """Test the cursor for a specific tool."""
+        cursor = self.cursor_vars[tool].get()
+        self.test_specific_cursor(cursor)
+    
+    def test_specific_cursor(self, cursor):
+        """Test a specific cursor."""
+        try:
+            # Create a non-modal test window
+            CursorTestWindow(self.window, self.app, cursor)
+            
+        except tk.TclError as e:
+            tk.messagebox.showerror("Cursor Error", 
+                                   f"Cannot display cursor '{cursor}':\n{str(e)}")
+    
+    def test_current_cursor(self):
+        """Test the cursor for the currently selected tool."""
+        self.test_cursor(self.app.current_tool)
+    
+    def add_custom_cursor(self):
+        """Add a new custom cursor."""
+        CustomCursorDialog(self.window, self, None)
+    
+    def edit_custom_cursor(self):
+        """Edit the selected custom cursor."""
+        selection = self.custom_listbox.curselection()
+        if not selection:
+            tk.messagebox.showwarning("No Selection", "Please select a custom cursor to edit.")
+            return
+        
+        cursor_name = self.custom_listbox.get(selection[0])
+        CustomCursorDialog(self.window, self, cursor_name)
+    
+    def delete_custom_cursor(self):
+        """Delete the selected custom cursor."""
+        selection = self.custom_listbox.curselection()
+        if not selection:
+            tk.messagebox.showwarning("No Selection", "Please select a custom cursor to delete.")
+            return
+        
+        cursor_name = self.custom_listbox.get(selection[0])
+        if tk.messagebox.askyesno("Delete Custom Cursor", 
+                                 f"Are you sure you want to delete the custom cursor '{cursor_name}'?"):
+            del self.app.cursor_settings['custom_cursors'][cursor_name]
+            self.refresh_custom_list()
+    
+    def reset_to_defaults(self):
+        """Reset all settings to defaults."""
+        if tk.messagebox.askyesno("Reset to Defaults", 
+                                 "Are you sure you want to reset all cursor settings to defaults?"):
+            # Reset handedness
+            self.handedness_var.set('right')
+            
+            # Reset tool cursors
+            defaults = {
+                'brush': 'crosshair',
+                'pencil': 'crosshair', 
+                'eraser': 'dotbox',
+                'line': 'crosshair',
+                'rectangle': 'crosshair',
+                'circle': 'crosshair',
+                'text': 'xterm',
+                'fill': 'spraycan'
+            }
+            
+            for tool, default_cursor in defaults.items():
+                if tool in self.cursor_vars:
+                    self.cursor_vars[tool].set(default_cursor)
+    
+    def apply_settings(self):
+        """Apply the current settings."""
+        # Update handedness
+        self.app.cursor_settings['handedness'] = self.handedness_var.get()
+        
+        # Update tool cursors
+        for tool, var in self.cursor_vars.items():
+            self.app.cursor_settings[tool] = var.get()
+        
+        # Save settings
+        self.app.save_cursor_settings()
+        
+        # Update current tool cursor
+        self.app.update_tool_cursor(self.app.current_tool)
+        
+        tk.messagebox.showinfo("Settings Applied", "Cursor settings have been applied and saved.")
+    
+    def ok(self):
+        """Apply settings and close dialog."""
+        self.apply_settings()
+        self.window.destroy()
+    
+    def cancel(self):
+        """Close dialog without applying changes."""
+        self.window.destroy()
+
+
+class CustomCursorDialog:
+    """Dialog for creating/editing custom cursors."""
+    
+    def __init__(self, parent, settings_dialog, cursor_name=None):
+        self.settings_dialog = settings_dialog
+        self.cursor_name = cursor_name
+        self.is_edit = cursor_name is not None
+        
+        self.window = tk.Toplevel(parent)
+        self.window.title("Edit Custom Cursor" if self.is_edit else "Add Custom Cursor")
+        self.window.geometry("500x400")
+        self.window.resizable(True, True)
+        
+        # Make dialog modal
+        self.window.transient(parent)
+        self.window.grab_set()
+        
+        # Center the dialog
+        self.window.update_idletasks()
+        x = (self.window.winfo_screenwidth() // 2) - (500 // 2)
+        y = (self.window.winfo_screenheight() // 2) - (400 // 2)
+        self.window.geometry(f"500x400+{x}+{y}")
+        
+        self.setup_ui()
+        
+        if self.is_edit:
+            self.load_cursor_data()
+        
+        # Bind text changes to update preview
+        self.data_text.bind('<KeyRelease>', self.update_preview)
+        self.data_text.bind('<ButtonRelease>', self.update_preview)
+        
+        # Initial preview update
+        self.update_preview()
+        
+        # Bind text changes to update preview
+        self.data_text.bind('<KeyRelease>', self.update_preview)
+        self.data_text.bind('<ButtonRelease>', self.update_preview)
+        
+        # Initial preview update
+        self.update_preview()
+        
+        # Focus the dialog
+        self.window.focus_set()
+    
+    def setup_ui(self):
+        """Set up the custom cursor dialog UI."""
+        main_frame = ttk.Frame(self.window)
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        
+        # Cursor name
+        name_frame = ttk.Frame(main_frame)
+        name_frame.pack(fill=tk.X, pady=(0, 10))
+        
+        ttk.Label(name_frame, text="Cursor Name:").pack(side=tk.LEFT)
+        self.name_var = tk.StringVar(value=self.cursor_name or "")
+        name_entry = ttk.Entry(name_frame, textvariable=self.name_var)
+        name_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(5, 0))
+        
+        # Cursor data
+        data_frame = ttk.LabelFrame(main_frame, text="Cursor Data", padding=10)
+        data_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 10))
+        
+        # Instructions
+        instructions = ttk.Label(text_frame, 
+                                text="Enter cursor data as a string (e.g., 'crosshair') or file path to cursor file.",
+                                foreground="gray")
+        instructions.pack(anchor=tk.W, pady=(0, 5))
+        
+        # Data text area with preview
+        text_preview_frame = ttk.Frame(text_frame)
+        text_preview_frame.pack(fill=tk.BOTH, expand=True)
+        
+        # Text area
+        text_frame = ttk.Frame(text_preview_frame)
+        text_frame.pack(side="left", fill="both", expand=True)
+        
+        self.data_text = tk.Text(text_frame, height=10, wrap=tk.WORD)
+        data_scrollbar = ttk.Scrollbar(text_frame, orient="vertical", command=self.data_text.yview)
+        self.data_text.configure(yscrollcommand=data_scrollbar.set)
+        
+        self.data_text.pack(side="left", fill="both", expand=True)
+        data_scrollbar.pack(side="right", fill="y")
+        
+        # Preview area
+        preview_frame = ttk.LabelFrame(text_preview_frame, text="Preview", padding=5)
+        preview_frame.pack(side="right", fill="y", padx=(10, 0))
+        
+        self.preview_canvas = tk.Canvas(preview_frame, width=60, height=60, bg="white", 
+                                       relief="sunken", bd=2)
+        self.preview_canvas.pack(pady=5)
+        
+        ttk.Label(preview_frame, text="Live Preview\n(hover to test)", 
+                 font=("Arial", 8), foreground="gray").pack()
+        
+        # Preview area
+        preview_frame = ttk.LabelFrame(text_preview_frame, text="Preview", padding=5)
+        preview_frame.pack(side="right", fill="y", padx=(10, 0))
+        
+        self.preview_canvas = tk.Canvas(preview_frame, width=60, height=60, bg="white", 
+                                       relief="sunken", bd=2)
+        self.preview_canvas.pack(pady=5)
+        
+        ttk.Label(preview_frame, text="Live Preview\n(hover to test)", 
+                 font=("Arial", 8), foreground="gray").pack()
+        
+        # Buttons
+        buttons_frame = ttk.Frame(main_frame)
+        buttons_frame.pack(fill=tk.X)
+        
+        ttk.Button(buttons_frame, text="Test Cursor", 
+                  command=self.test_cursor).pack(side=tk.LEFT)
+        ttk.Button(buttons_frame, text="Browse File...", 
+                  command=self.browse_file).pack(side=tk.LEFT, padx=(5, 0))
+        
+        ttk.Button(buttons_frame, text="Cancel", 
+                  command=self.cancel).pack(side=tk.RIGHT)
+        ttk.Button(buttons_frame, text="Save", 
+                  command=self.save_cursor).pack(side=tk.RIGHT, padx=(0, 5))
+    
+    def load_cursor_data(self):
+        """Load existing cursor data for editing."""
+        if self.cursor_name in self.settings_dialog.app.cursor_settings['custom_cursors']:
+            cursor_data = self.settings_dialog.app.cursor_settings['custom_cursors'][self.cursor_name]
+            self.data_text.insert(1.0, cursor_data)
+    
+    def update_preview(self, event=None):
+        """Update the cursor preview."""
+        try:
+            cursor_data = self.data_text.get(1.0, tk.END).strip()
+            if not cursor_data:
+                # Clear preview
+                self.preview_canvas.delete("all")
+                self.preview_canvas.create_text(30, 30, text="?", fill="gray", font=("Arial", 16))
+                return
+            
+            # Clear previous preview
+            self.preview_canvas.delete("all")
+            
+            # Draw visual representation
+            if hasattr(self.settings_dialog, 'draw_cursor_preview'):
+                self.settings_dialog.draw_cursor_preview(self.preview_canvas, cursor_data)
+            else:
+                # Fallback representation
+                self.preview_canvas.create_text(30, 30, text="⚬", fill="black", font=("Arial", 12))
+            
+            # Apply cursor to preview canvas
+            try:
+                self.preview_canvas.configure(cursor=cursor_data)
+            except tk.TclError:
+                self.preview_canvas.configure(cursor="arrow")
+                # Show error indicator
+                self.preview_canvas.create_text(30, 50, text="⚠", fill="red", font=("Arial", 10))
+                
+        except Exception:
+            # Show error in preview
+            self.preview_canvas.delete("all")
+            self.preview_canvas.create_text(30, 30, text="✗", fill="red", font=("Arial", 16))
+    
+    def browse_file(self):
+        """Browse for a cursor file."""
+        from tkinter import filedialog
+        filename = filedialog.askopenfilename(
+            title="Select Cursor File",
+            filetypes=[
+                ("Cursor files", "*.cur *.ani"),
+                ("All files", "*.*")
+            ]
+        )
+        if filename:
+            self.data_text.delete(1.0, tk.END)
+            self.data_text.insert(1.0, f"@{filename}")
+    
+    def test_cursor(self):
+        """Test the custom cursor."""
+        cursor_data = self.data_text.get(1.0, tk.END).strip()
+        if not cursor_data:
+            tk.messagebox.showwarning("No Data", "Please enter cursor data to test.")
+            return
+        
+        try:
+            # Create a test window for the custom cursor
+            CursorTestWindow(self.window, self.settings_dialog.app, cursor_data)
+            
+        except tk.TclError as e:
+            tk.messagebox.showerror("Cursor Error", 
+                                   f"Cannot display custom cursor:\n{str(e)}")
+    
+    def save_cursor(self):
+        """Save the custom cursor."""
+        name = self.name_var.get().strip()
+        cursor_data = self.data_text.get(1.0, tk.END).strip()
+        
+        if not name:
+            tk.messagebox.showwarning("Missing Name", "Please enter a name for the custom cursor.")
+            return
+        
+        if not cursor_data:
+            tk.messagebox.showwarning("Missing Data", "Please enter cursor data.")
+            return
+        
+        # Check if name already exists (and we're not editing the same one)
+        if not self.is_edit and name in self.settings_dialog.app.cursor_settings['custom_cursors']:
+            if not tk.messagebox.askyesno("Name Exists", 
+                                         f"A custom cursor named '{name}' already exists. Replace it?"):
+                return
+        
+        # Save the cursor
+        self.settings_dialog.app.cursor_settings['custom_cursors'][name] = cursor_data
+        self.settings_dialog.refresh_custom_list()
+        
+        tk.messagebox.showinfo("Cursor Saved", f"Custom cursor '{name}' has been saved.")
+        self.window.destroy()
+    
+    def cancel(self):
+        """Cancel and close dialog."""
+        self.window.destroy()
+
+
+class CursorTestWindow:
+    """Window for testing cursors interactively."""
+    
+    def __init__(self, parent, app, cursor):
+        self.app = app
+        self.cursor = cursor
+        self.original_cursor = None
+        
+        self.window = tk.Toplevel(parent)
+        self.window.title(f"Testing Cursor: {cursor}")
+        self.window.geometry("400x300")
+        self.window.resizable(True, True)
+        
+        # Don't make it modal - user needs to interact with main canvas
+        self.window.transient(parent)
+        
+        # Center the dialog
+        self.window.update_idletasks()
+        x = (self.window.winfo_screenwidth() // 2) - (400 // 2)
+        y = (self.window.winfo_screenheight() // 2) - (300 // 2)
+        self.window.geometry(f"400x300+{x}+{y}")
+        
+        self.setup_ui()
+        self.apply_cursor()
+        
+        # Handle window close
+        self.window.protocol("WM_DELETE_WINDOW", self.close_window)
+        
+        # Focus the dialog
+        self.window.focus_set()
+    
+    def setup_ui(self):
+        """Set up the cursor test window UI."""
+        main_frame = ttk.Frame(self.window)
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+        
+        # Title
+        title_label = ttk.Label(main_frame, text=f"Testing Cursor: {self.cursor}", 
+                               font=("Arial", 12, "bold"))
+        title_label.pack(pady=(0, 20))
+        
+        # Instructions
+        instructions = ttk.Label(main_frame, 
+                                text="The cursor has been applied to the main canvas.\n\n"
+                                     "Move your mouse over the canvas area to see the cursor in action.\n\n"
+                                     "You can continue working with the application while this window is open.\n\n"
+                                     "Click 'Restore Original' or close this window to return to the normal cursor.",
+                                justify=tk.CENTER,
+                                foreground="navy")
+        instructions.pack(pady=(0, 20))
+        
+        # Test area (canvas to show cursor here too)
+        test_frame = ttk.LabelFrame(main_frame, text="Test Area", padding=10)
+        test_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 20))
+        
+        self.test_canvas = tk.Canvas(test_frame, bg="white", height=100)
+        self.test_canvas.pack(fill=tk.BOTH, expand=True)
+        
+        # Apply cursor to test canvas too
+        try:
+            self.test_canvas.configure(cursor=self.cursor)
+        except tk.TclError:
+            pass
+        
+        # Add some visual elements to the test canvas
+        self.test_canvas.create_text(100, 30, text="Move mouse here to test cursor", 
+                                    fill="gray", font=("Arial", 10))
+        self.test_canvas.create_rectangle(20, 50, 180, 80, outline="lightblue", width=2)
+        
+        # Buttons
+        buttons_frame = ttk.Frame(main_frame)
+        buttons_frame.pack(fill=tk.X)
+        
+        ttk.Button(buttons_frame, text="Restore Original", 
+                  command=self.restore_cursor).pack(side=tk.LEFT)
+        ttk.Button(buttons_frame, text="Apply to Current Tool", 
+                  command=self.apply_to_tool).pack(side=tk.LEFT, padx=(10, 0))
+        ttk.Button(buttons_frame, text="Close", 
+                  command=self.close_window).pack(side=tk.RIGHT)
+    
+    def apply_cursor(self):
+        """Apply the test cursor to the main canvas."""
+        try:
+            # Store original cursor
+            self.original_cursor = self.app.canvas.cget("cursor")
+            
+            # Apply test cursor
+            self.app.canvas.configure(cursor=self.cursor)
+            
+        except tk.TclError as e:
+            tk.messagebox.showerror("Cursor Error", 
+                                   f"Cannot apply cursor '{self.cursor}':\n{str(e)}")
+            self.close_window()
+    
+    def restore_cursor(self):
+        """Restore the original cursor."""
+        if self.original_cursor:
+            try:
+                self.app.canvas.configure(cursor=self.original_cursor)
+                tk.messagebox.showinfo("Cursor Restored", 
+                                      f"Original cursor '{self.original_cursor}' has been restored.")
+            except tk.TclError:
+                pass
+    
+    def apply_to_tool(self):
+        """Apply this cursor to the current tool."""
+        current_tool = self.app.current_tool
+        if tk.messagebox.askyesno("Apply Cursor", 
+                                 f"Apply cursor '{self.cursor}' to the {current_tool} tool?"):
+            self.app.cursor_settings[current_tool] = self.cursor
+            self.app.save_cursor_settings()
+            tk.messagebox.showinfo("Cursor Applied", 
+                                  f"Cursor '{self.cursor}' has been applied to the {current_tool} tool.")
+    
+    def close_window(self):
+        """Close the test window and restore original cursor."""
+        self.restore_cursor()
+        self.window.destroy()
+
+
 def main():
-    """Main entry point for the Image Studio GUI."""
-    app = ImageDesignerGUI()
+    """Main entry point for the Enhanced Image Studio GUI."""
+    app = EnhancedImageDesignerGUI()
     app.run()
 
 

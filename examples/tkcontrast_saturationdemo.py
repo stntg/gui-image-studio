@@ -1,10 +1,10 @@
 import tkinter as tk
-import image_loader
+import gui_image_studio
 
 root = tk.Tk()
 
 # Retrieve an image with increased contrast (1.5) and boosted saturation (1.3)
-tk_image = image_loader.get_image(
+tk_image = gui_image_studio.get_image(
     "icon.png", 
     framework="tkinter", 
     size=(64, 64), 

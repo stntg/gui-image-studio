@@ -1,11 +1,10 @@
 name: CI
-# Updated to trigger workflow
 
 on:
   push:
     branches: [ main, develop ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, develop ]
 
 permissions:
   contents: read
@@ -13,128 +12,126 @@ permissions:
 jobs:
   test:
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 20  # Add job timeout
+    timeout-minutes: 30
     strategy:
-      fail-fast: false  # Don't cancel other jobs if one fails
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ['3.9', '3.11', '3.12']
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
 
     steps:
     - uses: actions/checkout@v4
-    
-    - name: System information
-      run: |
-        echo "Runner OS: ${{ runner.os }}"
-        echo "Python version: ${{ matrix.python-version }}"
-        echo "Architecture: $(uname -m 2>/dev/null || echo 'N/A')"
-        echo "Available memory: $(free -h 2>/dev/null || echo 'N/A')"
-      shell: bash
-    
+
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
-    
+
+    - name: Install system dependencies (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y xvfb
+
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
     - name: Install dependencies
-      timeout-minutes: 10
       run: |
         python -m pip install --upgrade pip
-        pip install -e .[dev] --timeout 300
+        pip install -e .[dev,test]
     
-    - name: Run pytest tests
-      timeout-minutes: 5
+    - name: Lint with flake8
       run: |
-        python -m pytest tests/test_basic_pytest.py -v --tb=short
-      env:
-        PYTHONIOENCODING: utf-8
-        CI: true
-    
-    - name: Run legacy tests
-      timeout-minutes: 5
+        flake8 src/gui_image_studio tests --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 src/gui_image_studio tests --count --exit-zero --max-complexity=10 --max-line-length=88 --statistics
+
+    - name: Type check with mypy
       run: |
-        # Run the existing test files (if they exist and are executable)
-        echo "Running legacy tests..."
-        for test_file in tests/test_package.py tests/test_embedded.py tests/test_gif_animation.py tests/test_tint_visibility.py; do
-          if [ -f "$test_file" ]; then
-            echo "Running $test_file..."
-            python "$test_file" || echo "Warning: $test_file failed"
-          else
-            echo "Skipping $test_file (not found)"
-          fi
-        done
-      shell: bash
-      env:
-        PYTHONIOENCODING: utf-8
-        CI: true
+        mypy src/gui_image_studio
       continue-on-error: true
-    
-    - name: Test package import
+
+    - name: Security check with bandit
       run: |
-        python -c "import gui_image_studio; print('Package version:', gui_image_studio.__version__)"
-    
-    - name: Test CLI functionality
-      timeout-minutes: 3
+        bandit -r src/gui_image_studio/
+      continue-on-error: true
+
+    - name: Test with pytest (Linux with xvfb)
+      if: runner.os == 'Linux'
       run: |
-        mkdir -p test_workspace
-        cd test_workspace
-        python -c "
-        import sys
-        import os
-        sys.path.insert(0, os.path.join('..', 'src'))
-        from gui_image_studio.sample_creator import create_sample_images
-        try:
-            create_sample_images()
-            print('Sample images created successfully')
-        except Exception as e:
-            print(f'Sample creation failed: {e}')
-            sys.exit(1)
-        "
-      shell: bash
-    
-    - name: Cleanup test files
-      timeout-minutes: 2
+        xvfb-run -a pytest --cov=gui_image_studio --cov-report=xml
+
+    - name: Test with pytest (Windows/macOS)
+      if: runner.os != 'Linux'
       run: |
-        echo "Cleaning up test files..."
-        if [[ "$RUNNER_OS" == "Windows" ]]; then
-          powershell -Command "if (Test-Path test_workspace) { Remove-Item -Recurse -Force test_workspace -ErrorAction SilentlyContinue }"
-        else
-          rm -rf test_workspace
-        fi
-        echo "Cleanup completed"
-      shell: bash
-      if: always()
+        pytest --cov=gui_image_studio --cov-report=xml
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
 
   lint:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v4
       with:
-        python-version: '3.9'
-    
-    - name: Install linting tools
-      timeout-minutes: 5
+        python-version: '3.11'
+
+    - name: Install dependencies
       run: |
-        pip install flake8 black isort --timeout 300
-    
-    - name: Run flake8
-      timeout-minutes: 2
-      run: |
-        flake8 src/ --max-line-length=88 --extend-ignore=E203,W503 --exclude=__pycache__,*embedded_images.py
-      continue-on-error: true
-    
+        python -m pip install --upgrade pip
+        pip install -e .[dev]
+
     - name: Check code formatting with black
-      timeout-minutes: 2
       run: |
-        black --check src/ --line-length=88 --exclude=".*embedded_images\.py"
-      continue-on-error: true
-    
-    - name: Check import sorting
-      timeout-minutes: 2
+        black --check .
+
+    - name: Check import sorting with isort
       run: |
-        isort --check-only src/ --profile=black --skip-glob="*embedded_images.py"
-      continue-on-error: true
+        isort --check-only .
+
+    - name: Run safety check
+      run: |
+        safety check
+
+  build:
+    runs-on: ubuntu-latest
+    needs: [test, lint]
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install build dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build twine
+
+    - name: Build package
+      run: |
+        python -m build
+
+    - name: Check package
+      run: |
+        twine check dist/*
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: dist
+        path: dist/

@@ -24,11 +24,12 @@
 ## 📖 Documentation Overview
 
 ### 🎨 USER_GUIDE.md
-**Complete User Manual** - 12 sections covering everything from installation to advanced features.
+**Complete User Manual** - 12 sections covering everything from installation to
+advanced features.
 
 **Contents:**
 - Installation & Setup
-- Interface Overview  
+- Interface Overview
 - Drawing Tools Guide
 - Image Management
 - Code Generation
@@ -101,7 +102,7 @@ The application includes a comprehensive help system accessible through:
 ## 🎓 Learning Path
 
 ### Beginner Path
-1. **Launch Application**: `python launch_designer.py`
+1. **Launch Application**: `python launch_designer.py` or `gui-image-studio-designer`
 2. **Press F1**: Read the Quick Start Guide
 3. **Create First Image**: Follow the built-in tutorial
 4. **Explore Tools**: Use Help → Drawing Tools Help
@@ -177,7 +178,8 @@ When you need help with:
 - **🐛 Problems** → Built-in Help → Troubleshooting
 - **💡 Best Practices** → Built-in Help → Tips & Tricks
 
-**Remember**: The built-in help system (F1) is always available and provides the most up-to-date information!
+**Remember**: The built-in help system (F1) is always available and provides the
+most up-to-date information!
 
 ---
 

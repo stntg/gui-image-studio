@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Theming Examples - image_loader
+Theming Examples - gui_image_studio
 ===============================
 
-This example demonstrates how to use different themes with image_loader.
+This example demonstrates how to use different themes with gui_image_studio.
 Shows how images can be automatically themed based on filename prefixes.
 """
 
@@ -13,7 +13,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 import tkinter as tk
 from tkinter import ttk
-import image_loader
+import gui_image_studio
 
 class ThemingDemo:
     def __init__(self):
@@ -65,7 +65,7 @@ class ThemingDemo:
         for image_name, description in images_to_load:
             try:
                 # Load image with current theme
-                image = image_loader.get_image(
+                image = gui_image_studio.get_image(
                     image_name,
                     framework="tkinter",
                     size=(64, 64),
@@ -98,7 +98,7 @@ class ThemingDemo:
                 
                 # Try to load default version
                 try:
-                    image = image_loader.get_image(
+                    image = gui_image_studio.get_image(
                         image_name,
                         framework="tkinter",
                         size=(64, 64),
@@ -137,7 +137,7 @@ class ThemingDemo:
         for i, theme in enumerate(themes):
             try:
                 # Try to load icon in each theme
-                image = image_loader.get_image(
+                image = gui_image_studio.get_image(
                     "icon.png",
                     framework="tkinter",
                     size=(48, 48),
@@ -232,7 +232,7 @@ def customtkinter_theming_example():
             for i, (image_name, description) in enumerate(images_to_load):
                 try:
                     # Try to load with specified theme
-                    image = image_loader.get_image(
+                    image = gui_image_studio.get_image(
                         image_name,
                         framework="customtkinter",
                         size=(64, 64),
@@ -258,7 +258,7 @@ def customtkinter_theming_example():
                     
                     # Try fallback to default
                     try:
-                        image = image_loader.get_image(
+                        image = gui_image_studio.get_image(
                             image_name,
                             framework="customtkinter",
                             size=(64, 64),

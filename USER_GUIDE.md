@@ -18,10 +18,12 @@
 
 ## Overview
 
-The **GUI Image Studio** is a comprehensive toolkit for creating, editing, and embedding images in Python GUI applications. It consists of two main components:
+The **GUI Image Studio** is a comprehensive toolkit for creating, editing, and
+embedding images in Python GUI applications. It consists of two main components:
 
 - **🎨 Image Studio**: Interactive image editor with drawing tools
-- **📦 gui-image-studio Package**: Command-line tools and utilities for image embedding
+- **📦 gui-image-studio Package**: Command-line tools and utilities for image
+  embedding
 
 ### Key Features
 - ✨ **Visual Image Editor**: Create and edit images with professional tools
@@ -36,17 +38,21 @@ The **GUI Image Studio** is a comprehensive toolkit for creating, editing, and e
 ## Installation & Setup
 
 ### Prerequisites
-- Python 3.7 or higher
+- Python 3.8 or higher
 - pip package manager
 
 ### Installation
 ```bash
-# Install from the package directory
+# Install from PyPI (when published)
+pip install gui-image-studio
+
+# Or install from source
+git clone https://github.com/stntg/gui-image-studio.git
 cd gui-image-studio
 pip install -e .
 
 # Or install required dependencies manually
-pip install pillow customtkinter
+pip install pillow>=8.0.0 customtkinter>=5.0.0
 ```
 
 ### Launching the Application
@@ -54,11 +60,14 @@ pip install pillow customtkinter
 # Method 1: Direct launch
 python launch_designer.py
 
-# Method 2: Using the package
+# Method 2: Using the package module
 python -m gui_image_studio
 
-# Method 3: Command line tool
-gui-image-studio
+# Method 3: Using the CLI command (after installation)
+gui-image-studio-designer
+
+# Method 4: Programmatically
+python -c "import gui_image_studio; gui_image_studio.launch_designer()"
 ```
 
 ---
@@ -255,14 +264,17 @@ from PIL import Image, ImageTk
 import base64
 from io import BytesIO
 
-def create_photo_image(base64_string):
-    image_data = base64.b64decode(base64_string)
-    pil_image = Image.open(BytesIO(image_data))
-    return ImageTk.PhotoImage(pil_image)
+# Modern usage with gui_image_studio
+import gui_image_studio
 
 # Usage
 root = tk.Tk()
-photo = create_photo_image(embedded_images['default']['icon.png'])
+photo = gui_image_studio.get_image(
+    "icon.png",
+    framework="tkinter",
+    size=(32, 32),
+    theme="default"
+)
 button = tk.Button(root, image=photo, text="My Button")
 button.pack()
 ```
@@ -275,17 +287,18 @@ from PIL import Image
 import base64
 from io import BytesIO
 
-def create_ctk_image(base64_string, size=None):
-    image_data = base64.b64decode(base64_string)
-    pil_image = Image.open(BytesIO(image_data))
-    if size:
-        return ctk.CTkImage(light_image=pil_image, size=size)
-    return ctk.CTkImage(light_image=pil_image)
+# Modern usage with gui_image_studio
+import gui_image_studio
 
 # Usage
 ctk.set_appearance_mode("dark")
 root = ctk.CTk()
-ctk_image = create_ctk_image(embedded_images['default']['icon.png'], size=(32, 32))
+ctk_image = gui_image_studio.get_image(
+    "icon.png",
+    framework="customtkinter",
+    size=(32, 32),
+    theme="dark"
+)
 button = ctk.CTkButton(root, image=ctk_image, text="My Button")
 button.pack()
 ```
@@ -334,7 +347,8 @@ button.pack()
 
 ### Preview Modes
 
-The live preview automatically updates to show how your images will appear in the selected framework and usage type.
+The live preview automatically updates to show how your images will appear in the
+selected framework and usage type.
 
 #### **Button Preview**
 ```
@@ -553,22 +567,29 @@ gui-image-studio-generate --folder images --output embedded.py --quality 85
 
 #### **Loading Images**
 ```python
-from gui_image_studio import load_image_from_base64, create_photo_image
+import gui_image_studio
 
-# Load PIL Image
-pil_image = load_image_from_base64(base64_string)
-
-# Create tkinter PhotoImage
-photo = create_photo_image(base64_string)
+# Load image with transformations
+photo = gui_image_studio.get_image(
+    "my_image.png",
+    framework="tkinter",
+    size=(64, 64),
+    theme="default"
+)
 ```
 
 #### **CustomTkinter Integration**
 ```python
 import customtkinter as ctk
-from gui_image_studio import create_ctk_image
+import gui_image_studio
 
-# Create CTkImage
-ctk_image = create_ctk_image(base64_string, size=(32, 32))
+# Load image with transformations
+ctk_image = gui_image_studio.get_image(
+    "my_image.png",
+    framework="customtkinter",
+    size=(32, 32),
+    theme="dark"
+)
 
 # Use in button
 button = ctk.CTkButton(parent, image=ctk_image, text="Button")
@@ -605,7 +626,9 @@ AUTO_ZOOM_THRESHOLD = 400  # Auto-zoom for images smaller than 400px
 SUPPORTED_FRAMEWORKS = ["tkinter", "customtkinter"]
 
 # Usage types
-USAGE_TYPES = ["general", "buttons", "icons", "backgrounds", "sprites", "ui_elements"]
+USAGE_TYPES = [
+    "general", "buttons", "icons", "backgrounds", "sprites", "ui_elements"
+]
 
 # Quality range
 QUALITY_RANGE = (1, 100)
@@ -633,4 +656,5 @@ This project is open source. Check the LICENSE file for details.
 
 **Happy Creating! 🎨**
 
-*The GUI Image Studio team hopes this tool helps you create amazing graphics for your Python applications!*
+*The GUI Image Studio team hopes this tool helps you create amazing graphics for
+your Python applications!*

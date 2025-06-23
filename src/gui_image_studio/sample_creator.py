@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Script to create sample images for comprehensive image_loader examples.
+Script to create sample images for comprehensive gui_image_studio examples.
 This creates various types of images including static icons, animated GIFs, and
 themed variants.
 """
@@ -20,7 +20,7 @@ except ImportError:
 
 
 def create_sample_images():
-    """Create a variety of sample images for testing image_loader functionality."""
+    """Create a variety of sample images for testing gui_image_studio functionality."""
 
     # Create images directory
     images_dir = "sample_images"

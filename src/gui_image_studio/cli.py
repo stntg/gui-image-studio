@@ -6,6 +6,7 @@ Command-line interface for gui_image_studio package.
 import argparse
 import sys
 
+from . import __version__
 from .generator import embed_images_from_folder
 from .sample_creator import create_sample_images as _create_sample_images
 
@@ -35,7 +36,7 @@ def generate_embedded_images():
         default=85,
         help="Compression quality 1-100 (default: 85)",
     )
-    parser.add_argument("--version", action="version", version="%(prog)s 1.0.0")
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
 
     args = parser.parse_args()
 
@@ -64,7 +65,7 @@ def create_sample_images():
         default="sample_images",
         help="Output directory for sample images (default: sample_images)",
     )
-    parser.add_argument("--version", action="version", version="%(prog)s 1.0.0")
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
 
     args = parser.parse_args()
 
@@ -94,7 +95,7 @@ def launch_designer():
         description="Launch the GUI Image Studio",
         prog="gui-image-studio-designer",
     )
-    parser.add_argument("--version", action="version", version="%(prog)s 1.0.0")
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
 
     args = parser.parse_args()
 

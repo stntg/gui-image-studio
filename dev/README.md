@@ -10,7 +10,7 @@ setups, and changes made to the project.
 These are created automatically by `dev_tools.py` when you use development commands:
 
 - **FEATURE** - Created when starting new feature branches
-- **RELEASE** - Created when starting release processes  
+- **RELEASE** - Created when starting release processes
 - **TEST** - Created when running local package tests
 
 ### Manual Summaries
@@ -80,7 +80,7 @@ dir dev\SUMMARY_* /O-D
 # Find all feature summaries
 ls dev/SUMMARY_FEATURE_*
 
-# Find all release summaries  
+# Find all release summaries
 ls dev/SUMMARY_RELEASE_*
 ```
 

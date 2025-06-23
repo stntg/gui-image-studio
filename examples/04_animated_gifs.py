@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Animated GIF Examples - image_loader
+Animated GIF Examples - gui_image_studio
 ====================================
 
-This example demonstrates how to work with animated GIFs using image_loader.
+This example demonstrates how to work with animated GIFs using gui_image_studio.
 Shows different animation techniques and controls.
 """
 
@@ -13,7 +13,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 import tkinter as tk
 from tkinter import ttk
-import image_loader
+import gui_image_studio
 
 class AnimatedGifDemo:
     def __init__(self):
@@ -129,7 +129,7 @@ class AnimatedGifDemo:
         """Load all animation data."""
         try:
             # Basic animation
-            self.animations["basic"] = image_loader.get_image(
+            self.animations["basic"] = gui_image_studio.get_image(
                 "animation.gif",
                 framework="tkinter",
                 size=(64, 64),
@@ -147,7 +147,7 @@ class AnimatedGifDemo:
             ]
             
             for name, config in transform_configs:
-                self.animations[f"transform_{name}"] = image_loader.get_image(
+                self.animations[f"transform_{name}"] = gui_image_studio.get_image(
                     "animation.gif",
                     framework="tkinter",
                     size=(48, 48),
@@ -158,7 +158,7 @@ class AnimatedGifDemo:
                 )
             
             # Speed control animation
-            self.animations["speed"] = image_loader.get_image(
+            self.animations["speed"] = gui_image_studio.get_image(
                 "animation.gif",
                 framework="tkinter",
                 size=(64, 64),
@@ -319,7 +319,7 @@ def customtkinter_animation_example():
         
         # Load animated GIF
         try:
-            anim_data = image_loader.get_image(
+            anim_data = gui_image_studio.get_image(
                 "animation.gif",
                 framework="customtkinter",
                 size=(80, 80),

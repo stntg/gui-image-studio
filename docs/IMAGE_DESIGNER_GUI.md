@@ -9,7 +9,8 @@ applications.
 ### Visual Design Tools
 
 - **Drawing Tools**: Brush, eraser, line, rectangle, circle, text, and fill tools
-- **Customizable Properties**: Adjustable brush size, color picker, and tool-specific settings
+- **Customizable Properties**: Adjustable brush size, color picker, and
+  tool-specific settings
 - **Real-time Canvas**: Interactive drawing canvas with zoom controls
 - **Multiple Images**: Manage multiple images in a single project
 
@@ -45,20 +46,20 @@ applications.
    python launch_designer.py
    ```
 
-2. **Using the CLI**:
+2. **Using the package module**:
    ```bash
-   python -m gui_image_studio.cli designer
+   python -m gui_image_studio
    ```
 
-3. **Using the package function**:
+3. **Using the CLI command** (after installation):
+   ```bash
+   gui-image-studio-designer
+   ```
+
+4. **Using the package function**:
    ```python
    import gui_image_studio
    gui_image_studio.launch_designer()
-   ```
-
-4. **If installed via pip**:
-   ```bash
-   gui-image-studio-designer
    ```
 
 ### Interface Overview

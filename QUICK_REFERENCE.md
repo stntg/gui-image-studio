@@ -64,7 +64,7 @@
 
 ## Multi-Theme Organization
 - **Naming**: `theme_imagename.png`
-- **Examples**: 
+- **Examples**:
   - `dark_icon.png` → Theme: "dark"
   - `light_button.png` → Theme: "light"
   - `game_sprite.png` → Theme: "game"
@@ -80,23 +80,36 @@
 
 ## Integration Template
 ```python
-# Basic integration template
+# Modern integration template
+import gui_image_studio
 import tkinter as tk
-from PIL import Image, ImageTk
-import base64
-from io import BytesIO
 
-def load_image(base64_string):
-    image_data = base64.b64decode(base64_string)
-    pil_image = Image.open(BytesIO(image_data))
-    return ImageTk.PhotoImage(pil_image)
-
-# Use your embedded images
+# Load image with transformations
 root = tk.Tk()
-photo = load_image(embedded_images['theme']['image.png'])
+photo = gui_image_studio.get_image(
+    "my_image.png",
+    framework="tkinter",
+    size=(64, 64),
+    theme="default"
+)
 button = tk.Button(root, image=photo, text="My Button")
 button.pack()
 root.mainloop()
+```
+
+## Command Line Tools
+```bash
+# Launch GUI Image Studio
+gui-image-studio-designer
+# Or alternatively:
+python -m gui_image_studio
+
+# Create sample images
+gui-image-studio-create-samples
+
+# Generate embedded images from folder
+gui-image-studio-generate --folder images/ --output embedded_images.py \
+  --quality 85
 ```
 
 ## Pro Tips

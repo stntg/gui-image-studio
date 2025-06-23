@@ -106,7 +106,10 @@ base64-encoded images that work across multiple frameworks and use cases.
 
 ### Step 1: Create Your Images
 
-1. Launch GUI Image Studio
+1. Launch GUI Image Studio:
+   - `python launch_designer.py`
+   - `python -m gui_image_studio`
+   - `gui-image-studio-designer` (after installation)
 2. Click "Create Your First Image!" or "Load an Existing Image"
 3. Use the drawing tools to create your graphics:
    - **Brush**: Freehand drawing
@@ -192,11 +195,24 @@ base64-encoded images that work across multiple frameworks and use cases.
 ### Simple Icon App (Tkinter)
 
 ```python
+import gui_image_studio
+import tkinter as tk
+
+root = tk.Tk()
+
 # Create a toolbar with custom icons
 toolbar = tk.Frame(root)
-for icon_name, icon_data in embedded_images['icons'].items():
-    btn = create_icon_button(toolbar, icon_data, icon_name)
-    btn.pack(side=tk.LEFT)
+icon_names = ["save", "open", "close"]
+for icon_name in icon_names:
+    icon = gui_image_studio.get_image(
+        f"{icon_name}.png",
+        framework="tkinter",
+        size=(24, 24),
+        theme="default"
+    )
+    btn = tk.Button(toolbar, image=icon, text=icon_name.title())
+    btn.pack(side=tk.LEFT, padx=2)
+toolbar.pack()
 ```
 
 ### Modern Button App (CustomTkinter)
@@ -208,8 +224,14 @@ import customtkinter as ctk
 ctk.set_appearance_mode("dark")
 root = ctk.CTk()
 
-for icon_name, icon_data in embedded_images['icons'].items():
-    ctk_image = create_ctk_image(icon_data, size=(24, 24))
+icon_names = ["save", "open", "close", "settings"]
+for icon_name in icon_names:
+    ctk_image = gui_image_studio.get_image(
+        f"{icon_name}.png",
+        framework="customtkinter",
+        size=(24, 24),
+        theme="dark"
+    )
     btn = ctk.CTkButton(root, image=ctk_image, text=icon_name)
     btn.pack(pady=5)
 ```
