@@ -21,12 +21,6 @@ Quick links:
 - [💡 Examples](https://stntg.github.io/gui-image-studio/examples/)
 - [🛠️ Installation Guide](https://stntg.github.io/gui-image-studio/installation.html)
 
-Quick links:
-- [🚀 Quick Start Guide](https://yourusername.github.io/gui-image-studio/quickstart.html)
-- [📖 API Reference](https://yourusername.github.io/gui-image-studio/api/)
-- [💡 Examples](https://yourusername.github.io/gui-image-studio/examples/)
-- [🛠️ Installation Guide](https://yourusername.github.io/gui-image-studio/installation.html)
-
 ## Features
 
 - 🎨 **Visual Image Studio GUI** - Create and edit images with drawing tools
