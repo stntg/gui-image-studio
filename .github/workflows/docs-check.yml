@@ -7,6 +7,10 @@ on:
       - 'src/**'
       - '.github/workflows/docs*.yml'
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   docs-check:
     runs-on: ubuntu-latest
