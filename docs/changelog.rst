@@ -10,17 +10,32 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 ------------
 
 **Added**
+- Comprehensive test coverage system with pytest and coverage.py
+- Automated coverage reporting with Codecov and Coveralls integration
+- GitHub Actions workflow for coverage tracking and reporting
+- Coverage badge and detailed coverage documentation
+- PowerShell and Python scripts for cross-platform coverage testing
+- Makefile for streamlined development workflows
+- Enhanced CI/CD pipeline with coverage validation
 - Comprehensive Sphinx documentation system
 - Advanced API reference with autosummary
 - Detailed examples and tutorials
 - User guide with step-by-step instructions
 
 **Changed**
+- Updated GitHub Actions workflows to use latest versions (upload-artifact@v4)
 - Improved documentation structure and organization
 - Enhanced code examples with better error handling
+- Upgraded development tooling and dependency management
+- Streamlined testing and coverage collection processes
 
 **Fixed**
+- Documentation syntax errors in RST code blocks
+- Python code block indentation issues in changelog.rst
+- Incomplete code examples in API documentation (generator.rst, sample_creator.rst)
+- GitHub Actions deprecation warnings for artifact upload actions
 - Documentation cross-references and links
+- Test coverage collection and reporting accuracy
 
 [1.0.0] - 2024-06-22
 ---------------------
