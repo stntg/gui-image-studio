@@ -7,13 +7,14 @@ This example demonstrates how to use different themes with gui_image_studio.
 Shows how images can be automatically themed based on filename prefixes.
 """
 
-import sys
 import os
+import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
 
 import tkinter as tk
 from tkinter import ttk
+
 import gui_image_studio
 
 

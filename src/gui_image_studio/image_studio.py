@@ -6,18 +6,19 @@ Features detachable left and right panels with fixed width.
 FUNCTIONALITY IS IDENTICAL TO THE ORIGINAL - ONLY THE UI LAYOUT USES THREEPANEWINDOWS.
 """
 
-import tkinter as tk
-from tkinter import ttk, filedialog, messagebox, colorchooser, simpledialog
-import os
-import json
-from typing import Dict, List, Optional, Tuple
-from PIL import Image, ImageDraw, ImageFont, ImageTk, ImageFilter, ImageEnhance
 import base64
-from io import BytesIO
+import json
+import os
 import tempfile
+import tkinter as tk
+from io import BytesIO
+from tkinter import colorchooser, filedialog, messagebox, simpledialog, ttk
+from typing import Dict, List, Optional, Tuple
+
+import threepanewindows
+from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageFont, ImageTk
 
 from .generator import embed_images_from_folder
-import threepanewindows
 
 
 class EnhancedImageDesignerGUI:
@@ -3140,7 +3141,7 @@ def create_button_with_image(parent, base64_string, text="", command=None):
     image_data = base64.b64decode(base64_string)
     pil_image = Image.open(BytesIO(image_data))
     photo = ImageTk.PhotoImage(pil_image)
-    
+
     btn = tk.Button(parent, image=photo, text=text, compound=tk.LEFT, command=command)
     btn.image = photo  # Keep reference
     return btn
@@ -3152,7 +3153,7 @@ root.title("Image Buttons")
 for theme, images in embedded_images.items():
     frame = ttk.LabelFrame(root, text=f"{theme.title()} Theme")
     frame.pack(fill=tk.X, padx=10, pady=5)
-    
+
     for name, data in images.items():
         btn = create_button_with_image(frame, data, text=name.replace('.png', ''))
         btn.pack(side=tk.LEFT, padx=5, pady=5)
@@ -3172,7 +3173,7 @@ def create_icon_label(parent, base64_string, size=(32, 32)):
     pil_image = Image.open(BytesIO(image_data))
     pil_image = pil_image.resize(size, Image.Resampling.LANCZOS)
     photo = ImageTk.PhotoImage(pil_image)
-    
+
     label = tk.Label(parent, image=photo, text="")
     label.image = photo
     return label
@@ -3187,10 +3188,10 @@ for theme, images in embedded_images.items():
     for name, data in images.items():
         icon = create_icon_label(root, data, size=(48, 48))
         icon.grid(row=row, column=col, padx=10, pady=10)
-        
+
         # Add label
         tk.Label(root, text=name.replace('.png', '')).grid(row=row+1, column=col)
-        
+
         col += 1
         if col > 4:  # 5 icons per row
             col = 0
@@ -3208,12 +3209,12 @@ def set_background_image(widget, base64_string, size=None):
     """Set background image for a widget."""
     image_data = base64.b64decode(base64_string)
     pil_image = Image.open(BytesIO(image_data))
-    
+
     if size:
         pil_image = pil_image.resize(size, Image.Resampling.LANCZOS)
-    
+
     photo = ImageTk.PhotoImage(pil_image)
-    
+
     if isinstance(widget, tk.Canvas):
         widget.create_image(0, 0, anchor=tk.NW, image=photo)
         widget.image = photo
@@ -3294,7 +3295,7 @@ def create_ctk_button_with_image(parent, base64_string, text="", command=None):
     image_data = base64.b64decode(base64_string)
     pil_image = Image.open(BytesIO(image_data))
     ctk_image = ctk.CTkImage(light_image=pil_image, size=(24, 24))
-    
+
     btn = ctk.CTkButton(parent, image=ctk_image, text=text, command=command)
     return btn
 
@@ -3306,9 +3307,9 @@ root.title("CustomTkinter Image Buttons")
 for theme, images in embedded_images.items():
     frame = ctk.CTkFrame(root)
     frame.pack(fill="x", padx=10, pady=5)
-    
+
     ctk.CTkLabel(frame, text=f"{theme.title()} Theme", font=("Arial", 16, "bold")).pack(pady=5)
-    
+
     for name, data in images.items():
         btn = create_ctk_button_with_image(frame, data, text=name.replace('.png', ''))
         btn.pack(side="left", padx=5, pady=5)
@@ -3328,7 +3329,7 @@ def create_ctk_icon_label(parent, base64_string, size=(32, 32)):
     image_data = base64.b64decode(base64_string)
     pil_image = Image.open(BytesIO(image_data))
     ctk_image = ctk.CTkImage(light_image=pil_image, size=size)
-    
+
     label = ctk.CTkLabel(parent, image=ctk_image, text="")
     return label
 
@@ -3347,10 +3348,10 @@ for theme, images in embedded_images.items():
     for name, data in images.items():
         icon = create_ctk_icon_label(scrollable_frame, data, size=(48, 48))
         icon.grid(row=row, column=col, padx=10, pady=10)
-        
+
         # Add label
         ctk.CTkLabel(scrollable_frame, text=name.replace('.png', '')).grid(row=row+1, column=col)
-        
+
         col += 1
         if col > 4:  # 5 icons per row
             col = 0
@@ -3370,13 +3371,13 @@ def set_ctk_background_image(widget, base64_string, size=None):
     """Set background image for a CustomTkinter widget."""
     image_data = base64.b64decode(base64_string)
     pil_image = Image.open(BytesIO(image_data))
-    
+
     if size:
         pil_image = pil_image.resize(size, Image.Resampling.LANCZOS)
-    
+
     # For CustomTkinter, we can use it as a label background
     ctk_image = ctk.CTkImage(light_image=pil_image, size=pil_image.size)
-    
+
     if hasattr(widget, 'configure'):
         # Create a label with the background image
         bg_label = ctk.CTkLabel(widget, image=ctk_image, text="")
@@ -3393,12 +3394,12 @@ root.geometry("600x400")
 for theme, images in embedded_images.items():
     for name, data in images.items():
         bg_label = set_ctk_background_image(root, data, size=(600, 400))
-        
+
         # Add some content on top
         content_frame = ctk.CTkFrame(root, fg_color="transparent")
         content_frame.place(relx=0.5, rely=0.5, anchor="center")
-        
-        ctk.CTkLabel(content_frame, text="Content over background", 
+
+        ctk.CTkLabel(content_frame, text="Content over background",
                     font=("Arial", 20, "bold")).pack()
         break
     break
@@ -3590,9 +3591,9 @@ class HelpWindow:
     def print_content(self):
         """Print the help content."""
         try:
-            import tempfile
             import os
             import subprocess
+            import tempfile
 
             # Create temporary file
             with tempfile.NamedTemporaryFile(

@@ -100,7 +100,7 @@ Quick Start Examples
 
     # Load an image
     image = gui_image_studio.get_image("input.jpg")
-    
+
     # Save in different format
     gui_image_studio.save_image(image, "output.png")
 
@@ -112,11 +112,11 @@ Quick Start Examples
 
     # Load image
     image = gui_image_studio.get_image("photo.jpg")
-    
+
     # Apply tint and resize
     tinted = gui_image_studio.apply_tint(image, "#FF6B6B")
     resized = gui_image_studio.resize_image(tinted, (800, 600))
-    
+
     # Save result
     gui_image_studio.save_image(resized, "processed.jpg")
 
@@ -129,12 +129,12 @@ Quick Start Examples
     # Create frames
     frames = []
     base_image = gui_image_studio.get_image("base.png")
-    
+
     for i in range(10):
         angle = i * 36  # Rotate by 36 degrees each frame
         rotated = gui_image_studio.rotate_image(base_image, angle)
         frames.append(rotated)
-    
+
     # Create animated GIF
     gui_image_studio.create_animation(frames, "spinning.gif", duration=100)
 
@@ -188,7 +188,7 @@ All examples follow these conventions:
 
     """
     Example: Basic Image Processing
-    
+
     This example demonstrates basic image loading, processing, and saving
     operations using GUI Image Studio.
     """
@@ -196,32 +196,32 @@ All examples follow these conventions:
     import gui_image_studio
     from typing import Optional
 
-    def process_image(input_path: str, output_path: str, 
+    def process_image(input_path: str, output_path: str,
                      tint_color: str = "#FF6B6B") -> Optional[bool]:
         """
         Process an image with tint and resize operations.
-        
+
         Args:
             input_path: Path to input image
             output_path: Path for output image
             tint_color: Hex color for tinting
-            
+
         Returns:
             True if successful, None if failed
         """
         try:
             # Load image
             image = gui_image_studio.get_image(input_path)
-            
+
             # Apply processing
             tinted = gui_image_studio.apply_tint(image, tint_color)
             resized = gui_image_studio.resize_image(tinted, (800, 600))
-            
+
             # Save result
             gui_image_studio.save_image(resized, output_path)
-            
+
             return True
-            
+
         except Exception as e:
             print(f"Error processing image: {e}")
             return None

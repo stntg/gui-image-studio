@@ -7,13 +7,14 @@ This example demonstrates how to work with animated GIFs using gui_image_studio.
 Shows different animation techniques and controls.
 """
 
-import sys
 import os
+import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
 
 import tkinter as tk
 from tkinter import ttk
+
 import gui_image_studio
 
 

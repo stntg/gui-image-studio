@@ -5,12 +5,12 @@ Documentation build script for GUI Image Studio.
 This script provides a convenient way to build and serve documentation locally.
 """
 
-import os
-import sys
-import subprocess
 import argparse
-import webbrowser
+import os
 import shutil
+import subprocess
+import sys
+import webbrowser
 from pathlib import Path
 
 

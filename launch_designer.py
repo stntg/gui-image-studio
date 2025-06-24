@@ -9,8 +9,8 @@ Usage:
     python launch_designer.py
 """
 
-import sys
 import os
+import sys
 
 # Add the src directory to the Python path so we can import gui_image_studio
 script_dir = os.path.dirname(os.path.abspath(__file__))

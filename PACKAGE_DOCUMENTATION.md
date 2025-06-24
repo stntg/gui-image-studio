@@ -341,6 +341,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Version**: 1.0.0  
-**Last Updated**: 2024-12-19  
+**Version**: 1.0.0
+**Last Updated**: 2024-12-19
 **Maintainers**: GUI Image Studio development team

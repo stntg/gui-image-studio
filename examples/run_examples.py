@@ -7,10 +7,10 @@ This script provides an easy way to run all the gui_image_studio examples.
 It checks prerequisites and guides users through the available examples.
 """
 
-import sys
+import importlib.util
 import os
 import subprocess
-import importlib.util
+import sys
 
 # Add src directory to path
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))

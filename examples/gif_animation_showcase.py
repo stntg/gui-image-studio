@@ -12,15 +12,16 @@ Comprehensive demonstration of animated GIF capabilities including:
 - Custom animation controls
 """
 
-import sys
 import os
+import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
 
+import threading
+import time
 import tkinter as tk
 from tkinter import ttk
-import time
-import threading
+
 import gui_image_studio
 
 

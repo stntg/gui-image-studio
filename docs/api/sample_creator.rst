@@ -191,14 +191,14 @@ Icon Samples
     def create_home_icon(size=(32, 32)):
         """Create a simple home icon."""
         from PIL import Image, ImageDraw
-        
+
         image = Image.new('RGBA', size, (0, 0, 0, 0))
         draw = ImageDraw.Draw(image)
-        
+
         # Draw house shape
         width, height = size
         # ... drawing code ...
-        
+
         return image
 
 Photo Samples
@@ -219,13 +219,13 @@ Photo Samples
         """Create a simple landscape photo."""
         from PIL import Image, ImageDraw
         import random
-        
+
         image = Image.new('RGB', size, '#87CEEB')  # Sky blue
         draw = ImageDraw.Draw(image)
-        
+
         # Draw mountains, trees, etc.
         # ... drawing code ...
-        
+
         return image
 
 Gradient Samples
@@ -246,11 +246,11 @@ Gradient Samples
         """Create a linear gradient."""
         from PIL import Image
         import numpy as np
-        
+
         width, height = size
         # Create gradient using numpy
         # ... gradient calculation ...
-        
+
         return Image.fromarray(gradient_array)
 
 Animated Samples
@@ -270,18 +270,18 @@ Animated Samples
     def create_spinning_animation(size=(128, 128), frames=20):
         """Create a spinning square animation."""
         from PIL import Image, ImageDraw
-        
+
         images = []
         for i in range(frames):
             angle = (360 / frames) * i
             image = Image.new('RGBA', size, (255, 255, 255, 0))
             draw = ImageDraw.Draw(image)
-            
+
             # Draw rotated square
             # ... rotation and drawing code ...
-            
+
             images.append(image)
-        
+
         return images
 
 Transparency Samples
@@ -302,10 +302,10 @@ Transparency Samples
         """Create an image with alpha gradient."""
         from PIL import Image
         import numpy as np
-        
+
         # Create RGBA image with alpha gradient
         # ... alpha calculation ...
-        
+
         return Image.fromarray(rgba_array, 'RGBA')
 
 Utility Functions
@@ -385,7 +385,7 @@ Validate that generated samples meet requirements.
         'required_formats': ['png', 'jpg'],
         'min_count': 5
     }
-    
+
     is_valid = validate_samples('sample_images', requirements)
 
 Configuration
@@ -446,12 +446,12 @@ Advanced Usage
             for i in range(count):
                 # Create custom image
                 image = self.create_custom_image()
-                
+
                 # Save with naming convention
                 filename = f"custom_sample_{i+1:03d}.png"
                 output_path = os.path.join(self.output_dir, filename)
                 image.save(output_path)
-        
+
         def create_custom_image(self):
             """Create a custom image."""
             # Custom image creation logic
@@ -463,15 +463,15 @@ Advanced Usage
 
     def generate_test_data():
         """Generate comprehensive test data."""
-        
+
         # Small images for unit tests
         small_creator = SampleCreator("tests/small", size=(64, 64))
         small_creator.create_all_samples()
-        
+
         # Medium images for integration tests
         medium_creator = SampleCreator("tests/medium", size=(256, 256))
         medium_creator.create_all_samples()
-        
+
         # Large images for performance tests
         large_creator = SampleCreator("tests/large", size=(2048, 2048))
         large_creator.create_photo_samples(count=3)
@@ -482,14 +482,14 @@ Advanced Usage
 
     def create_parameterized_samples():
         """Create samples with various parameters."""
-        
+
         creator = SampleCreator("parameterized_samples")
-        
+
         # Different sizes
         for size in [(64, 64), (128, 128), (256, 256)]:
             creator.size = size
             creator.create_icon_samples(count=2)
-        
+
         # Different color schemes
         color_schemes = ['warm', 'cool', 'monochrome', 'vibrant']
         for scheme in color_schemes:
@@ -504,18 +504,18 @@ Advanced Usage
 
     def create_performance_samples():
         """Create samples for performance testing."""
-        
+
         # Memory usage tests
         memory_creator = SampleCreator("performance/memory")
         memory_creator.create_photo_samples(
             count=1,
             size=(8192, 8192)  # Very large image
         )
-        
+
         # Processing speed tests
         speed_creator = SampleCreator("performance/speed")
         speed_creator.create_all_samples(count=100)  # Many small images
-        
+
         # Animation performance tests
         anim_creator = SampleCreator("performance/animation")
         anim_creator.create_animated_samples(
@@ -539,12 +539,12 @@ Integration with Testing
             """Create test samples once for all tests."""
             cls.creator = SampleCreator("test_samples")
             cls.creator.create_all_samples()
-        
+
         def test_image_loading(self):
             """Test loading sample images."""
             # Test with generated samples
             pass
-        
+
         def test_image_processing(self):
             """Test processing sample images."""
             # Test with generated samples
@@ -612,12 +612,12 @@ Error Handling
 
     def safe_create_samples(output_dir, max_size=(1024, 1024)):
         """Safely create samples with validation."""
-        
+
         # Check disk space
         free_space = shutil.disk_usage(output_dir).free
         if free_space < 100 * 1024 * 1024:  # 100MB
             raise RuntimeError("Insufficient disk space")
-        
+
         # Create with size limit
         creator = SampleCreator(output_dir, size=max_size)
         return creator.create_all_samples()
@@ -653,7 +653,7 @@ Performance Considerations
         formats=['png'],  # Single format
         count=1  # Minimal count
     )
-    
+
     # Optimize for comprehensive testing
     creator = SampleCreator(
         size=(512, 512),
@@ -661,7 +661,7 @@ Performance Considerations
         count=5,
         include_animated=True
     )
-    
+
     # Generate optimized samples
     creator.create_all_samples()
 
@@ -671,16 +671,16 @@ Performance Considerations
 
     # For large sample generation
     import gc
-    
+
     def create_large_samples():
         """Create large samples with memory management."""
         creator = SampleCreator("large_samples", size=(2048, 2048))
-        
+
         # Create samples one by one to manage memory
         for i in range(10):
             creator.create_photo_samples(count=1)
             gc.collect()  # Force garbage collection
-        
+
         print("Large samples created successfully")
 
 Summary

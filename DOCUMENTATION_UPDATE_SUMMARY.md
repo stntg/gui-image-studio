@@ -159,7 +159,7 @@ gui-image-studio/
 The documentation is now complete and accurate. Users can:
 
 1. **Install the package**: `pip install -e .`
-2. **Launch the application**: 
+2. **Launch the application**:
    - `gui-image-studio-designer`
    - `python launch_designer.py`
    - `python -m gui_image_studio`

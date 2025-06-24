@@ -7,9 +7,9 @@ including all necessary dependencies, pre-commit hooks, and development tools.
 """
 
 import os
+import shutil
 import subprocess
 import sys
-import shutil
 from pathlib import Path
 
 

@@ -133,10 +133,10 @@ Getting Started Workflow
 
     # Install GUI Image Studio
     pip install gui-image-studio
-    
+
     # Verify installation
     gui-image-studio-designer --version
-    
+
     # Create sample images for testing
     gui-image-studio-create-samples
 
@@ -163,7 +163,7 @@ Getting Started Workflow
 .. code-block:: python
 
     # Create animations
-    frames = [gui_image_studio.rotate_image(image, angle) 
+    frames = [gui_image_studio.rotate_image(image, angle)
               for angle in range(0, 360, 30)]
     gui_image_studio.create_animation(frames, "spinning.gif")
 

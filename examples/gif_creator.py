@@ -7,11 +7,12 @@ Utility to create custom animated GIFs for testing gui_image_studio functionalit
 Creates various types of animations with different patterns and effects.
 """
 
+import math
 import os
 import sys
-import math
-from PIL import Image, ImageDraw, ImageFont
+
 import numpy as np
+from PIL import Image, ImageDraw, ImageFont
 
 
 def create_loading_spinner(filepath, size=(64, 64), frames=12, colors=None):

@@ -206,7 +206,7 @@ Decode a base64 string back to PIL Image.
 .. code-block:: python
 
     from PIL import Image
-    
+
     encoded = encode_image("icon.png")
     image = decode_image(encoded)
     print(f"Decoded image size: {image.size}")
@@ -231,7 +231,7 @@ Compress an image with specified settings.
 .. code-block:: python
 
     from gui_image_studio import get_image
-    
+
     image = get_image("large_photo.jpg")
     compressed = compress_image(image, quality=70, max_size=(800, 600))
 
@@ -299,13 +299,13 @@ The generator creates Python modules with the following structure:
     def get_image(name: str) -> Image.Image:
         """
         Get embedded image by name.
-        
+
         Args:
             name: Name of the image to retrieve
-            
+
         Returns:
             PIL Image object
-            
+
         Raises:
             KeyError: If image name is not found
             ValueError: If image data is corrupted
@@ -313,7 +313,7 @@ The generator creates Python modules with the following structure:
         if name not in IMAGES:
             available = ', '.join(list_images())
             raise KeyError(f"Image '{name}' not found. Available: {available}")
-        
+
         try:
             data = base64.b64decode(IMAGES[name])
             return Image.open(BytesIO(data))
@@ -323,7 +323,7 @@ The generator creates Python modules with the following structure:
     def list_images() -> List[str]:
         """
         List all available embedded images.
-        
+
         Returns:
             List of image names
         """
@@ -332,16 +332,16 @@ The generator creates Python modules with the following structure:
     def get_image_info(name: str) -> Dict[str, any]:
         """
         Get information about an embedded image.
-        
+
         Args:
             name: Name of the image
-            
+
         Returns:
             Dictionary with image information
         """
         if name not in IMAGES:
             raise KeyError(f"Image '{name}' not found")
-        
+
         image = get_image(name)
         return {
             'name': name,
@@ -354,11 +354,11 @@ The generator creates Python modules with the following structure:
     def save_image(name: str, output_path: str) -> bool:
         """
         Save an embedded image to file.
-        
+
         Args:
             name: Name of the embedded image
             output_path: Path where to save the image
-            
+
         Returns:
             True if successful
         """
@@ -377,13 +377,13 @@ Configuration Options
 .. code-block:: python
 
     generator = ImageGenerator("assets")
-    
+
     # Enable compression with quality setting
     generator.set_compression(True, quality=85)
-    
+
     # Set maximum image size
     generator.set_compression(True, max_size=(512, 512))
-    
+
     # Disable compression for lossless embedding
     generator.set_compression(False)
 
@@ -427,17 +427,17 @@ Advanced Usage
 
     def generate_all_resources():
         """Generate resources from multiple folders."""
-        
+
         # Icons
         icon_gen = ImageGenerator("assets/icons", "icons.py", "icons")
         icon_gen.set_compression(True, quality=95, max_size=(64, 64))
         icon_gen.generate()
-        
+
         # Images
         image_gen = ImageGenerator("assets/images", "images.py", "images")
         image_gen.set_compression(True, quality=80, max_size=(512, 512))
         image_gen.generate()
-        
+
         # Backgrounds
         bg_gen = ImageGenerator("assets/backgrounds", "backgrounds.py", "backgrounds")
         bg_gen.set_compression(True, quality=70, max_size=(1024, 768))
@@ -452,14 +452,14 @@ Advanced Usage
     Custom embedded images module
     Generated: {timestamp}
     """
-    
+
     IMAGES = {images_dict}
-    
+
     def get_image(name):
         # Custom implementation
         pass
     '''
-    
+
     generator = ImageGenerator("assets", template=template)
 
 **Progress Tracking:**
@@ -470,11 +470,11 @@ Advanced Usage
         def generate(self):
             images = self.list_images()
             total = len(images)
-            
+
             for i, name in enumerate(images, 1):
                 print(f"Processing {i}/{total}: {name}")
                 # Process image...
-            
+
             return super().generate()
 
 **Integration with Build Systems:**
@@ -525,15 +525,15 @@ Error Handling
 
     # Validate before generation
     generator = ImageGenerator("assets")
-    
+
     # Check input folder exists
     if not os.path.exists(generator.input_folder):
         raise FileNotFoundError(f"Input folder not found: {generator.input_folder}")
-    
+
     # Check for valid images
-    valid_images = [img for img in generator.list_images() 
+    valid_images = [img for img in generator.list_images()
                     if validate_image(os.path.join(generator.input_folder, img))]
-    
+
     if not valid_images:
         raise ValueError("No valid images found in input folder")
 
@@ -564,10 +564,10 @@ Performance Considerations
 
     # Optimize for size
     generator.set_compression(True, quality=60, max_size=(256, 256))
-    
+
     # Optimize for quality
     generator.set_compression(True, quality=95, max_size=(1024, 1024))
-    
+
     # No compression for small images
     import os
     image_files = [os.path.join(generator.input_folder, f) for f in generator.list_images()]

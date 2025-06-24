@@ -14,23 +14,23 @@ permissions:
 jobs:
   docs-check:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-    
+
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.9'
         cache: 'pip'
-    
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r docs/requirements-docs.txt
         pip install -e .
-    
+
     - name: Create sample images
       run: |
         python -c "
@@ -43,13 +43,13 @@ jobs:
             import os
             os.makedirs('sample_images', exist_ok=True)
         "
-    
+
     - name: Build documentation
       run: |
         cd docs
         make clean
         make html
-    
+
     - name: Check for build warnings
       run: |
         cd docs
@@ -59,20 +59,20 @@ jobs:
           echo "❌ Documentation build failed"
           exit 1
         fi
-    
+
     - name: Validate RST files
       run: |
         cd docs
         python -c "
         import os
         import docutils.core
-        
+
         rst_files = []
         for root, dirs, files in os.walk('.'):
             if '_build' in root:
                 continue
             rst_files.extend([os.path.join(root, f) for f in files if f.endswith('.rst')])
-        
+
         errors = 0
         for rst_file in rst_files:
             try:
@@ -82,12 +82,12 @@ jobs:
             except Exception as e:
                 print(f'❌ {rst_file}: {e}')
                 errors += 1
-        
+
         if errors > 0:
             exit(1)
         print(f'✅ All {len(rst_files)} RST files are valid')
         "
-    
+
     - name: Check essential files exist
       run: |
         cd docs/_build/html
@@ -102,14 +102,14 @@ jobs:
           "changelog.html"
           "license.html"
         )
-        
+
         missing_files=()
         for file in "${essential_files[@]}"; do
           if [ ! -f "$file" ]; then
             missing_files+=("$file")
           fi
         done
-        
+
         if [ ${#missing_files[@]} -gt 0 ]; then
           echo "❌ Missing essential files:"
           printf '%s\n' "${missing_files[@]}"
@@ -117,7 +117,7 @@ jobs:
         else
           echo "✅ All essential documentation files are present"
         fi
-    
+
     - name: Quick link check
       run: |
         cd docs
@@ -126,11 +126,11 @@ jobs:
         import os
         import re
         from urllib.parse import urlparse
-        
+
         html_dir = '_build/html'
         internal_links = set()
         broken_links = []
-        
+
         # Find all internal links
         for root, dirs, files in os.walk(html_dir):
             for file in files:
@@ -139,7 +139,7 @@ jobs:
                     try:
                         with open(filepath, 'r', encoding='utf-8') as f:
                             content = f.read()
-                        
+
                         # Find href links
                         links = re.findall(r'href=[\"\'](.*?)[\"\']', content)
                         for link in links:
@@ -149,21 +149,21 @@ jobs:
                                 internal_links.add(link)
                     except Exception:
                         pass
-        
+
         # Check if internal links exist
         for link in internal_links:
             if link.startswith('/'):
                 link = link[1:]  # Remove leading slash
-            
+
             link_path = os.path.join(html_dir, link)
             if not os.path.exists(link_path):
                 # Try with index.html appended
                 if link.endswith('/'):
                     link_path = os.path.join(html_dir, link, 'index.html')
-                
+
                 if not os.path.exists(link_path):
                     broken_links.append(link)
-        
+
         if broken_links:
             print(f'⚠️ Found {len(broken_links)} potentially broken internal links:')
             for link in broken_links[:10]:  # Show first 10
@@ -171,7 +171,7 @@ jobs:
         else:
             print(f'✅ Checked {len(internal_links)} internal links - all appear valid')
         "
-    
+
     - name: Comment on PR
       if: github.event_name == 'pull_request'
       uses: actions/github-script@v6
@@ -179,16 +179,16 @@ jobs:
         script: |
           const fs = require('fs');
           const path = require('path');
-          
+
           // Check if documentation was built successfully
           const buildDir = 'docs/_build/html';
           const indexExists = fs.existsSync(path.join(buildDir, 'index.html'));
-          
+
           let comment = '## 📚 Documentation Check Results\n\n';
-          
+
           if (indexExists) {
             comment += '✅ **Documentation built successfully**\n\n';
-            
+
             // Count generated files
             let fileCount = 0;
             function countFiles(dir) {
@@ -202,27 +202,27 @@ jobs:
                 }
               }
             }
-            
+
             try {
               countFiles(buildDir);
               comment += `📄 Generated ${fileCount} HTML pages\n\n`;
             } catch (e) {
               comment += '📄 Documentation pages generated\n\n';
             }
-            
+
             comment += '### Key sections:\n';
             comment += '- 📖 [API Reference](api/index.html)\n';
             comment += '- 🚀 [Quick Start](quickstart.html)\n';
             comment += '- 💡 [Examples](examples/index.html)\n';
             comment += '- 👥 [User Guide](user_guide/index.html)\n';
             comment += '- 🤝 [Contributing](contributing.html)\n\n';
-            
+
             comment += '> The documentation will be automatically deployed to GitHub Pages when this PR is merged to main.\n';
           } else {
             comment += '❌ **Documentation build failed**\n\n';
             comment += 'Please check the workflow logs for details and fix any issues.\n';
           }
-          
+
           // Post comment
           github.rest.issues.createComment({
             issue_number: context.issue.number,

@@ -14,10 +14,10 @@ Workflow:
 This example shows both tkinter and customtkinter usage.
 """
 
-import sys
 import os
+import sys
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import messagebox, ttk
 
 # Add the src directory to the Python path for development
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
@@ -211,8 +211,9 @@ class ImageDisplayDemo:
                         else:
                             # Fallback: decode base64 manually
                             import base64
-                            from PIL import Image, ImageTk
                             from io import BytesIO
+
+                            from PIL import Image, ImageTk
 
                             image_bytes = base64.b64decode(image_data)
                             pil_image = Image.open(BytesIO(image_bytes))

@@ -7,13 +7,15 @@ This example demonstrates contrast and saturation adjustments using CustomTkinte
 Shows interactive sliders for real-time adjustment of image properties.
 """
 
-import sys
 import os
+import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
 
-import customtkinter as ctk
 import tkinter as tk
+
+import customtkinter as ctk
+
 import gui_image_studio
 
 

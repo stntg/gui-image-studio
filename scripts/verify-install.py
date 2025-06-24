@@ -95,8 +95,9 @@ def test_image_processing():
     """Test basic image processing functionality."""
     print("\nTesting image processing functionality...")
     try:
-        from PIL import Image
         import io
+
+        from PIL import Image
 
         # Create a simple test image
         img = Image.new("RGB", (100, 100), color="red")
@@ -172,13 +173,14 @@ def test_sample_creation():
     """Test sample image creation."""
     print("\nTesting sample creation...")
     try:
-        from gui_image_studio.sample_creator import create_sample_images
+        import os
 
         # Test that the function can be imported and called
         # Note: create_sample_images() creates images in 'sample_images' directory
         # We'll just test that it can be called without errors
         import tempfile
-        import os
+
+        from gui_image_studio.sample_creator import create_sample_images
 
         # Change to temp directory to avoid creating files in project
         original_cwd = os.getcwd()

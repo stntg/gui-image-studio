@@ -68,11 +68,11 @@ Basic Usage
 
     # Load an image
     image = gui_image_studio.get_image("path/to/image.png")
-    
+
     # Apply transformations
     resized = gui_image_studio.resize_image(image, (800, 600))
     tinted = gui_image_studio.apply_tint(resized, "#FF6B6B")
-    
+
     # Save the result
     gui_image_studio.save_image(tinted, "output.png")
 

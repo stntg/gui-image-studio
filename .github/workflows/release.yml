@@ -19,23 +19,23 @@ jobs:
         python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
-    
+
     - name: Install dependencies
       timeout-minutes: 10
       run: |
         python -m pip install --upgrade pip
         pip install -e .[dev] --timeout 300
-    
+
     - name: Create test directory
       run: |
         mkdir -p test_workspace
       shell: bash
-    
+
     - name: Run tests
       timeout-minutes: 5
       run: |
@@ -45,11 +45,11 @@ jobs:
       env:
         PYTHONIOENCODING: utf-8
         CI: true
-    
+
     - name: Verify package version
       run: |
         python -c "import gui_image_studio; print('Release version:', gui_image_studio.__version__)"
-    
+
     - name: Verify version matches tag
       if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.9'
       run: |
@@ -61,7 +61,7 @@ jobs:
           echo "Version mismatch! Package version ($PACKAGE_VERSION) does not match tag ($TAG_VERSION)"
           exit 1
         fi
-    
+
     - name: Cleanup test files
       timeout-minutes: 2
       run: |
@@ -81,28 +81,28 @@ jobs:
     timeout-minutes: 30
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.9'
-    
+
     - name: Install build dependencies
       timeout-minutes: 10
       run: |
         python -m pip install --upgrade pip
         pip install build twine
         pip install -e .[dev]
-    
+
     - name: Build package
       timeout-minutes: 5
       run: |
         python -m build
-    
+
     - name: Check distribution
       run: |
         python -m twine check dist/*
-    
+
     - name: Test installation from built package
       timeout-minutes: 10
       run: |
@@ -120,20 +120,20 @@ jobs:
           deactivate
         fi
       shell: bash
-    
+
     - name: Run security checks
       timeout-minutes: 5
       run: |
         pip install safety bandit
         safety check
         bandit -r src/ -f json || true
-    
+
     - name: Validate package for PyPI
       run: |
         # Perform a dry run to validate the package
         python -m twine check dist/*
         echo "Package validation completed successfully"
-    
+
     - name: Check PyPI token availability
       id: check-token
       env:
@@ -146,7 +146,7 @@ jobs:
           echo "PyPI token available. Proceeding with upload."
           echo "token-available=true" >> $GITHUB_OUTPUT
         fi
-    
+
     - name: Publish to PyPI
       if: steps.check-token.outputs.token-available == 'true'
       env:
@@ -156,7 +156,7 @@ jobs:
         echo "🚀 Publishing package to PyPI..."
         python -m twine upload dist/* --verbose
         echo "✅ Package successfully published to PyPI!"
-    
+
     - name: PyPI upload skipped
       if: steps.check-token.outputs.token-available == 'false'
       run: |
@@ -166,7 +166,7 @@ jobs:
         echo "2. Add a new repository secret named 'PYPI_API_TOKEN'"
         echo "3. Set the value to your PyPI API token"
         echo "4. Re-run this workflow"
-    
+
     - name: Upload release assets
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')

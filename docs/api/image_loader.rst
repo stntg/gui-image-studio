@@ -35,10 +35,10 @@ Load images from various sources including files, embedded resources, and URLs.
 
    # Load from file
    image = get_image("photo.jpg")
-   
+
    # Load embedded resource
    icon = get_image("sample_icon")
-   
+
    # Load with fallback
    image = get_image("might_not_exist.png", fallback_color="#FF0000")
 
@@ -61,10 +61,10 @@ Save images to files in various formats.
 
    # Save as PNG
    save_image(image, "output.png")
-   
+
    # Save as JPEG with specific quality
    save_image(image, "output.jpg", quality=85)
-   
+
    # Save optimized GIF
    save_image(animated_image, "output.gif", optimize=True)
 
@@ -90,7 +90,7 @@ Resize images while maintaining quality.
 
    # Resize to exact dimensions
    resized = resize_image(image, (800, 600))
-   
+
    # Resize maintaining aspect ratio
    resized = resize_image(image, (800, 600), maintain_aspect=True)
 
@@ -113,10 +113,10 @@ Apply color tints to images.
 
    # Apply red tint
    tinted = apply_tint(image, "#FF0000")
-   
+
    # Apply blue tint with custom opacity
    tinted = apply_tint(image, "blue", opacity=0.5)
-   
+
    # Apply tint with overlay blend mode
    tinted = apply_tint(image, "#00FF00", blend_mode="overlay")
 
@@ -139,7 +139,7 @@ Rotate images by specified angles.
 
    # Rotate 90 degrees clockwise
    rotated = rotate_image(image, 90)
-   
+
    # Rotate 45 degrees with white background
    rotated = rotate_image(image, 45, fillcolor="white")
 
@@ -161,10 +161,10 @@ Flip images horizontally or vertically.
 
    # Flip horizontally
    flipped = flip_image(image, horizontal=True)
-   
+
    # Flip vertically
    flipped = flip_image(image, vertical=True)
-   
+
    # Flip both ways
    flipped = flip_image(image, horizontal=True, vertical=True)
 
@@ -189,7 +189,7 @@ Apply various image filters and effects.
 
    # Apply blur filter
    blurred = apply_filter(image, "blur", intensity=0.5)
-   
+
    # Apply sharpen filter
    sharpened = apply_filter(image, "sharpen")
 
@@ -211,10 +211,10 @@ Adjust image brightness and contrast.
 
    # Increase brightness
    brighter = adjust_brightness(image, brightness=1.2)
-   
+
    # Increase contrast
    contrasted = adjust_brightness(image, contrast=1.3)
-   
+
    # Adjust both
    adjusted = adjust_brightness(image, brightness=1.1, contrast=1.2)
 

@@ -29,13 +29,13 @@ Let's launch the application and perform basic image editing:
 
     # Load an image
     image = gui_image_studio.get_image("sample.png")
-    
+
     # Apply a tint
     tinted = gui_image_studio.apply_tint(image, "#FF6B6B")
-    
+
     # Resize the image
     resized = gui_image_studio.resize_image(tinted, (800, 600))
-    
+
     # Save the result
     gui_image_studio.save_image(resized, "output.png")
 
@@ -70,7 +70,7 @@ Basic Image Operations
 
     # Load from file
     image = gui_image_studio.get_image("path/to/image.png")
-    
+
     # Load from URL (if supported)
     image = gui_image_studio.get_image("https://example.com/image.jpg")
 
@@ -80,13 +80,13 @@ Basic Image Operations
 
     # Resize image
     resized = gui_image_studio.resize_image(image, (width, height))
-    
+
     # Apply color tint
     tinted = gui_image_studio.apply_tint(image, "#FF6B6B")
-    
+
     # Rotate image
     rotated = gui_image_studio.rotate_image(image, 90)
-    
+
     # Flip image
     flipped = gui_image_studio.flip_image(image, horizontal=True)
 
@@ -111,13 +111,13 @@ GUI Image Studio excels at creating animated GIFs:
     # Create frames for animation
     frames = []
     base_image = gui_image_studio.get_image("base.png")
-    
+
     # Create 10 frames with different tints
     for i in range(10):
         hue = i * 36  # 0 to 324 degrees
         tinted = gui_image_studio.apply_hue_shift(base_image, hue)
         frames.append(tinted)
-    
+
     # Create animated GIF
     gui_image_studio.create_animation(frames, "rainbow.gif", duration=100)
 
@@ -148,7 +148,7 @@ GUI Image Studio supports both light and dark themes:
 
     # Set dark theme
     gui_image_studio.set_theme("dark")
-    
+
     # Set light theme
     gui_image_studio.set_theme("light")
 

@@ -1,4 +1,5 @@
 import customtkinter as ctk
+
 import gui_image_studio
 
 ctk.set_appearance_mode("dark")

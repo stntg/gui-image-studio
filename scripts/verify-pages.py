@@ -3,10 +3,11 @@
 Verify GitHub Pages deployment for GUI Image Studio documentation.
 """
 
-import requests
 import sys
 import time
 from urllib.parse import urljoin
+
+import requests
 
 
 def check_url(url, timeout=10):
@@ -119,10 +120,11 @@ if __name__ == "__main__":
 Verify GitHub Pages deployment for GUI Image Studio documentation.
 """
 
-import requests
 import sys
 import time
 from urllib.parse import urljoin
+
+import requests
 
 
 def check_url(url, timeout=10):
@@ -235,10 +237,11 @@ if __name__ == "__main__":
 Verify GitHub Pages deployment for GUI Image Studio documentation.
 """
 
-import requests
 import sys
 import time
 from urllib.parse import urljoin
+
+import requests
 
 
 def check_url(url, timeout=10):

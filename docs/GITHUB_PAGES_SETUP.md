@@ -155,7 +155,7 @@ Customize deployment behavior in `.github/workflows/docs.yml`:
 # Deploy only on releases
 deploy:
   if: github.event_name == 'release'
-  
+
 # Deploy on multiple branches
 deploy:
   if: contains(fromJson('["main", "develop"]'), github.ref_name)
@@ -375,7 +375,7 @@ Customize deployment behavior in `.github/workflows/docs.yml`:
 # Deploy only on releases
 deploy:
   if: github.event_name == 'release'
-  
+
 # Deploy on multiple branches
 deploy:
   if: contains(fromJson('["main", "develop"]'), github.ref_name)
@@ -595,7 +595,7 @@ Customize deployment behavior in `.github/workflows/docs.yml`:
 # Deploy only on releases
 deploy:
   if: github.event_name == 'release'
-  
+
 # Deploy on multiple branches
 deploy:
   if: contains(fromJson('["main", "develop"]'), github.ref_name)

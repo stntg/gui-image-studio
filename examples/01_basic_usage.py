@@ -7,12 +7,13 @@ This example demonstrates the fundamental usage of gui_image_studio with both
 Tkinter and CustomTkinter frameworks.
 """
 
-import sys
 import os
+import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
 
 import tkinter as tk
+
 import gui_image_studio
 
 

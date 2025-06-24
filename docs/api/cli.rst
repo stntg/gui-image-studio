@@ -201,7 +201,7 @@ Generate embedded image resources for distribution.
         """Get embedded image by name."""
         if name not in IMAGES:
             raise KeyError(f"Image '{name}' not found")
-        
+
         data = base64.b64decode(IMAGES[name])
         return Image.open(BytesIO(data))
 
@@ -446,10 +446,10 @@ Integration Examples
                 '--output', 'src/embedded.py',
                 '--compress'
             ], check=True, capture_output=True, text=True)
-            
+
             print("Resources generated successfully")
             return True
-            
+
         except subprocess.CalledProcessError as e:
             print(f"Error generating resources: {e.stderr}")
             return False
@@ -510,31 +510,31 @@ Troubleshooting
 **Common Issues:**
 
 1. **Command not found:**
-   
+
    .. code-block:: bash
 
        # Ensure GUI Image Studio is installed
        pip install gui-image-studio
-       
+
        # Check installation
        pip show gui-image-studio
 
 2. **Permission errors:**
-   
+
    .. code-block:: bash
 
        # Use --output-dir with write permissions
        gui-image-studio-create-samples --output-dir ~/test_images
 
 3. **Memory errors with large images:**
-   
+
    .. code-block:: bash
 
        # Use size limits and compression
        gui-image-studio-generate --max-size 512x512 --compress
 
 4. **Display issues (Linux):**
-   
+
    .. code-block:: bash
 
        # Set display for headless systems

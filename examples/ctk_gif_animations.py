@@ -7,8 +7,8 @@ Specialized examples for animated GIFs in CustomTkinter applications.
 Demonstrates modern UI patterns with animated elements.
 """
 
-import sys
 import os
+import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
 

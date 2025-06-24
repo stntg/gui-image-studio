@@ -5,14 +5,14 @@ param(
     [Parameter(Position=0)]
     [ValidateSet("build", "serve", "check", "setup", "help")]
     [string]$Command = "help",
-    
+
     [ValidateSet("html", "pdf", "epub")]
     [string]$Format = "html",
-    
+
     [switch]$Clean,
-    
+
     [int]$Port = 8000,
-    
+
     [switch]$NoBrowser
 )
 
@@ -51,13 +51,13 @@ function Test-PythonModule {
 
 function Test-Dependencies {
     Write-Status "🔍 Checking dependencies..." $Cyan
-    
+
     # Check Python
     if (-not (Test-Command "python")) {
         Write-Status "❌ Python not found. Please install Python 3.8+" $Red
         return $false
     }
-    
+
     # Check Sphinx
     if (Test-PythonModule "sphinx") {
         $sphinxVersion = python -c "import sphinx; print(sphinx.__version__)" 2>$null
@@ -67,7 +67,7 @@ function Test-Dependencies {
         Write-Status "❌ Sphinx not found. Install with: pip install -r docs/requirements-docs.txt" $Red
         return $false
     }
-    
+
     # Check GUI Image Studio package
     if (Test-PythonModule "gui_image_studio") {
         Write-Status "✅ GUI Image Studio package found" $Green
@@ -76,19 +76,19 @@ function Test-Dependencies {
         Write-Status "⚠️ GUI Image Studio package not found. Install with: pip install -e ." $Yellow
         Write-Status "   (This is needed for API documentation generation)" $Yellow
     }
-    
+
     return $true
 }
 
 function New-SampleImages {
     Write-Status "📸 Creating sample images..." $Cyan
-    
+
     $sampleDir = "sample_images"
     if ((Test-Path $sampleDir) -and (Get-ChildItem $sampleDir -ErrorAction SilentlyContinue)) {
         Write-Status "✅ Sample images already exist" $Green
         return $true
     }
-    
+
     try {
         python -c @"
 from gui_image_studio.sample_creator import SampleCreator
@@ -109,26 +109,26 @@ print('Sample images created successfully')
 
 function Build-Documentation {
     param([string]$Format, [bool]$Clean)
-    
+
     if (-not (Test-Path "docs")) {
         Write-Status "❌ docs/ directory not found" $Red
         return $false
     }
-    
+
     Push-Location "docs"
-    
+
     try {
         if ($Clean) {
             Write-Status "🧹 Cleaning previous build..." $Cyan
             make clean
         }
-        
+
         Write-Status "📚 Building $Format documentation..." $Cyan
         $result = make $Format
-        
+
         if ($LASTEXITCODE -eq 0) {
             Write-Status "✅ $($Format.ToUpper()) documentation built successfully" $Green
-            
+
             # Show output location
             if ($Format -eq "html") {
                 $outputPath = Resolve-Path "docs\_build\html\index.html" -ErrorAction SilentlyContinue
@@ -142,7 +142,7 @@ function Build-Documentation {
                     Write-Status "📄 PDF available at: $($pdfFiles[0].FullName)" $Cyan
                 }
             }
-            
+
             return $true
         }
         else {
@@ -157,12 +157,12 @@ function Build-Documentation {
 
 function Start-DocumentationServer {
     param([int]$Port, [bool]$OpenBrowser)
-    
+
     if (-not (Test-Path "docs")) {
         Write-Status "❌ docs/ directory not found" $Red
         return $false
     }
-    
+
     # Check if sphinx-autobuild is available
     try {
         sphinx-autobuild --version | Out-Null
@@ -172,12 +172,12 @@ function Start-DocumentationServer {
         Write-Status "   pip install sphinx-autobuild" $Red
         return $false
     }
-    
+
     Write-Status "🚀 Starting documentation server on port $Port..." $Cyan
     Write-Status "📄 Documentation will be available at: http://localhost:$Port" $Cyan
     Write-Status "🔄 Auto-reload enabled - changes will be reflected automatically" $Cyan
     Write-Status "Press Ctrl+C to stop the server" $Yellow
-    
+
     # Open browser if requested
     if ($OpenBrowser) {
         Start-Job -ScriptBlock {
@@ -185,7 +185,7 @@ function Start-DocumentationServer {
             Start-Process "http://localhost:$using:Port"
         } | Out-Null
     }
-    
+
     # Start the server
     try {
         sphinx-autobuild docs docs\_build\html --port $Port --host localhost --ignore "*.tmp" --ignore "*~"
@@ -200,12 +200,12 @@ function Invoke-DocumentationChecks {
         Write-Status "❌ docs/ directory not found" $Red
         return $false
     }
-    
+
     Push-Location "docs"
-    
+
     try {
         Write-Status "🔍 Running documentation checks..." $Cyan
-        
+
         # Link check
         Write-Status "`n📎 Checking links..." $Cyan
         make linkcheck
@@ -215,7 +215,7 @@ function Invoke-DocumentationChecks {
         else {
             Write-Status "⚠️ Some links may be broken" $Yellow
         }
-        
+
         # Doctest
         Write-Status "`n🧪 Running doctests..." $Cyan
         make doctest
@@ -225,7 +225,7 @@ function Invoke-DocumentationChecks {
         else {
             Write-Status "⚠️ Some doctests failed" $Yellow
         }
-        
+
         # Coverage
         Write-Status "`n📊 Checking documentation coverage..." $Cyan
         make coverage
@@ -235,7 +235,7 @@ function Invoke-DocumentationChecks {
         else {
             Write-Status "⚠️ Coverage check had issues" $Yellow
         }
-        
+
         return $true
     }
     finally {
@@ -245,21 +245,21 @@ function Invoke-DocumentationChecks {
 
 function Initialize-DocumentationEnvironment {
     Write-Status "🔧 Setting up documentation environment..." $Cyan
-    
+
     # Install dependencies
     Write-Status "📦 Installing documentation dependencies..." $Cyan
     python -m pip install -r docs/requirements-docs.txt
-    
+
     # Install package in development mode
     Write-Status "📦 Installing GUI Image Studio in development mode..." $Cyan
     python -m pip install -e .
-    
+
     # Create sample images
     New-SampleImages
-    
+
     # Build documentation
     Build-Documentation -Format "html" -Clean $true
-    
+
     Write-Status "✅ Documentation environment setup complete!" $Green
     Write-Status "💡 Try: .\scripts\build-docs.ps1 serve" $Cyan
 }
@@ -306,10 +306,10 @@ switch ($Command) {
             Write-Status "   pip install -e ." $Red
             exit 1
         }
-        
+
         New-SampleImages
         $success = Build-Documentation -Format $Format -Clean $Clean
-        
+
         if ($success -and $Format -eq "html") {
             $outputPath = "docs\_build\html\index.html"
             if (Test-Path $outputPath) {
@@ -318,7 +318,7 @@ switch ($Command) {
             }
         }
     }
-    
+
     "serve" {
         if (-not (Test-Dependencies)) {
             Write-Status "`n❌ Please install required dependencies first:" $Red
@@ -326,11 +326,11 @@ switch ($Command) {
             Write-Status "   pip install -e ." $Red
             exit 1
         }
-        
+
         New-SampleImages
         Start-DocumentationServer -Port $Port -OpenBrowser (-not $NoBrowser)
     }
-    
+
     "check" {
         if (-not (Test-Dependencies)) {
             Write-Status "`n❌ Please install required dependencies first:" $Red
@@ -338,19 +338,19 @@ switch ($Command) {
             Write-Status "   pip install -e ." $Red
             exit 1
         }
-        
+
         New-SampleImages
         Invoke-DocumentationChecks
     }
-    
+
     "setup" {
         Initialize-DocumentationEnvironment
     }
-    
+
     "help" {
         Show-Help
     }
-    
+
     default {
         Show-Help
     }

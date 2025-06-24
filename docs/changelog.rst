@@ -163,7 +163,7 @@ Migration Guide
       # Old (0.9.x)
       image = load_image("photo.jpg")
       tinted = tint_image(image, "#FF0000")
-      
+
       # New (1.0.0)
       image = gui_image_studio.get_image("photo.jpg")
       tinted = gui_image_studio.apply_tint(image, "#FF0000")
@@ -175,7 +175,7 @@ Migration Guide
        # Old (0.9.x)
        python image_studio.py
        python create_samples.py
-       
+
        # New (1.0.0)
        gui-image-studio-designer
        gui-image-studio-create-samples
@@ -186,7 +186,7 @@ Migration Guide
 
       # Old (0.9.x)
       from image_loader import get_image
-      
+
       # New (1.0.0)
       import gui_image_studio
       # or
@@ -317,7 +317,7 @@ When submitting pull requests, please:
     **Added**
     - New image filter for vintage effects (#123)
     - Keyboard shortcuts for common operations (#124)
-    
+
     **Fixed**
     - Memory leak in animation preview (#125)
     - Crash when loading corrupted GIF files (#126)

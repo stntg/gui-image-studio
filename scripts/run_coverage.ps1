@@ -40,14 +40,14 @@ function Run-Command {
         [string[]]$Command,
         [string]$Description = ""
     )
-    
+
     if ($Description) {
         Write-Host "`n🔄 $Description" -ForegroundColor Blue
     }
-    
+
     $cmdString = $Command -join " "
     Write-Host "Running: $cmdString" -ForegroundColor Gray
-    
+
     try {
         & $Command[0] $Command[1..($Command.Length-1)]
         if ($LASTEXITCODE -eq 0) {
@@ -95,14 +95,14 @@ function Open-HtmlReport {
 
 function Clean-Coverage {
     Write-Host "🗑️  Cleaning coverage files..." -ForegroundColor Yellow
-    
+
     $filesToClean = @(
         ".coverage",
         "coverage.xml",
         "coverage.json",
         "htmlcov"
     )
-    
+
     foreach ($file in $filesToClean) {
         if (Test-Path $file) {
             try {
@@ -113,7 +113,7 @@ function Clean-Coverage {
             }
         }
     }
-    
+
     # Clean .coverage.* files
     Get-ChildItem -Path "." -Name ".coverage.*" | ForEach-Object {
         try {
@@ -127,18 +127,18 @@ function Clean-Coverage {
 
 function Show-CoverageSummary {
     Write-Host "`n📊 Coverage Files Summary:" -ForegroundColor Cyan
-    
+
     $filesToCheck = @(
         @(".coverage", "Coverage data file"),
         @("coverage.xml", "XML coverage report"),
         @("coverage.json", "JSON coverage report"),
         @("htmlcov\index.html", "HTML coverage report")
     )
-    
+
     foreach ($fileInfo in $filesToCheck) {
         $filePath = $fileInfo[0]
         $description = $fileInfo[1]
-        
+
         if (Test-Path $filePath) {
             $size = if (Test-Path $filePath -PathType Leaf) { (Get-Item $filePath).Length } else { "N/A" }
             Write-Host "  ✅ $description`: $filePath ($size bytes)" -ForegroundColor Green

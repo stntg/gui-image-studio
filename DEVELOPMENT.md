@@ -174,7 +174,7 @@ class TestImageStudio:
         """Test basic initialization."""
         studio = ImageStudio()
         assert studio is not None
-    
+
     @pytest.mark.visual
     def test_gui_creation(self):
         """Test GUI creation (requires display)."""
@@ -202,18 +202,18 @@ from typing import Optional, Tuple
 from PIL import Image
 
 def resize_image(
-    image: Image.Image, 
-    size: Tuple[int, int], 
+    image: Image.Image,
+    size: Tuple[int, int],
     resample: Optional[int] = None
 ) -> Image.Image:
     """
     Resize an image to the specified size.
-    
+
     Args:
         image: The input image
         size: Target size as (width, height)
         resample: Resampling algorithm
-        
+
     Returns:
         Resized image
     """

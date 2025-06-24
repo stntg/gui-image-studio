@@ -96,11 +96,11 @@ Basic Usage Pattern
 
    # Load an image
    image = gui_image_studio.get_image("path/to/image.png")
-   
+
    # Process the image
    processed = gui_image_studio.apply_tint(image, "#FF6B6B")
    resized = gui_image_studio.resize_image(processed, (800, 600))
-   
+
    # Save the result
    gui_image_studio.save_image(resized, "output.png")
 
@@ -149,7 +149,7 @@ All public APIs include comprehensive type hints for better IDE support and stat
    from PIL import Image
 
    def resize_image(
-       image: Union[Image.Image, str], 
+       image: Union[Image.Image, str],
        size: Tuple[int, int],
        resample: int = Image.LANCZOS
    ) -> Image.Image:
@@ -166,10 +166,10 @@ Global configuration options:
 
    # Set default image quality
    gui_image_studio.set_default_quality(90)
-   
+
    # Set default theme
    gui_image_studio.set_theme("dark")
-   
+
    # Enable/disable verbose logging
    gui_image_studio.set_verbose(True)
 
@@ -197,10 +197,10 @@ Examples by Category
 
    # Load from file
    image = gui_image_studio.get_image("photo.jpg")
-   
+
    # Load from embedded resources
    image = gui_image_studio.get_image("sample_icon")
-   
+
    # Load with error handling
    try:
        image = gui_image_studio.get_image("might_not_exist.png")
@@ -213,10 +213,10 @@ Examples by Category
 
    # Resize maintaining aspect ratio
    resized = gui_image_studio.resize_image(image, (800, 600))
-   
+
    # Apply color effects
    tinted = gui_image_studio.apply_tint(image, "#FF6B6B")
-   
+
    # Geometric transformations
    rotated = gui_image_studio.rotate_image(image, 45)
    flipped = gui_image_studio.flip_image(image, horizontal=True)
@@ -226,10 +226,10 @@ Examples by Category
 .. code-block:: python
 
    import os
-   
+
    input_folder = "input_images/"
    output_folder = "processed_images/"
-   
+
    for filename in os.listdir(input_folder):
        if filename.lower().endswith(('.png', '.jpg', '.jpeg')):
            image = gui_image_studio.get_image(os.path.join(input_folder, filename))
@@ -243,7 +243,7 @@ Examples by Category
 
    import tkinter as tk
    from gui_image_studio import ImageStudio
-   
+
    root = tk.Tk()
    app = ImageStudio(root)
    app.pack(fill=tk.BOTH, expand=True)

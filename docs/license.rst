@@ -126,7 +126,7 @@ When embedding GUI Image Studio:
     LICENSE_TEXT = """
     GUI Image Studio - MIT License
     Copyright (c) 2024 Stan Griffiths
-    
+
     Permission is hereby granted, free of charge, to any person obtaining a copy...
     [full license text]
     """

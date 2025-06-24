@@ -5,7 +5,7 @@
 source = gui_image_studio
 branch = true
 parallel = true
-omit = 
+omit =
     */tests/*
     */test_*.py
     setup.py

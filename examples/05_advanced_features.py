@@ -11,15 +11,16 @@ This example demonstrates advanced features and edge cases:
 - Integration patterns
 """
 
-import sys
 import os
+import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
 
-import tkinter as tk
-from tkinter import ttk, messagebox
-import time
 import threading
+import time
+import tkinter as tk
+from tkinter import messagebox, ttk
+
 import gui_image_studio
 
 
@@ -280,11 +281,11 @@ INTEGRATION PATTERNS & BEST PRACTICES
 
 1. LAZY LOADING PATTERN
    Load images only when needed to improve startup time:
-   
+
    class ImageManager:
        def __init__(self):
            self._cache = {}
-       
+
        def get_image(self, name, **kwargs):
            key = (name, frozenset(kwargs.items()))
            if key not in self._cache:
@@ -293,19 +294,19 @@ INTEGRATION PATTERNS & BEST PRACTICES
 
 2. THEME-AWARE COMPONENT PATTERN
    Create components that automatically adapt to theme changes:
-   
+
    class ThemedButton(tk.Button):
        def __init__(self, parent, image_name, **kwargs):
            self.image_name = image_name
            self.current_theme = "default"
            super().__init__(parent, **kwargs)
            self.update_theme()
-       
+
        def update_theme(self, theme="default"):
            if theme != self.current_theme:
                self.current_theme = theme
                image = gui_image_studio.get_image(
-                   self.image_name, 
+                   self.image_name,
                    framework="tkinter",
                    theme=theme
                )
@@ -314,7 +315,7 @@ INTEGRATION PATTERNS & BEST PRACTICES
 
 3. ASYNC LOADING PATTERN
    Load images in background threads for better responsiveness:
-   
+
    def load_image_async(image_name, callback, **kwargs):
        def load():
            try:
@@ -322,26 +323,26 @@ INTEGRATION PATTERNS & BEST PRACTICES
                callback(image, None)
            except Exception as e:
                callback(None, e)
-       
+
        threading.Thread(target=load, daemon=True).start()
 
 4. ANIMATION MANAGER PATTERN
    Centralized management of multiple animations:
-   
+
    class AnimationManager:
        def __init__(self, root):
            self.root = root
            self.animations = {}
            self.jobs = {}
-       
+
        def add_animation(self, name, label, anim_data):
            self.animations[name] = (label, anim_data)
-       
+
        def start_animation(self, name):
            if name in self.animations:
                label, anim_data = self.animations[name]
                self._animate(name, label, anim_data, 0)
-       
+
        def _animate(self, name, label, anim_data, frame_idx):
            frames = anim_data["animated_frames"]
            if frames and name in self.animations:
@@ -355,7 +356,7 @@ INTEGRATION PATTERNS & BEST PRACTICES
 
 5. ERROR HANDLING PATTERN
    Graceful degradation when images fail to load:
-   
+
    def safe_get_image(image_name, fallback_text="Image not available", **kwargs):
        try:
            return gui_image_studio.get_image(image_name, **kwargs)
@@ -363,7 +364,7 @@ INTEGRATION PATTERNS & BEST PRACTICES
            print(f"Failed to load {image_name}: {e}")
            # Return a placeholder or None
            return None
-   
+
    # Usage:
    image = safe_get_image("icon.png", framework="tkinter")
    if image:
@@ -373,22 +374,22 @@ INTEGRATION PATTERNS & BEST PRACTICES
 
 6. RESOURCE CLEANUP PATTERN
    Proper cleanup of image resources:
-   
+
    class ImageWidget:
        def __init__(self):
            self.images = []  # Keep references
-       
+
        def set_image(self, image_name, **kwargs):
            image = gui_image_studio.get_image(image_name, **kwargs)
            self.images.append(image)  # Prevent GC
            return image
-       
+
        def cleanup(self):
            self.images.clear()  # Allow GC
 
 7. CONFIGURATION-DRIVEN LOADING
    Use configuration files to define image loading parameters:
-   
+
    IMAGE_CONFIG = {
        "icons": {
            "size": (32, 32),
@@ -399,7 +400,7 @@ INTEGRATION PATTERNS & BEST PRACTICES
            "contrast": 1.1
        }
    }
-   
+
    def load_configured_image(image_name, config_key, **overrides):
        config = IMAGE_CONFIG.get(config_key, {})
        config.update(overrides)

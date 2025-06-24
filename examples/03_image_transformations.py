@@ -12,13 +12,14 @@ This example demonstrates various image transformation capabilities:
 - Tinting
 """
 
-import sys
 import os
+import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
 
 import tkinter as tk
-from tkinter import ttk, Scale
+from tkinter import Scale, ttk
+
 import gui_image_studio
 
 

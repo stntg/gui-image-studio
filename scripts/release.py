@@ -166,19 +166,19 @@ def create_release_notes(version):
 ## 🎉 What's New
 
 ### ✨ New Features
-- 
+-
 
 ### 🐛 Bug Fixes
-- 
+-
 
 ### 🔧 Improvements
-- 
+-
 
 ### 📚 Documentation
-- 
+-
 
 ### 🧪 Testing
-- 
+-
 
 ## 🔄 Breaking Changes
 

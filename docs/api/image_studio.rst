@@ -70,7 +70,7 @@ Load an image into the editor.
 
     # Load specific file
     app.load_image("photo.jpg")
-    
+
     # Open file dialog
     app.load_image()
 
@@ -91,7 +91,7 @@ Save the current image.
 
     # Save to specific file
     app.save_image("output.png")
-    
+
     # Open save dialog
     app.save_image()
 
@@ -112,7 +112,7 @@ Apply a filter to the current image.
 
     # Apply blur filter
     app.apply_filter("blur", {"radius": 2.0})
-    
+
     # Apply tint
     app.apply_filter("tint", {"color": "#FF6B6B", "opacity": 0.3})
 
@@ -183,7 +183,7 @@ Left sidebar containing editing tools.
 
     # Access current tool
     current_tool = app.tool_palette.current_tool
-    
+
     # Set tool programmatically
     app.tool_palette.set_tool("brush")
 
@@ -236,7 +236,7 @@ Central canvas area for image display and editing.
     app.canvas.zoom_in()
     app.canvas.zoom_out()
     app.canvas.fit_to_window()
-    
+
     # Get canvas state
     zoom_level = app.canvas.get_zoom_level()
     selection = app.canvas.get_selection()
@@ -284,10 +284,10 @@ The ImageStudio class uses an event-driven architecture for communication betwee
 
     def on_image_loaded(event_data):
         print(f"Image loaded: {event_data['file_path']}")
-    
+
     # Subscribe to events
     app.subscribe("image_loaded", on_image_loaded)
-    
+
     # Fire custom events
     app.fire_event("custom_event", {"data": "value"})
 
@@ -305,15 +305,15 @@ Create custom tools by extending the base Tool class:
     class CustomTool(Tool):
         def __init__(self):
             super().__init__("Custom Tool", "custom_icon.png")
-        
+
         def on_mouse_down(self, x, y):
             # Handle mouse down event
             pass
-        
+
         def on_mouse_drag(self, x, y):
             # Handle mouse drag event
             pass
-        
+
         def on_mouse_up(self, x, y):
             # Handle mouse up event
             pass
@@ -332,7 +332,7 @@ Create custom filters:
     class CustomFilter(Filter):
         def __init__(self):
             super().__init__("Custom Filter", "custom_filter")
-        
+
         def apply(self, image, parameters=None):
             # Apply custom processing
             processed_image = self.process_image(image, parameters)
@@ -427,7 +427,7 @@ Performance Considerations
     # Optimize for large images
     app.settings["tile_size"] = 512  # Smaller tiles for large images
     app.settings["preview_quality"] = "fast"  # Faster preview rendering
-    
+
     # Optimize for performance
     app.settings["real_time_preview"] = False  # Disable for complex operations
     app.settings["max_image_size"] = (4096, 4096)  # Limit maximum image size
@@ -480,23 +480,23 @@ Integration Examples
         def __init__(self):
             self.root = tk.Tk()
             self.setup_ui()
-        
+
         def setup_ui(self):
             # Create main frame
             main_frame = tk.Frame(self.root)
             main_frame.pack(fill=tk.BOTH, expand=True)
-            
+
             # Add other components
             toolbar = tk.Frame(main_frame)
             toolbar.pack(side=tk.TOP, fill=tk.X)
-            
+
             # Embed ImageStudio
             self.image_studio = ImageStudio(main_frame)
             self.image_studio.pack(fill=tk.BOTH, expand=True)
-            
+
             # Connect to events
             self.image_studio.subscribe("image_loaded", self.on_image_loaded)
-        
+
         def on_image_loaded(self, event_data):
             # Handle image loaded event
             print(f"Image loaded in embedded editor: {event_data['file_path']}")
@@ -510,14 +510,14 @@ Integration Examples
     class MyPlugin(Plugin):
         def __init__(self):
             super().__init__("My Plugin", "1.0.0")
-        
+
         def initialize(self, app):
             # Add menu items
             app.add_menu_item("Plugins", "My Plugin", self.run_plugin)
-            
+
             # Add toolbar button
             app.add_toolbar_button("My Plugin", "plugin_icon.png", self.run_plugin)
-        
+
         def run_plugin(self):
             # Plugin functionality
             current_image = self.app.get_current_image()

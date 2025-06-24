@@ -1,4 +1,5 @@
 import tkinter as tk
+
 import gui_image_studio
 
 root = tk.Tk()

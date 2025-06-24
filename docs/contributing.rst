@@ -144,15 +144,15 @@ Coding Standards
 
     class ExampleClass:
         """Class docstring."""
-        
+
         def __init__(self, param: str) -> None:
             """Initialize with parameter."""
             self.param = param
-        
+
         def public_method(self, arg: int) -> str:
             """Public method with type hints and docstring."""
             return self._private_method(arg)
-        
+
         def _private_method(self, arg: int) -> str:
             """Private method (prefixed with underscore)."""
             return f"{self.param}: {arg}"
@@ -169,19 +169,19 @@ Coding Standards
     def process_image(image: Image.Image, filter_type: str, intensity: float = 1.0) -> Image.Image:
         """
         Apply a filter to an image.
-        
+
         Args:
             image: The input PIL Image object
             filter_type: Type of filter to apply ('blur', 'sharpen', 'emboss')
             intensity: Filter intensity from 0.0 to 1.0 (default: 1.0)
-        
+
         Returns:
             Processed PIL Image object
-        
+
         Raises:
             ValueError: If filter_type is not supported
             TypeError: If image is not a PIL Image object
-        
+
         Example:
             >>> image = get_image("photo.jpg")
             >>> blurred = process_image(image, "blur", 0.5)
@@ -214,18 +214,18 @@ Testing Guidelines
 
     class TestImageLoader:
         """Test cases for image loading functionality."""
-        
+
         def test_load_valid_image(self):
             """Test loading a valid image file."""
             image = gui_image_studio.get_image("tests/fixtures/sample_image.png")
             assert isinstance(image, Image.Image)
             assert image.size == (100, 100)
-        
+
         def test_load_nonexistent_image(self):
             """Test loading a non-existent image file."""
             with pytest.raises(FileNotFoundError):
                 gui_image_studio.get_image("nonexistent.png")
-        
+
         @pytest.mark.parametrize("color,expected", [
             ("#FF0000", (255, 0, 0)),
             ("#00FF00", (0, 255, 0)),

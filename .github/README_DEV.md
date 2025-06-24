@@ -141,7 +141,7 @@ black --check src/
 **Common Issues:**
 
 1. **TestPyPI upload fails**: Check `TEST_PYPI_API_TOKEN` secret
-2. **PyPI upload fails**: Check `PYPI_API_TOKEN` secret  
+2. **PyPI upload fails**: Check `PYPI_API_TOKEN` secret
 3. **CI fails**: Run tests locally first with `pytest`
 4. **Version conflicts**: Ensure version is incremented in `pyproject.toml`
 
