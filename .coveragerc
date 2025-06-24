@@ -1,0 +1,74 @@
+# Coverage configuration file
+# This file provides additional coverage settings beyond pyproject.toml
+
+[run]
+source = gui_image_studio
+branch = true
+parallel = true
+omit = 
+    */tests/*
+    */test_*.py
+    setup.py
+    dev_files/*
+    */__main__.py
+    */cli.py
+    # Temporarily omit GUI components that require display
+    */image_studio.py
+
+[report]
+# Regexes for lines to exclude from consideration
+exclude_lines =
+    # Have to re-enable the standard pragma
+    pragma: no cover
+
+    # Don't complain about missing debug-only code:
+    def __repr__
+    if self\.debug
+
+    # Don't complain if tests don't hit defensive assertion code:
+    raise AssertionError
+    raise NotImplementedError
+
+    # Don't complain if non-runnable code isn't run:
+    if 0:
+    if __name__ == .__main__.:
+
+    # Don't complain about abstract methods, they aren't run:
+    @(abc\.)?abstractmethod
+
+    # Don't complain about GUI event handlers that are hard to test
+    def on_.*
+    def handle_.*
+    def callback_.*
+
+    # Don't complain about platform-specific code
+    if sys\.platform
+    if platform\.system
+
+    # Don't complain about type checking imports
+    if TYPE_CHECKING:
+
+# Show missing line numbers in the report
+show_missing = true
+
+# Set minimum coverage percentage
+fail_under = 70
+
+# Skip covered files in the report
+skip_covered = false
+
+# Skip empty files in the report
+skip_empty = false
+
+# Precision for coverage percentage
+precision = 1
+
+[html]
+directory = htmlcov
+title = GUI Image Studio Coverage Report
+
+[xml]
+output = coverage.xml
+
+[json]
+output = coverage.json

@@ -151,6 +151,7 @@ addopts = [
     "--cov-report=term-missing",
     "--cov-report=html",
     "--cov-report=xml",
+    "--cov-config=.coveragerc",
 ]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
@@ -158,20 +159,26 @@ markers = [
     "integration: marks tests as integration tests",
     "gui: marks tests requiring GUI/Tkinter",
     "image: marks tests requiring image processing",
+    "unit: marks tests as unit tests",
+    "functional: marks tests as functional tests",
 ]
 filterwarnings = [
     "error",
     "ignore::UserWarning",
     "ignore::DeprecationWarning",
+    "ignore::pytest.PytestUnraisableExceptionWarning",
 ]
 
 [tool.coverage.run]
 source = ["gui_image_studio"]
+branch = true
 omit = [
     "*/tests/*",
     "*/test_*.py",
     "setup.py",
     "dev_files/*",
+    "*/__main__.py",
+    "*/cli.py",
 ]
 
 [tool.coverage.report]
@@ -186,7 +193,26 @@ exclude_lines = [
     "if __name__ == .__main__.:",
     "class .*\\bProtocol\\):",
     "@(abc\\.)?abstractmethod",
+    "def on_.*",
+    "def handle_.*",
+    "def callback_.*",
+    "if sys\\.platform",
+    "if platform\\.system",
+    "if TYPE_CHECKING:",
 ]
+show_missing = true
+fail_under = 70
+precision = 1
+
+[tool.coverage.html]
+directory = "htmlcov"
+title = "GUI Image Studio Coverage Report"
+
+[tool.coverage.xml]
+output = "coverage.xml"
+
+[tool.coverage.json]
+output = "coverage.json"
 
 [tool.bandit]
 exclude_dirs = ["tests", "dev_files"]

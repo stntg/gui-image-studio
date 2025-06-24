@@ -532,7 +532,7 @@ Error Handling
     
     # Check for valid images
     valid_images = [img for img in generator.list_images() 
-                   if validate_image(os.path.join(generator.input_folder, img))]
+                    if validate_image(os.path.join(generator.input_folder, img))]
     
     if not valid_images:
         raise ValueError("No valid images found in input folder")
