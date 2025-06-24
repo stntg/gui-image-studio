@@ -9,16 +9,51 @@ including all necessary dependencies, pre-commit hooks, and development tools.
 import os
 import subprocess
 import sys
+import shutil
 from pathlib import Path
 
 
-def run_command(cmd, check=True, shell=False):
-    """Run a command and handle errors."""
-    print(f"Running: {cmd}")
+def find_executable(name):
+    """Find the full path to an executable, handling Windows .exe extension."""
+    # First try to find the executable as-is
+    path = shutil.which(name)
+    if path:
+        return path
+
+    # On Windows, try with .exe extension
+    if sys.platform == "win32" and not name.endswith(".exe"):
+        path = shutil.which(name + ".exe")
+        if path:
+            return path
+
+    # Return the original name if not found (will likely fail, but with better error)
+    return name
+
+
+def run_command(cmd, check=True):
+    """Run a command and handle errors.
+
+    Args:
+        cmd: Command to run. Can be a string (will be split) or list of arguments.
+        check: Whether to raise an exception on non-zero exit code.
+
+    Note: This function never uses shell=True for security reasons.
+    """
+    # Always convert string commands to list to avoid shell=True
+    if isinstance(cmd, str):
+        cmd = cmd.split()
+
+    # Resolve executable path for the first command for cross-platform compatibility
+    if cmd and isinstance(cmd, list):
+        cmd = cmd.copy()  # Don't modify the original list
+        cmd[0] = find_executable(cmd[0])
+
+    print(f"Running: {' '.join(cmd)}")
     try:
-        if isinstance(cmd, str) and not shell:
-            cmd = cmd.split()
-        result = subprocess.run(cmd, check=check, shell=shell, capture_output=True, text=True)
+        # Never use shell=True for security reasons
+        result = subprocess.run(
+            cmd, check=check, shell=False, capture_output=True, text=True
+        )
         if result.stdout:
             print(result.stdout)
         return result
@@ -65,7 +100,7 @@ def setup_pre_commit():
         run_command("pre-commit install")
         run_command("pre-commit install --hook-type commit-msg")
         print("✓ Pre-commit hooks installed")
-        
+
         # Run pre-commit on all files to ensure everything is set up correctly
         print("Running pre-commit on all files...")
         result = run_command("pre-commit run --all-files", check=False)
@@ -75,7 +110,9 @@ def setup_pre_commit():
             print("⚠ Some pre-commit checks failed. This is normal for initial setup.")
             print("Run 'pre-commit run --all-files' again after fixing any issues.")
     except subprocess.CalledProcessError:
-        print("⚠ Failed to set up pre-commit hooks. You may need to install pre-commit manually.")
+        print(
+            "⚠ Failed to set up pre-commit hooks. You may need to install pre-commit manually."
+        )
 
 
 def create_directories():
@@ -87,7 +124,7 @@ def create_directories():
         "examples",
         "scripts",
     ]
-    
+
     for directory in directories:
         Path(directory).mkdir(exist_ok=True)
         print(f"✓ Created/verified directory: {directory}")
@@ -96,28 +133,36 @@ def create_directories():
 def verify_installation():
     """Verify that the installation was successful."""
     print("\n🔍 Verifying installation...")
-    
+
     try:
         # Test package import
-        result = run_command([sys.executable, "-c", "import gui_image_studio; print(f'GUI Image Studio version: {gui_image_studio.__version__}')"])
+        result = run_command(
+            [
+                sys.executable,
+                "-c",
+                "import gui_image_studio; print(f'GUI Image Studio version: {gui_image_studio.__version__}')",
+            ]
+        )
         print("✓ Package import successful")
-        
+
         # Test CLI commands
         try:
-            run_command([sys.executable, "-m", "gui_image_studio", "--help"], check=False)
+            run_command(
+                [sys.executable, "-m", "gui_image_studio", "--help"], check=False
+            )
             print("✓ CLI commands available")
-        except:
+        except (subprocess.CalledProcessError, FileNotFoundError, OSError) as e:
             print("⚠ CLI commands may not be fully functional")
-        
+
         # Test development tools
         tools = ["black", "flake8", "mypy", "pytest", "isort"]
         for tool in tools:
             try:
                 run_command([tool, "--version"], check=False)
                 print(f"✓ {tool} is available")
-            except:
+            except (subprocess.CalledProcessError, FileNotFoundError, OSError) as e:
                 print(f"⚠ {tool} may not be available")
-                
+
     except Exception as e:
         print(f"⚠ Verification failed: {e}")
 
@@ -126,12 +171,14 @@ def run_tests():
     """Run a quick test to ensure everything is working."""
     print("\n🧪 Running quick tests...")
     try:
-        result = run_command([sys.executable, "-m", "pytest", "tests/", "-v", "--tb=short"], check=False)
+        result = run_command(
+            [sys.executable, "-m", "pytest", "tests/", "-v", "--tb=short"], check=False
+        )
         if result.returncode == 0:
             print("✓ All tests passed")
         else:
             print("⚠ Some tests failed. This may be normal for initial setup.")
-    except:
+    except (subprocess.CalledProcessError, FileNotFoundError, OSError) as e:
         print("⚠ Could not run tests. Make sure pytest is installed.")
 
 
@@ -157,22 +204,22 @@ def main():
     """Main setup function."""
     print("🚀 Setting up GUI Image Studio development environment...")
     print("=" * 60)
-    
+
     # Change to project root directory
     script_dir = Path(__file__).parent
     project_root = script_dir.parent
     os.chdir(project_root)
     print(f"Working directory: {project_root}")
-    
+
     # Run setup steps
     check_python_version()
     git_available = check_git()
     create_directories()
     install_package_dev()
-    
+
     if git_available:
         setup_pre_commit()
-    
+
     verify_installation()
     run_tests()
     print_next_steps()

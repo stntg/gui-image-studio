@@ -25,11 +25,11 @@ import sys
 import os
 
 # Add the src directory to the Python path for development
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 try:
     import gui_image_studio
-    
+
     def main():
         """Launch the Image Studio GUI."""
         print("Launching GUI Image Studio...")
@@ -53,13 +53,13 @@ try:
         print("- Ctrl+S: Export images")
         print("- Delete: Delete selected image")
         print()
-        
+
         # Launch the studio
         gui_image_studio.launch_designer()
-        
+
     if __name__ == "__main__":
         main()
-        
+
 except ImportError as e:
     print(f"Error importing gui_image_studio: {e}")
     print("\nMake sure to install the required dependencies:")

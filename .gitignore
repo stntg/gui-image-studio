@@ -178,6 +178,7 @@ Thumbs.db
 # Coverage files
 .coverage.*
 coverage.xml
+coverage.json
 htmlcov/
 
 # Documentation build

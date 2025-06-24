@@ -10,17 +10,28 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 ------------
 
 **Added**
-- Comprehensive Sphinx documentation system
-- Advanced API reference with autosummary
-- Detailed examples and tutorials
-- User guide with step-by-step instructions
+- Comprehensive test coverage system with pytest and coverage.py
+- Automated coverage reporting with Codecov and Coveralls integration
+- GitHub Actions workflow for coverage tracking and reporting
+- Coverage badge and detailed coverage documentation
+- PowerShell and Python scripts for cross-platform coverage testing
+- Makefile for streamlined development workflows
+- Enhanced CI/CD pipeline with coverage validation
 
 **Changed**
+- Updated GitHub Actions workflows to use latest versions (upload-artifact@v4)
 - Improved documentation structure and organization
 - Enhanced code examples with better error handling
+- Upgraded development tooling and dependency management
+- Streamlined testing and coverage collection processes
 
 **Fixed**
-- Documentation cross-references and links
+- Documentation syntax errors in RST code blocks
+- Python code block indentation issues in changelog.rst
+- Incomplete code examples in API documentation (generator.rst, sample_creator.rst)
+- GitHub Actions deprecation warnings for artifact upload actions
+- Cross-references and links in documentation
+- Test coverage collection and reporting accuracy
 
 [1.0.0] - 2024-06-22
 ---------------------
@@ -145,13 +156,13 @@ Migration Guide
 
    .. code-block:: python
 
-       # Old (0.9.x)
-       image = load_image("photo.jpg")
-       tinted = tint_image(image, "#FF0000")
-       
-       # New (1.0.0)
-       image = gui_image_studio.get_image("photo.jpg")
-       tinted = gui_image_studio.apply_tint(image, "#FF0000")
+      # Old (0.9.x)
+      image = load_image("photo.jpg")
+      tinted = tint_image(image, "#FF0000")
+      
+      # New (1.0.0)
+      image = gui_image_studio.get_image("photo.jpg")
+      tinted = gui_image_studio.apply_tint(image, "#FF0000")
 
 2. **Update CLI commands:**
 
@@ -169,13 +180,13 @@ Migration Guide
 
    .. code-block:: python
 
-       # Old (0.9.x)
-       from image_loader import get_image
-       
-       # New (1.0.0)
-       import gui_image_studio
-       # or
-       from gui_image_studio import get_image
+      # Old (0.9.x)
+      from image_loader import get_image
+      
+      # New (1.0.0)
+      import gui_image_studio
+      # or
+      from gui_image_studio import get_image
 
 **Deprecated Functions (Removed in 1.0.0):**
 - ``load_image()`` → Use ``get_image()``

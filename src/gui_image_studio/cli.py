@@ -36,7 +36,9 @@ def generate_embedded_images():
         default=85,
         help="Compression quality 1-100 (default: 85)",
     )
-    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
+    parser.add_argument(
+        "--version", action="version", version=f"%(prog)s {__version__}"
+    )
 
     args = parser.parse_args()
 
@@ -65,7 +67,9 @@ def create_sample_images():
         default="sample_images",
         help="Output directory for sample images (default: sample_images)",
     )
-    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
+    parser.add_argument(
+        "--version", action="version", version=f"%(prog)s {__version__}"
+    )
 
     args = parser.parse_args()
 
@@ -95,16 +99,22 @@ def launch_designer():
         description="Launch the GUI Image Studio",
         prog="gui-image-studio-designer",
     )
-    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
+    parser.add_argument(
+        "--version", action="version", version=f"%(prog)s {__version__}"
+    )
 
     args = parser.parse_args()
 
     try:
         from .image_studio import main
+
         main()
     except ImportError as e:
         print(f"Error importing GUI components: {e}", file=sys.stderr)
-        print("Make sure tkinter is available (usually built-in with Python)", file=sys.stderr)
+        print(
+            "Make sure tkinter is available (usually built-in with Python)",
+            file=sys.stderr,
+        )
         sys.exit(1)
     except Exception as e:
         print(f"Error launching studio: {e}", file=sys.stderr)

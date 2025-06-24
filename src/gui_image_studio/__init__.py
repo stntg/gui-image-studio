@@ -65,10 +65,12 @@ __all__ = [
     "__version__",
 ]
 
+
 def launch_designer():
     """Launch the GUI Image Studio."""
     try:
         from .image_studio import main
+
         main()
     except ImportError as e:
         print(f"Error importing GUI components: {e}")
@@ -77,6 +79,7 @@ def launch_designer():
     except Exception as e:
         print(f"Error launching studio: {e}")
         raise
+
 
 # Convenience imports for common use cases
 try:

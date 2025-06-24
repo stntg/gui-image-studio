@@ -661,3 +661,46 @@ Performance Considerations
         count=5,
         include_animated=True
     )
+    
+    # Generate optimized samples
+    creator.create_all_samples()
+
+**Memory Management:**
+
+.. code-block:: python
+
+    # For large sample generation
+    import gc
+    
+    def create_large_samples():
+        """Create large samples with memory management."""
+        creator = SampleCreator("large_samples", size=(2048, 2048))
+        
+        # Create samples one by one to manage memory
+        for i in range(10):
+            creator.create_photo_samples(count=1)
+            gc.collect()  # Force garbage collection
+        
+        print("Large samples created successfully")
+
+Summary
+-------
+
+The Sample Creator module provides comprehensive functionality for generating test images and sample data. It supports various image types, formats, and configurations to meet different testing and development needs.
+
+**Key Features:**
+
+* Multiple sample types (icons, photos, gradients, animations, transparency)
+* Configurable sizes, formats, and quality settings
+* Batch generation capabilities
+* Custom sample type support
+* Performance optimization options
+* Comprehensive validation tools
+
+**Best Practices:**
+
+* Use appropriate sample sizes for your testing needs
+* Choose formats that match your application requirements
+* Implement proper error handling for sample generation
+* Consider memory usage when generating large samples
+* Validate generated samples before use in tests

@@ -532,7 +532,7 @@ Error Handling
     
     # Check for valid images
     valid_images = [img for img in generator.list_images() 
-                   if validate_image(os.path.join(generator.input_folder, img))]
+                    if validate_image(os.path.join(generator.input_folder, img))]
     
     if not valid_images:
         raise ValueError("No valid images found in input folder")
@@ -569,5 +569,27 @@ Performance Considerations
     generator.set_compression(True, quality=95, max_size=(1024, 1024))
     
     # No compression for small images
+    import os
+    image_files = [os.path.join(generator.input_folder, f) for f in generator.list_images()]
+    total_size = sum(os.path.getsize(f) for f in image_files if os.path.exists(f))
     if total_size < 1024 * 1024:  # 1MB
         generator.set_compression(False)
+
+**Best Practices:**
+
+* Use compression for distribution packages
+* Test different quality settings for your use case
+* Monitor memory usage with large image sets
+* Consider using multiple smaller generators for very large projects
+* Validate generated modules before deployment
+
+**Troubleshooting:**
+
+Common issues and solutions:
+
+* **Out of memory**: Reduce image sizes or process in batches
+* **Slow generation**: Enable compression and reduce quality
+* **Large output files**: Use higher compression and smaller max_size
+* **Import errors**: Check that all dependencies are installed
+
+For more information, see the :doc:`../examples/index` and :doc:`../user_guide/index`.
