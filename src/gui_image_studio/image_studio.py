@@ -3592,6 +3592,7 @@ class HelpWindow:
         """Print the help content."""
         try:
             import os
+            import shutil
             import subprocess
             import tempfile
 
@@ -3605,39 +3606,60 @@ class HelpWindow:
 
             # Try to open with default text editor for printing
             if os.name == "nt":  # Windows
-                os.startfile(temp_file, "print")
+                # Validate that the temp file exists and is in a safe location
+                if os.path.exists(temp_file) and os.path.dirname(temp_file) == tempfile.gettempdir():
+                    try:
+                        os.startfile(temp_file, "print")
+                    except OSError as e:
+                        raise Exception(f"Failed to open file for printing: {str(e)}")
+                else:
+                    raise Exception("Invalid temporary file path for printing")
             else:  # Unix/Linux/Mac
-                try:
-                    # Try lpr first (most common Unix/Linux print command)
-                    subprocess.run(
-                        ["lpr", temp_file], check=True, capture_output=True, text=True
-                    )
-                except FileNotFoundError:
-                    # lpr not found, try alternative print commands
+                # Try lpr first (most common Unix/Linux print command)
+                lpr_path = shutil.which("lpr")
+                if lpr_path:
                     try:
                         subprocess.run(
-                            ["lp", temp_file],
-                            check=True,
-                            capture_output=True,
-                            text=True,
+                            [lpr_path, temp_file], check=True, capture_output=True, text=True
                         )
-                    except FileNotFoundError:
-                        # No print command found, try opening with default application
+                    except subprocess.CalledProcessError as e:
+                        raise Exception(
+                            f"Print command failed: {e.stderr if e.stderr else str(e)}"
+                        )
+                else:
+                    # lpr not found, try alternative print commands
+                    lp_path = shutil.which("lp")
+                    if lp_path:
                         try:
                             subprocess.run(
-                                ["xdg-open", temp_file],
+                                [lp_path, temp_file],
                                 check=True,
                                 capture_output=True,
                                 text=True,
                             )
-                        except FileNotFoundError:
+                        except subprocess.CalledProcessError as e:
+                            raise Exception(
+                                f"Print command failed: {e.stderr if e.stderr else str(e)}"
+                            )
+                    else:
+                        # No print command found, try opening with default application
+                        xdg_open_path = shutil.which("xdg-open")
+                        if xdg_open_path:
+                            try:
+                                subprocess.run(
+                                    [xdg_open_path, temp_file],
+                                    check=True,
+                                    capture_output=True,
+                                    text=True,
+                                )
+                            except subprocess.CalledProcessError as e:
+                                raise Exception(
+                                    f"Print command failed: {e.stderr if e.stderr else str(e)}"
+                                )
+                        else:
                             raise Exception(
                                 "No suitable print command found. Please install lpr, lp, or ensure xdg-open is available."
                             )
-                except subprocess.CalledProcessError as e:
-                    raise Exception(
-                        f"Print command failed: {e.stderr if e.stderr else str(e)}"
-                    )
 
         except Exception as e:
             messagebox.showerror("Print Error", f"Could not print: {str(e)}")
