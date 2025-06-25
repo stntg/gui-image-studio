@@ -160,13 +160,13 @@ Migration Guide
 
    .. code-block:: python
 
-      # Old (0.9.x)
-      image = load_image("photo.jpg")
-      tinted = tint_image(image, "#FF0000")
+       # Old (0.9.x)
+       image = load_image("photo.jpg")
+       tinted = tint_image(image, "#FF0000")
 
-      # New (1.0.0)
-      image = gui_image_studio.get_image("photo.jpg")
-      tinted = gui_image_studio.apply_tint(image, "#FF0000")
+       # New (1.0.0)
+       image = gui_image_studio.get_image("photo.jpg")
+       tinted = gui_image_studio.apply_tint(image, "#FF0000")
 
 2. **Update CLI commands:**
 
@@ -184,13 +184,13 @@ Migration Guide
 
    .. code-block:: python
 
-      # Old (0.9.x)
-      from image_loader import get_image
+       # Old (0.9.x)
+       from image_loader import get_image
 
-      # New (1.0.0)
-      import gui_image_studio
-      # or
-      from gui_image_studio import get_image
+       # New (1.0.0)
+       import gui_image_studio
+       # or
+       from gui_image_studio import get_image
 
 **Deprecated Functions (Removed in 1.0.0):**
 - ``load_image()`` → Use ``get_image()``

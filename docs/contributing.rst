@@ -167,8 +167,7 @@ Coding Standards
 .. code-block:: python
 
     def process_image(image: Image.Image, filter_type: str, intensity: float = 1.0) -> Image.Image:
-        """
-        Apply a filter to an image.
+        """Apply a filter to an image.
 
         Args:
             image: The input PIL Image object

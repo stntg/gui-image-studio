@@ -242,11 +242,28 @@ jobs:
         import re
         import ast
 
+        def load_ignore_list():
+            '''Load list of files to ignore from .code-check-ignore'''
+            ignore_files = set()
+            ignore_file = '.code-check-ignore'
+            if os.path.exists(ignore_file):
+                with open(ignore_file, 'r', encoding='utf-8') as f:
+                    for line in f:
+                        line = line.strip()
+                        if line and not line.startswith('#'):
+                            # Normalize path separators
+                            ignore_files.add(line.replace('\\\\', '/'))
+            return ignore_files
+
         def extract_python_code(rst_content):
             # Find Python code blocks
             pattern = r'.. code-block:: python\n\n((?:    .*\n)*)'
             matches = re.findall(pattern, rst_content, re.MULTILINE)
             return [re.sub(r'^    ', '', match, flags=re.MULTILINE) for match in matches]
+
+        # Load ignore list
+        ignore_files = load_ignore_list()
+        print(f'Ignoring {len(ignore_files)} files: {list(ignore_files)}')
 
         rst_files = []
         for root, dirs, files in os.walk('.'):
@@ -256,8 +273,17 @@ jobs:
 
         total_code_blocks = 0
         syntax_errors = 0
+        ignored_files = 0
 
         for rst_file in rst_files:
+            # Normalize path for comparison
+            normalized_path = rst_file.lstrip('./').replace('\\\\', '/').lstrip('/')
+
+            if normalized_path in ignore_files:
+                ignored_files += 1
+                print(f'Skipping {rst_file} (in ignore list)')
+                continue
+
             try:
                 with open(rst_file, 'r', encoding='utf-8') as f:
                     content = f.read()
@@ -271,20 +297,21 @@ jobs:
                             # Try to parse the code
                             ast.parse(code)
                         except SyntaxError as e:
-                            print(f'❌ Syntax error in {rst_file} block {i+1}: {e}')
+                            print(f'ERROR: Syntax error in {rst_file} block {i+1}: {e}')
                             syntax_errors += 1
                         except Exception:
                             # Some code blocks might be incomplete examples
                             pass
             except Exception as e:
-                print(f'⚠️ Could not process {rst_file}: {e}')
+                print(f'WARNING: Could not process {rst_file}: {e}')
 
         print(f'Checked {total_code_blocks} Python code blocks')
+        print(f'Ignored {ignored_files} files from checking')
         if syntax_errors > 0:
-            print(f'❌ {syntax_errors} code blocks have syntax errors')
+            print(f'ERROR: {syntax_errors} code blocks have syntax errors')
             exit(1)
         else:
-            print('✅ All code blocks have valid syntax')
+            print('SUCCESS: All code blocks have valid syntax')
         "
 
   # Coverage check

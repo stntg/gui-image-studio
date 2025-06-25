@@ -431,9 +431,7 @@ Advanced Usage
 .. code-block:: python
 
     # Create custom template file
-    template = '''
-    """
-    Custom embedded images module
+    template = '''"""Custom embedded images module
     Generated: 2024-01-01 12:00:00
     """
 

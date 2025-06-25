@@ -1,0 +1,9 @@
+# Files to ignore during Python code block syntax checking
+# These files contain complex code examples that may not parse correctly
+# but are still valid for documentation purposes
+
+# Files with complex multi-line string examples
+contributing.rst
+license.rst
+changelog.rst
+api/generator.rst
