@@ -19,6 +19,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Planned bug fixes for future releases
 
+
+## [1.0.1] - 2025-06-25
+
+### Security
+
+- security: fix partial executable path vulnerability in Windows print function.
+- Fix security issue and reduce method complexity in print_content.
+- Fix security vulnerabilities in process execution.
+
+### Changed
+
+- refactor: reduce cyclomatic complexity in build-docs.py.
+- Update docs.yml.
+- Test pre-commit hooks.
+
+### Fixed
+
+- Fix Python code block syntax errors in documentation.
+- Fix GitHub Actions workflow and documentation syntax errors.
+- Complete pre-commit hooks fix.
+
+### Removed
+
+- Remove test file.
+
 ## [1.0.0] - 2024-12-19
 
 ### Added

@@ -45,7 +45,7 @@ For more examples and documentation, see:
 https://github.com/stntg/gui_image_studio
 """
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 __author__ = "Stan Griffiths"
 __email__ = "stantgriffiths@gmail.com"
 __license__ = "MIT"

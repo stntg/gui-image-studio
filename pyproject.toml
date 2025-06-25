@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gui-image-studio"
-version = "1.0.0"
+version = "1.0.1"
 description = "GUI Image Studio - Complete toolkit for creating, embedding, and managing images in Python GUI applications"
 readme = "README.md"
 license = {text = "MIT"}
