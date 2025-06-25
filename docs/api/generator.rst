@@ -25,51 +25,34 @@ This is particularly useful for:
 * Reducing external dependencies
 * Improving application startup time
 
-Main Classes
-------------
+Main Functions
+--------------
 
-ImageGenerator
-~~~~~~~~~~~~~~
+embed_images_from_folder
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: gui_image_studio.generator.ImageGenerator
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. autofunction:: gui_image_studio.generator.embed_images_from_folder
 
-The main class for generating embedded image resources.
-
-**Initialization:**
-
-.. code-block:: python
-
-    from gui_image_studio.generator import ImageGenerator
-
-    generator = ImageGenerator(
-        input_folder="assets/icons",
-        output_file="embedded_icons.py",
-        module_name="embedded_icons"
-    )
+The main function for generating embedded image resources from a folder.
 
 **Basic Usage:**
 
 .. code-block:: python
 
-    # Generate embedded images
-    generator.generate()
+    from gui_image_studio import embed_images_from_folder
 
-**Advanced Configuration:**
-
-.. code-block:: python
-
-    generator = ImageGenerator(
-        input_folder="assets",
-        output_file="resources.py",
-        module_name="resources",
-        compress=True,
-        quality=85,
-        max_size=(512, 512),
-        formats=['png', 'jpg', 'gif']
+    # Generate embedded images from a folder
+    embed_images_from_folder(
+        folder_path="assets/icons",
+        output_file="embedded_icons.py",
+        compression_quality=85
     )
+
+**Parameters:**
+
+* ``folder_path`` (str): Path to the folder containing images
+* ``output_file`` (str): Name of the generated Python file (default: "embedded_images.py")
+* ``compression_quality`` (int): JPEG/WebP quality 1-100 (default: 85)
 
 **Methods:**
 
@@ -450,14 +433,14 @@ Advanced Usage
     # Create custom template file
     template = '''"""
     Custom embedded images module
-    Generated: {timestamp}
+    Generated: 2024-01-01 12:00:00
     """
 
-    IMAGES = {images_dict}
+    IMAGES = {}
 
     def get_image(name):
         """Custom implementation"""
-        pass
+        return IMAGES.get(name)
     '''
 
     generator = ImageGenerator("assets", template=template)

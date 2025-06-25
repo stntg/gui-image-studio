@@ -42,6 +42,7 @@ dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
     "pytest-xvfb>=2.0; sys_platform=='linux'",
+    "pytest-timeout>=2.0",
     "black>=22.0",
     "flake8>=5.0",
     "mypy>=1.0",
@@ -62,6 +63,7 @@ test = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
     "pytest-xvfb>=2.0; sys_platform=='linux'",
+    "pytest-timeout>=2.0",
 ]
 examples = [
     "customtkinter>=5.0.0",

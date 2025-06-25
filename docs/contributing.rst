@@ -190,7 +190,7 @@ Coding Standards
         # Implementation would go here
         if filter_type not in ['blur', 'sharpen', 'emboss']:
             raise ValueError(f"Unsupported filter type: {filter_type}")
-        
+
         # Apply the filter based on type and intensity
         # This is a placeholder implementation
         return image

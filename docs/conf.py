@@ -6,7 +6,8 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath(".."))
+# Add the source directory to the path
+sys.path.insert(0, os.path.abspath("../src"))
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
@@ -42,13 +43,29 @@ extensions = [
 ]
 
 templates_path = ["_templates"]
-exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
+exclude_patterns = [
+    "_build",
+    "Thumbs.db",
+    ".DS_Store",
+    # Exclude development/internal documentation
+    "README.md",
+    "COVERAGE.md",
+    "EXAMPLES_SUMMARY.md",
+    "GIF_ANIMATION_SUMMARY.md",
+    "IMAGE_DESIGNER_GUI.md",
+    "GITHUB_PAGES_SETUP.md",
+]
 
 # The suffix(es) of source filenames.
-source_suffix = {
-    ".rst": None,
-    ".md": "myst_parser",
-}
+source_suffix = [".rst", ".md"]
+
+# MyST parser configuration
+myst_enable_extensions = [
+    "deflist",
+    "tasklist",
+    "html_admonition",
+    "html_image",
+]
 
 # The master toctree document.
 master_doc = "index"
@@ -160,7 +177,6 @@ texinfo_documents = [
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3/", None),
-    "tkinter": ("https://docs.python.org/3/library/tkinter.html", None),
     "pillow": ("https://pillow.readthedocs.io/en/stable/", None),
 }
 
@@ -183,3 +199,12 @@ autodoc_typehints = "description"
 # -- Options for autosummary extension ---------------------------------------
 
 autosummary_generate = True
+
+# -- Options for autodoc extension -------------------------------------------
+
+# Mock imports for modules that might not be available during doc build
+autodoc_mock_imports = ["threepanewindows", "customtkinter"]
+
+# Don't fail on import errors
+autodoc_inherit_docstrings = True
+autodoc_member_order = "bysource"

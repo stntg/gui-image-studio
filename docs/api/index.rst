@@ -25,11 +25,6 @@ Core Image Processing
    :toctree: _autosummary
 
    gui_image_studio.get_image
-   gui_image_studio.save_image
-   gui_image_studio.resize_image
-   gui_image_studio.apply_tint
-   gui_image_studio.rotate_image
-   gui_image_studio.flip_image
 
 GUI Application
 ~~~~~~~~~~~~~~~
@@ -37,7 +32,6 @@ GUI Application
 .. autosummary::
    :toctree: _autosummary
 
-   gui_image_studio.ImageStudio
    gui_image_studio.launch_designer
 
 Resource Generation
@@ -46,8 +40,7 @@ Resource Generation
 .. autosummary::
    :toctree: _autosummary
 
-   gui_image_studio.ImageGenerator
-   gui_image_studio.generate_embedded_images
+   gui_image_studio.embed_images_from_folder
 
 Sample Creation
 ~~~~~~~~~~~~~~~
@@ -55,8 +48,7 @@ Sample Creation
 .. autosummary::
    :toctree: _autosummary
 
-   gui_image_studio.SampleCreator
-   gui_image_studio.create_samples
+   gui_image_studio.create_sample_images
 
 Command Line Interface
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -64,10 +56,9 @@ Command Line Interface
 .. autosummary::
    :toctree: _autosummary
 
-   gui_image_studio.cli.main
-   gui_image_studio.cli.designer_main
-   gui_image_studio.cli.generator_main
-   gui_image_studio.cli.samples_main
+   gui_image_studio.cli.generate_embedded_images
+   gui_image_studio.cli.create_sample_images
+   gui_image_studio.cli.launch_designer
 
 Quick Reference
 ---------------
@@ -80,11 +71,10 @@ For most applications, you'll primarily use these functions:
 .. code-block:: python
 
    from gui_image_studio import (
-       get_image,           # Load images from files or resources
-       save_image,          # Save images to files
-       resize_image,        # Resize images
-       apply_tint,          # Apply color tints
-       ImageStudio,         # Main GUI application class
+       get_image,                    # Load images from files or resources
+       embed_images_from_folder,     # Generate embedded images
+       create_sample_images,         # Create sample images
+       launch_designer,              # Launch GUI designer
    )
 
 Basic Usage Pattern
@@ -94,15 +84,20 @@ Basic Usage Pattern
 
    import gui_image_studio
 
-   # Load an image
-   image = gui_image_studio.get_image("path/to/image.png")
+   # Load an image with transformations
+   image = gui_image_studio.get_image(
+       "path/to/image.png",
+       framework="tkinter",
+       size=(800, 600),
+       tint_color=(255, 107, 107),
+       tint_intensity=0.3
+   )
 
-   # Process the image
-   processed = gui_image_studio.apply_tint(image, "#FF6B6B")
-   resized = gui_image_studio.resize_image(processed, (800, 600))
+   # Create sample images
+   gui_image_studio.create_sample_images()
 
-   # Save the result
-   gui_image_studio.save_image(resized, "output.png")
+   # Generate embedded images from folder
+   gui_image_studio.embed_images_from_folder("images/", "embedded.py")
 
 Common Parameters
 ~~~~~~~~~~~~~~~~~
@@ -211,42 +206,58 @@ Examples by Category
 
 .. code-block:: python
 
-   # Resize maintaining aspect ratio
-   resized = gui_image_studio.resize_image(image, (800, 600))
+   # Load image with transformations applied
+   resized = gui_image_studio.get_image(
+       "image.png",
+       size=(800, 600)
+   )
 
    # Apply color effects
-   tinted = gui_image_studio.apply_tint(image, "#FF6B6B")
+   tinted = gui_image_studio.get_image(
+       "image.png",
+       tint_color=(255, 107, 107),
+       tint_intensity=0.3
+   )
 
    # Geometric transformations
-   rotated = gui_image_studio.rotate_image(image, 45)
-   flipped = gui_image_studio.flip_image(image, horizontal=True)
+   rotated = gui_image_studio.get_image(
+       "image.png",
+       rotate=45
+   )
 
 **Batch Processing**
 
 .. code-block:: python
 
-   import os
+   # Generate embedded images from a folder
+   gui_image_studio.embed_images_from_folder(
+       "input_images/",
+       "embedded_images.py",
+       compression_quality=85
+   )
 
-   input_folder = "input_images/"
-   output_folder = "processed_images/"
-
-   for filename in os.listdir(input_folder):
-       if filename.lower().endswith(('.png', '.jpg', '.jpeg')):
-           image = gui_image_studio.get_image(os.path.join(input_folder, filename))
-           processed = gui_image_studio.apply_tint(image, "#FF6B6B")
-           output_path = os.path.join(output_folder, f"tinted_{filename}")
-           gui_image_studio.save_image(processed, output_path)
+   # Create sample images for testing
+   gui_image_studio.create_sample_images()
 
 **GUI Integration**
 
 .. code-block:: python
 
    import tkinter as tk
-   from gui_image_studio import ImageStudio
+   import gui_image_studio
 
+   # Launch the GUI designer
+   gui_image_studio.launch_designer()
+
+   # Or use images in your own GUI
    root = tk.Tk()
-   app = ImageStudio(root)
-   app.pack(fill=tk.BOTH, expand=True)
+   image = gui_image_studio.get_image(
+       "icon.png",
+       framework="tkinter",
+       size=(64, 64)
+   )
+   label = tk.Label(root, image=image)
+   label.pack()
    root.mainloop()
 
 Migration Guide
@@ -259,10 +270,9 @@ Migration Guide
 * Type hints have been added throughout
 * Some deprecated functions have been removed
 
-**Deprecated Functions**
+**Key Changes**
 
-These functions are deprecated and will be removed in future versions:
-
-* ``load_image()`` → Use ``get_image()``
-* ``tint_image()`` → Use ``apply_tint()``
-* ``create_gif()`` → Use ``create_animation()``
+* Simplified API with focus on ``get_image()`` function
+* All image transformations now handled through ``get_image()`` parameters
+* Embedded image generation through ``embed_images_from_folder()``
+* GUI designer accessible via ``launch_designer()``

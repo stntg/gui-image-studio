@@ -25,7 +25,7 @@ Main Commands
 Designer Application
 ~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: gui_image_studio.cli.designer_main
+.. autofunction:: gui_image_studio.cli.launch_designer
 
 Launch the main GUI Image Studio application.
 
@@ -73,7 +73,7 @@ Launch the main GUI Image Studio application.
 Sample Creator
 ~~~~~~~~~~~~~~
 
-.. autofunction:: gui_image_studio.cli.samples_main
+.. autofunction:: gui_image_studio.cli.create_sample_images
 
 Generate sample images for testing and development.
 
@@ -130,7 +130,7 @@ Generate sample images for testing and development.
 Resource Generator
 ~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: gui_image_studio.cli.generator_main
+.. autofunction:: gui_image_studio.cli.generate_embedded_images
 
 Generate embedded image resources for distribution.
 
@@ -209,59 +209,14 @@ Generate embedded image resources for distribution.
         """List all available embedded images."""
         return list(IMAGES.keys())
 
-Utility Functions
------------------
+Available Functions
+-------------------
 
-Common CLI Utilities
-~~~~~~~~~~~~~~~~~~~~
+The CLI module provides the following functions that can be used programmatically:
 
-.. autofunction:: gui_image_studio.cli.parse_size
-
-Parse size string (e.g., "800x600") into tuple.
-
-**Parameters:**
-  * ``size_str`` (str): Size string in format "WIDTHxHEIGHT"
-
-**Returns:**
-  * ``Tuple[int, int]``: Width and height tuple
-
-**Example:**
-
-.. code-block:: python
-
-    width, height = parse_size("1920x1080")
-    # Returns: (1920, 1080)
-
-.. autofunction:: gui_image_studio.cli.validate_format
-
-Validate image format string.
-
-**Parameters:**
-  * ``format_str`` (str): Format string (e.g., "png", "jpg")
-
-**Returns:**
-  * ``bool``: True if format is supported
-
-**Example:**
-
-.. code-block:: python
-
-    is_valid = validate_format("png")  # Returns: True
-    is_valid = validate_format("xyz")  # Returns: False
-
-.. autofunction:: gui_image_studio.cli.setup_logging
-
-Setup logging configuration for CLI tools.
-
-**Parameters:**
-  * ``verbose`` (bool): Enable verbose logging
-  * ``debug`` (bool): Enable debug logging
-
-**Example:**
-
-.. code-block:: python
-
-    setup_logging(verbose=True, debug=False)
+.. autofunction:: gui_image_studio.cli.generate_embedded_images
+.. autofunction:: gui_image_studio.cli.create_sample_images
+.. autofunction:: gui_image_studio.cli.launch_designer
 
 Configuration
 -------------

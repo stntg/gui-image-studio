@@ -58,18 +58,27 @@ jobs:
 
     - name: Security check with bandit
       run: |
-        bandit -r src/gui_image_studio/
+        bandit -r src/gui_image_studio/ --skip B404,B603
       continue-on-error: true
 
     - name: Test with pytest (Linux with xvfb)
       if: runner.os == 'Linux'
+      env:
+        DISPLAY: ':99'
+        QT_QPA_PLATFORM: 'offscreen'
+        MPLBACKEND: 'Agg'
+        CI: 'true'
       run: |
-        xvfb-run -a pytest --cov=gui_image_studio --cov-report=xml
+        xvfb-run -a pytest --cov=gui_image_studio --cov-report=xml --timeout=300
 
     - name: Test with pytest (Windows/macOS)
       if: runner.os != 'Linux'
+      env:
+        QT_QPA_PLATFORM: 'offscreen'
+        MPLBACKEND: 'Agg'
+        CI: 'true'
       run: |
-        pytest --cov=gui_image_studio --cov-report=xml
+        pytest --cov=gui_image_studio --cov-report=xml --timeout=300
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3

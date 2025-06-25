@@ -69,9 +69,8 @@ jobs:
         # Create sample images that documentation examples reference
         python -c "
         try:
-            from gui_image_studio.sample_creator import SampleCreator
-            creator = SampleCreator('sample_images', count=3)
-            creator.create_all_samples()
+            from gui_image_studio import create_sample_images
+            create_sample_images()
             print('Sample images created successfully')
         except Exception as e:
             print(f'Could not create samples: {e}')
@@ -83,8 +82,11 @@ jobs:
     - name: Build HTML documentation
       run: |
         cd docs
-        make clean
-        make html
+        # Clean previous builds
+        rm -rf _build || true
+
+        # Build HTML documentation
+        sphinx-build -b html . _build/html
 
         # Check for build warnings
         if [ -f _build/html/.buildinfo ]; then
@@ -97,17 +99,23 @@ jobs:
     - name: Build PDF documentation
       run: |
         cd docs
-        make pdf || echo "⚠️ PDF build failed, continuing..."
+        if sphinx-build -b latex . _build/latex && cd _build/latex && make; then
+          echo "✅ PDF documentation built successfully"
+          echo "PDF_BUILD_SUCCESS=true" >> $GITHUB_ENV
+        else
+          echo "⚠️ PDF build failed, continuing..."
+          echo "PDF_BUILD_SUCCESS=false" >> $GITHUB_ENV
+        fi
 
     - name: Run documentation tests
       run: |
         cd docs
 
         # Test doctests in documentation
-        make doctest || echo "⚠️ Some doctests failed"
+        sphinx-build -b doctest . _build/doctest || echo "⚠️ Some doctests failed"
 
         # Check for broken links
-        make linkcheck || echo "⚠️ Some links may be broken"
+        sphinx-build -b linkcheck . _build/linkcheck || echo "⚠️ Some links may be broken"
 
         # Validate HTML
         python -c "
@@ -140,7 +148,7 @@ jobs:
 
     - name: Upload PDF artifact
       uses: actions/upload-artifact@v4
-      if: always()
+      if: env.PDF_BUILD_SUCCESS == 'true'
       with:
         name: documentation-pdf
         path: docs/_build/latex/*.pdf
@@ -303,7 +311,7 @@ jobs:
         cd docs
 
         # Build with coverage checking
-        make coverage || true
+        sphinx-build -b coverage . _build/coverage || true
 
         # Analyze coverage results
         python -c "

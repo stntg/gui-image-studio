@@ -3617,7 +3617,7 @@ class HelpWindow:
     def _print_on_windows(self, temp_file):
         """Handle printing on Windows systems."""
         import os
-        import subprocess
+        import subprocess  # nosec B404 - subprocess needed for system printing
         import tempfile
 
         self._validate_temp_file(temp_file)
@@ -3631,7 +3631,7 @@ class HelpWindow:
             raise Exception("Windows command processor not found")
 
         try:
-            subprocess.run(
+            subprocess.run(  # nosec B603 - controlled subprocess call with validated inputs
                 [cmd_path, "/c", "start", "/min", "", temp_file],
                 check=True,
                 capture_output=True,
@@ -3688,10 +3688,12 @@ class HelpWindow:
 
     def _run_print_command(self, command):
         """Run a print command and handle errors."""
-        import subprocess
+        import subprocess  # nosec B404 - subprocess needed for system printing
 
         try:
-            subprocess.run(command, check=True, capture_output=True, text=True)
+            subprocess.run(
+                command, check=True, capture_output=True, text=True
+            )  # nosec B603 - controlled subprocess call with validated inputs
         except subprocess.CalledProcessError as e:
             raise Exception(f"Print command failed: {e.stderr if e.stderr else str(e)}")
 

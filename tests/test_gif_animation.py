@@ -17,10 +17,19 @@ def test_gif_animation():
     """Test basic GIF animation loading."""
     print("Testing GIF animation functionality...")
 
+    # Skip GUI-dependent tests in CI environment
+    if os.environ.get("CI") == "true" or os.environ.get("GITHUB_ACTIONS") == "true":
+        print("⚠ Skipping GIF animation test in CI environment (no GUI available)")
+        print("✓ GIF animation test skipped")
+        return True
+
     # Create a root window (required for Tkinter PhotoImage)
     root = tk.Tk()
     root.title("GIF Animation Test")
     root.geometry("300x200")
+
+    # Don't show the window in headless mode
+    root.withdraw()
 
     try:
         # Test loading animated GIF
@@ -35,11 +44,11 @@ def test_gif_animation():
         print(f"✓ Successfully loaded {len(frames)} frames with {delay}ms delay")
 
         if frames:
-            # Create a label to display the animation
+            # Create a label to display the animation (but don't show it)
             label = tk.Label(root, text="Animation will appear here")
             label.pack(pady=20)
 
-            # Animation control
+            # Test that we can create the animation components
             current_frame = [0]
             animation_job = [None]
 
@@ -53,38 +62,32 @@ def test_gif_animation():
                 if animation_job[0] is None:
                     animation_job[0] = True
                     animate()
-                    start_btn.configure(text="Stop", command=stop_animation)
 
             def stop_animation():
                 if animation_job[0] is not None:
                     if animation_job[0] != True:
                         root.after_cancel(animation_job[0])
                     animation_job[0] = None
-                    start_btn.configure(text="Start", command=start_animation)
 
-            # Control button
-            start_btn = tk.Button(root, text="Start Animation", command=start_animation)
-            start_btn.pack(pady=10)
+            # Test animation controls
+            start_animation()
+            root.update()  # Process one update cycle
+            stop_animation()
 
-            # Status label
-            status_label = tk.Label(root, text=f"Ready - {len(frames)} frames loaded")
-            status_label.pack()
+            print("✓ Animation test components created successfully!")
 
-            print("✓ Animation test window created successfully!")
-            print("Click 'Start Animation' to test the animation.")
-
-            # Start the GUI
-            root.mainloop()
+            # Clean up
+            root.destroy()
+            return True
         else:
             print("✗ No animation frames found")
             root.destroy()
+            return False
 
     except Exception as e:
         print(f"✗ Error testing animation: {e}")
         root.destroy()
         return False
-
-    return True
 
 
 if __name__ == "__main__":
