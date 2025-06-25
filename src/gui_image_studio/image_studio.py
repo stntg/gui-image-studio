@@ -3591,78 +3591,105 @@ class HelpWindow:
     def print_content(self):
         """Print the help content."""
         try:
-            import os
-            import shutil
-            import subprocess
-            import tempfile
-
-            # Create temporary file
-            with tempfile.NamedTemporaryFile(
-                mode="w", suffix=".txt", delete=False
-            ) as f:
-                content = self.text_widget.get(1.0, tk.END)
-                f.write(content)
-                temp_file = f.name
-
-            # Try to open with default text editor for printing
-            if os.name == "nt":  # Windows
-                # Validate that the temp file exists and is in a safe location
-                if os.path.exists(temp_file) and os.path.dirname(temp_file) == tempfile.gettempdir():
-                    try:
-                        os.startfile(temp_file, "print")
-                    except OSError as e:
-                        raise Exception(f"Failed to open file for printing: {str(e)}")
-                else:
-                    raise Exception("Invalid temporary file path for printing")
-            else:  # Unix/Linux/Mac
-                # Try lpr first (most common Unix/Linux print command)
-                lpr_path = shutil.which("lpr")
-                if lpr_path:
-                    try:
-                        subprocess.run(
-                            [lpr_path, temp_file], check=True, capture_output=True, text=True
-                        )
-                    except subprocess.CalledProcessError as e:
-                        raise Exception(
-                            f"Print command failed: {e.stderr if e.stderr else str(e)}"
-                        )
-                else:
-                    # lpr not found, try alternative print commands
-                    lp_path = shutil.which("lp")
-                    if lp_path:
-                        try:
-                            subprocess.run(
-                                [lp_path, temp_file],
-                                check=True,
-                                capture_output=True,
-                                text=True,
-                            )
-                        except subprocess.CalledProcessError as e:
-                            raise Exception(
-                                f"Print command failed: {e.stderr if e.stderr else str(e)}"
-                            )
-                    else:
-                        # No print command found, try opening with default application
-                        xdg_open_path = shutil.which("xdg-open")
-                        if xdg_open_path:
-                            try:
-                                subprocess.run(
-                                    [xdg_open_path, temp_file],
-                                    check=True,
-                                    capture_output=True,
-                                    text=True,
-                                )
-                            except subprocess.CalledProcessError as e:
-                                raise Exception(
-                                    f"Print command failed: {e.stderr if e.stderr else str(e)}"
-                                )
-                        else:
-                            raise Exception(
-                                "No suitable print command found. Please install lpr, lp, or ensure xdg-open is available."
-                            )
-
+            temp_file = self._create_temp_file()
+            self._execute_print_command(temp_file)
         except Exception as e:
             messagebox.showerror("Print Error", f"Could not print: {str(e)}")
+
+    def _create_temp_file(self):
+        """Create a temporary file with the help content."""
+        import tempfile
+        
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
+            content = self.text_widget.get(1.0, tk.END)
+            f.write(content)
+            return f.name
+
+    def _execute_print_command(self, temp_file):
+        """Execute the appropriate print command based on the operating system."""
+        import os
+        
+        if os.name == "nt":
+            self._print_on_windows(temp_file)
+        else:
+            self._print_on_unix(temp_file)
+
+    def _print_on_windows(self, temp_file):
+        """Handle printing on Windows systems."""
+        import os
+        import subprocess
+        import tempfile
+        
+        self._validate_temp_file(temp_file)
+        
+        try:
+            subprocess.run(
+                ["cmd", "/c", "start", "/min", "", temp_file],
+                check=True,
+                capture_output=True,
+                text=True,
+                timeout=30
+            )
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
+            raise Exception(f"Failed to open file for printing: {str(e)}")
+
+    def _validate_temp_file(self, temp_file):
+        """Validate that the temporary file is in a safe location."""
+        import os
+        import tempfile
+        
+        if not (os.path.exists(temp_file) and 
+                os.path.dirname(temp_file) == tempfile.gettempdir()):
+            raise Exception("Invalid temporary file path for printing")
+
+    def _print_on_unix(self, temp_file):
+        """Handle printing on Unix/Linux/Mac systems."""
+        import shutil
+        
+        # Try print commands in order of preference
+        print_commands = [
+            ("lpr", self._try_lpr_command),
+            ("lp", self._try_lp_command),
+            ("xdg-open", self._try_xdg_open_command)
+        ]
+        
+        for cmd_name, cmd_func in print_commands:
+            cmd_path = shutil.which(cmd_name)
+            if cmd_path:
+                cmd_func(cmd_path, temp_file)
+                return
+        
+        raise Exception(
+            "No suitable print command found. Please install lpr, lp, or ensure xdg-open is available."
+        )
+
+    def _try_lpr_command(self, lpr_path, temp_file):
+        """Try to print using the lpr command."""
+        self._run_print_command([lpr_path, temp_file])
+
+    def _try_lp_command(self, lp_path, temp_file):
+        """Try to print using the lp command."""
+        self._run_print_command([lp_path, temp_file])
+
+    def _try_xdg_open_command(self, xdg_open_path, temp_file):
+        """Try to print using the xdg-open command."""
+        self._run_print_command([xdg_open_path, temp_file])
+
+    def _run_print_command(self, command):
+        """Run a print command and handle errors."""
+        import subprocess
+        
+        try:
+            subprocess.run(
+                command,
+                check=True,
+                capture_output=True,
+                text=True
+            )
+        except subprocess.CalledProcessError as e:
+            raise Exception(
+                f"Print command failed: {e.stderr if e.stderr else str(e)}"
+            )
 
     def copy_content(self):
         """Copy all content to clipboard."""
