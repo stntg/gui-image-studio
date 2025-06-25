@@ -3622,13 +3622,20 @@ class HelpWindow:
         
         self._validate_temp_file(temp_file)
         
+        # Use full path to cmd.exe for security
+        cmd_path = os.path.join(os.environ.get('SYSTEMROOT', 'C:\\Windows'), 'System32', 'cmd.exe')
+        
+        if not os.path.exists(cmd_path):
+            raise Exception("Windows command processor not found")
+        
         try:
             subprocess.run(
-                ["cmd", "/c", "start", "/min", "", temp_file],
+                [cmd_path, "/c", "start", "/min", "", temp_file],
                 check=True,
                 capture_output=True,
                 text=True,
-                timeout=30
+                timeout=30,
+                cwd=tempfile.gettempdir()  # Set working directory to temp for additional security
             )
         except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
             raise Exception(f"Failed to open file for printing: {str(e)}")
