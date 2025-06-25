@@ -122,7 +122,7 @@ def _clean_build_directory():
     """Clean the previous build directory."""
     print("🧹 Cleaning previous build...")
     import shutil as sh
-    
+
     if Path("_build").exists():
         sh.rmtree("_build")
 
@@ -131,12 +131,12 @@ def _build_with_sphinx_direct(format_type, clean):
     """Build documentation using sphinx-build directly."""
     print("❌ Make command not found. Using sphinx-build directly...")
     sphinx_build = find_executable("sphinx-build")
-    
+
     if clean:
         _clean_build_directory()
-    
+
     print(f"📚 Building {format_type} documentation...")
-    
+
     if format_type == "html":
         return run_command([sphinx_build, "-b", "html", ".", "_build/html"])
     elif format_type == "pdf":
@@ -150,7 +150,7 @@ def _build_with_sphinx_direct(format_type, clean):
 def _build_pdf_with_sphinx(sphinx_build):
     """Build PDF documentation using sphinx-build and pdflatex."""
     result = run_command([sphinx_build, "-b", "latex", ".", "_build/latex"])
-    
+
     if result.returncode == 0:
         latex_dir = Path("_build/latex")
         if latex_dir.exists():
@@ -161,7 +161,7 @@ def _build_pdf_with_sphinx(sphinx_build):
                 result = run_command([pdflatex, "*.tex"], check=False)
             finally:
                 os.chdir(original_dir)
-    
+
     return result
 
 
@@ -170,7 +170,7 @@ def _build_with_make(make_cmd, format_type, clean):
     if clean:
         print("🧹 Cleaning previous build...")
         run_command([make_cmd, "clean"])
-    
+
     print(f"📚 Building {format_type} documentation...")
     return run_command([make_cmd, format_type])
 
@@ -199,7 +199,7 @@ def build_docs(format_type="html", clean=False):
 
     try:
         make_cmd = get_make_command()
-        
+
         # Choose build method based on available tools
         if make_cmd:
             result = _build_with_make(make_cmd, format_type, clean)
@@ -277,28 +277,40 @@ def _run_single_check(command, check_name, success_msg, failure_msg):
     """Run a single documentation check and report results."""
     print(f"\n{check_name}")
     result = run_command(command, check=False)
-    
+
     if result.returncode == 0:
         print(f"✅ {success_msg}")
     else:
         print(f"⚠️ {failure_msg}")
-    
+
     return result.returncode == 0
 
 
 def _run_checks_with_sphinx(sphinx_build):
     """Run documentation checks using sphinx-build directly."""
     print("❌ Make command not found. Using sphinx-build directly for checks...")
-    
+
     checks = [
-        ([sphinx_build, "-b", "linkcheck", ".", "_build/linkcheck"], 
-         "📎 Checking links...", "Link check passed", "Some links may be broken"),
-        ([sphinx_build, "-b", "doctest", ".", "_build/doctest"], 
-         "🧪 Running doctests...", "Doctests passed", "Some doctests failed"),
-        ([sphinx_build, "-b", "coverage", ".", "_build/coverage"], 
-         "📊 Checking documentation coverage...", "Coverage check completed", "Coverage check had issues")
+        (
+            [sphinx_build, "-b", "linkcheck", ".", "_build/linkcheck"],
+            "📎 Checking links...",
+            "Link check passed",
+            "Some links may be broken",
+        ),
+        (
+            [sphinx_build, "-b", "doctest", ".", "_build/doctest"],
+            "🧪 Running doctests...",
+            "Doctests passed",
+            "Some doctests failed",
+        ),
+        (
+            [sphinx_build, "-b", "coverage", ".", "_build/coverage"],
+            "📊 Checking documentation coverage...",
+            "Coverage check completed",
+            "Coverage check had issues",
+        ),
     ]
-    
+
     for command, check_name, success_msg, failure_msg in checks:
         _run_single_check(command, check_name, success_msg, failure_msg)
 
@@ -306,14 +318,26 @@ def _run_checks_with_sphinx(sphinx_build):
 def _run_checks_with_make(make_cmd):
     """Run documentation checks using make command."""
     checks = [
-        ([make_cmd, "linkcheck"], 
-         "📎 Checking links...", "Link check passed", "Some links may be broken"),
-        ([make_cmd, "doctest"], 
-         "🧪 Running doctests...", "Doctests passed", "Some doctests failed"),
-        ([make_cmd, "coverage"], 
-         "📊 Checking documentation coverage...", "Coverage check completed", "Coverage check had issues")
+        (
+            [make_cmd, "linkcheck"],
+            "📎 Checking links...",
+            "Link check passed",
+            "Some links may be broken",
+        ),
+        (
+            [make_cmd, "doctest"],
+            "🧪 Running doctests...",
+            "Doctests passed",
+            "Some doctests failed",
+        ),
+        (
+            [make_cmd, "coverage"],
+            "📊 Checking documentation coverage...",
+            "Coverage check completed",
+            "Coverage check had issues",
+        ),
     ]
-    
+
     for command, check_name, success_msg, failure_msg in checks:
         _run_single_check(command, check_name, success_msg, failure_msg)
 
@@ -425,7 +449,7 @@ def _execute_command(args):
         "check": run_checks,
         "setup": _handle_setup_command,
     }
-    
+
     handler = command_handlers.get(args.command)
     if handler:
         handler()

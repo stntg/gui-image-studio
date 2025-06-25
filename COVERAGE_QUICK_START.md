@@ -51,7 +51,8 @@ make coverage-open
 ## 📊 Current Coverage Status
 
 After running coverage, you'll see output like:
-```
+
+```text
 Name                                      Stmts   Miss Branch BrPart  Cover   Missing
 -------------------------------------------------------------------------------------
 src\gui_image_studio\__init__.py             46     17      6      3  61.5%   71-81, 89-90

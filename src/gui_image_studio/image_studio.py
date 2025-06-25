@@ -3599,7 +3599,7 @@ class HelpWindow:
     def _create_temp_file(self):
         """Create a temporary file with the help content."""
         import tempfile
-        
+
         with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
             content = self.text_widget.get(1.0, tk.END)
             f.write(content)
@@ -3608,7 +3608,7 @@ class HelpWindow:
     def _execute_print_command(self, temp_file):
         """Execute the appropriate print command based on the operating system."""
         import os
-        
+
         if os.name == "nt":
             self._print_on_windows(temp_file)
         else:
@@ -3619,15 +3619,17 @@ class HelpWindow:
         import os
         import subprocess
         import tempfile
-        
+
         self._validate_temp_file(temp_file)
-        
+
         # Use full path to cmd.exe for security
-        cmd_path = os.path.join(os.environ.get('SYSTEMROOT', 'C:\\Windows'), 'System32', 'cmd.exe')
-        
+        cmd_path = os.path.join(
+            os.environ.get("SYSTEMROOT", "C:\\Windows"), "System32", "cmd.exe"
+        )
+
         if not os.path.exists(cmd_path):
             raise Exception("Windows command processor not found")
-        
+
         try:
             subprocess.run(
                 [cmd_path, "/c", "start", "/min", "", temp_file],
@@ -3635,7 +3637,7 @@ class HelpWindow:
                 capture_output=True,
                 text=True,
                 timeout=30,
-                cwd=tempfile.gettempdir()  # Set working directory to temp for additional security
+                cwd=tempfile.gettempdir(),  # Set working directory to temp for additional security
             )
         except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
             raise Exception(f"Failed to open file for printing: {str(e)}")
@@ -3644,28 +3646,30 @@ class HelpWindow:
         """Validate that the temporary file is in a safe location."""
         import os
         import tempfile
-        
-        if not (os.path.exists(temp_file) and 
-                os.path.dirname(temp_file) == tempfile.gettempdir()):
+
+        if not (
+            os.path.exists(temp_file)
+            and os.path.dirname(temp_file) == tempfile.gettempdir()
+        ):
             raise Exception("Invalid temporary file path for printing")
 
     def _print_on_unix(self, temp_file):
         """Handle printing on Unix/Linux/Mac systems."""
         import shutil
-        
+
         # Try print commands in order of preference
         print_commands = [
             ("lpr", self._try_lpr_command),
             ("lp", self._try_lp_command),
-            ("xdg-open", self._try_xdg_open_command)
+            ("xdg-open", self._try_xdg_open_command),
         ]
-        
+
         for cmd_name, cmd_func in print_commands:
             cmd_path = shutil.which(cmd_name)
             if cmd_path:
                 cmd_func(cmd_path, temp_file)
                 return
-        
+
         raise Exception(
             "No suitable print command found. Please install lpr, lp, or ensure xdg-open is available."
         )
@@ -3685,18 +3689,11 @@ class HelpWindow:
     def _run_print_command(self, command):
         """Run a print command and handle errors."""
         import subprocess
-        
+
         try:
-            subprocess.run(
-                command,
-                check=True,
-                capture_output=True,
-                text=True
-            )
+            subprocess.run(command, check=True, capture_output=True, text=True)
         except subprocess.CalledProcessError as e:
-            raise Exception(
-                f"Print command failed: {e.stderr if e.stderr else str(e)}"
-            )
+            raise Exception(f"Print command failed: {e.stderr if e.stderr else str(e)}")
 
     def copy_content(self):
         """Copy all content to clipboard."""
