@@ -456,7 +456,7 @@ Advanced Usage
     IMAGES = {images_dict}
 
     def get_image(name):
-        # Custom implementation
+        """Custom implementation"""
         pass
     '''
 
