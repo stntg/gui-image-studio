@@ -3,6 +3,7 @@
 ## 🚀 Quick Commands
 
 ### Basic Coverage
+
 ```bash
 # Run basic coverage report
 python scripts/run_coverage.py --basic
@@ -12,6 +13,7 @@ pytest --cov=gui_image_studio --cov-report=term-missing
 ```
 
 ### Full Coverage with HTML Report
+
 ```bash
 # Generate all coverage reports
 python scripts/run_coverage.py --full
@@ -21,6 +23,7 @@ python scripts/run_coverage.py --open
 ```
 
 ### Windows PowerShell
+
 ```powershell
 # Basic coverage
 .\scripts\run_coverage.ps1 -Basic
@@ -33,6 +36,7 @@ python scripts/run_coverage.py --open
 ```
 
 ### Using Makefile (Linux/macOS)
+
 ```bash
 # Basic coverage
 make coverage

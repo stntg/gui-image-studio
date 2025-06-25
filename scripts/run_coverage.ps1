@@ -42,7 +42,7 @@ function Run-Command {
     )
 
     if ($Description) {
-        Write-Host "`n🔄 $Description" -ForegroundColor Blue
+        Write-Host "`n[RUNNING] $Description" -ForegroundColor Blue
     }
 
     $cmdString = $Command -join " "
@@ -51,14 +51,14 @@ function Run-Command {
     try {
         & $Command[0] $Command[1..($Command.Length-1)]
         if ($LASTEXITCODE -eq 0) {
-            Write-Host "✅ $($Description -or 'Command') completed successfully" -ForegroundColor Green
+            Write-Host "[SUCCESS] $($Description -or 'Command') completed successfully" -ForegroundColor Green
             return $true
         } else {
-            Write-Host "❌ Command failed with exit code $LASTEXITCODE" -ForegroundColor Red
+            Write-Host "[ERROR] Command failed with exit code $LASTEXITCODE" -ForegroundColor Red
             return $false
         }
     } catch {
-        Write-Host "❌ Command failed: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "[ERROR] Command failed: $($_.Exception.Message)" -ForegroundColor Red
         return $false
     }
 }
@@ -86,15 +86,15 @@ function Run-NoGuiCoverage {
 function Open-HtmlReport {
     $htmlFile = "htmlcov\index.html"
     if (Test-Path $htmlFile) {
-        Write-Host "🌐 Opening coverage report: $(Resolve-Path $htmlFile)" -ForegroundColor Green
+        Write-Host "[OPENING] Coverage report: $(Resolve-Path $htmlFile)" -ForegroundColor Green
         Start-Process $htmlFile
     } else {
-        Write-Host "❌ HTML coverage report not found. Run coverage first." -ForegroundColor Red
+        Write-Host "[ERROR] HTML coverage report not found. Run coverage first." -ForegroundColor Red
     }
 }
 
 function Clean-Coverage {
-    Write-Host "🗑️  Cleaning coverage files..." -ForegroundColor Yellow
+    Write-Host "[CLEANING] Cleaning coverage files..." -ForegroundColor Yellow
 
     $filesToClean = @(
         ".coverage",
@@ -107,9 +107,9 @@ function Clean-Coverage {
         if (Test-Path $file) {
             try {
                 Remove-Item $file -Recurse -Force
-                Write-Host "🗑️  Removed: $file" -ForegroundColor Green
+                Write-Host "[REMOVED] $file" -ForegroundColor Green
             } catch {
-                Write-Host "⚠️  Could not remove $file`: $($_.Exception.Message)" -ForegroundColor Yellow
+                Write-Host "[WARNING] Could not remove $file`: $($_.Exception.Message)" -ForegroundColor Yellow
             }
         }
     }
@@ -118,15 +118,15 @@ function Clean-Coverage {
     Get-ChildItem -Path "." -Name ".coverage.*" | ForEach-Object {
         try {
             Remove-Item $_ -Force
-            Write-Host "🗑️  Removed: $_" -ForegroundColor Green
+            Write-Host "[REMOVED] $_" -ForegroundColor Green
         } catch {
-            Write-Host "⚠️  Could not remove $_`: $($_.Exception.Message)" -ForegroundColor Yellow
+            Write-Host "[WARNING] Could not remove $_`: $($_.Exception.Message)" -ForegroundColor Yellow
         }
     }
 }
 
 function Show-CoverageSummary {
-    Write-Host "`n📊 Coverage Files Summary:" -ForegroundColor Cyan
+    Write-Host "`n[SUMMARY] Coverage Files Summary:" -ForegroundColor Cyan
 
     $filesToCheck = @(
         @(".coverage", "Coverage data file"),
@@ -141,9 +141,9 @@ function Show-CoverageSummary {
 
         if (Test-Path $filePath) {
             $size = if (Test-Path $filePath -PathType Leaf) { (Get-Item $filePath).Length } else { "N/A" }
-            Write-Host "  ✅ $description`: $filePath ($size bytes)" -ForegroundColor Green
+            Write-Host "  [OK] $description`: $filePath ($size bytes)" -ForegroundColor Green
         } else {
-            Write-Host "  ❌ $description`: $filePath (not found)" -ForegroundColor Red
+            Write-Host "  [X] $description`: $filePath (not found)" -ForegroundColor Red
         }
     }
 }
@@ -181,5 +181,5 @@ if ($Clean) {
 if (-not ($Clean -or $Open -or $Summary)) {
     Write-Host "`n$('='*60)" -ForegroundColor Gray
     Show-CoverageSummary
-    Write-Host "`n💡 Tip: Use -Open to view the HTML report in your browser" -ForegroundColor Cyan
+    Write-Host "`nTip: Use -Open to view the HTML report in your browser" -ForegroundColor Cyan
 }
