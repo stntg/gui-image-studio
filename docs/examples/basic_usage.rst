@@ -12,11 +12,8 @@ The most basic operations involve loading images from files and saving them in d
 
 .. code-block:: python
 
-    """
-    Example: Basic Image Loading and Saving
-
-    Demonstrates how to load an image from a file and save it in a different format.
-    """
+    # Example: Basic Image Loading and Saving
+    # Demonstrates how to load an image from a file and save it in a different format.
 
     import gui_image_studio
 
@@ -60,11 +57,8 @@ The most basic operations involve loading images from files and saving them in d
 
 .. code-block:: python
 
-    """
-    Example: Robust Image Loading with Error Handling
-
-    Shows how to handle various error conditions when loading images.
-    """
+    # Example: Robust Image Loading with Error Handling
+    # Shows how to handle various error conditions when loading images.
 
     import gui_image_studio
     import os
@@ -135,11 +129,8 @@ These examples show how to perform common image transformations.
 
 .. code-block:: python
 
-    """
-    Example: Image Resizing Operations
-
-    Demonstrates different ways to resize images while maintaining quality.
-    """
+    # Example: Image Resizing Operations
+    # Demonstrates different ways to resize images while maintaining quality.
 
     import gui_image_studio
     from typing import Tuple
@@ -198,11 +189,8 @@ These examples show how to perform common image transformations.
 
 .. code-block:: python
 
-    """
-    Example: Color Tinting Operations
-
-    Shows how to apply various color tints and effects to images.
-    """
+    # Example: Color Tinting Operations
+    # Shows how to apply various color tints and effects to images.
 
     import gui_image_studio
 
@@ -268,11 +256,8 @@ These examples show how to perform common image transformations.
 
 .. code-block:: python
 
-    """
-    Example: Image Rotation and Flipping
-
-    Demonstrates geometric transformations like rotation and flipping.
-    """
+    # Example: Image Rotation and Flipping
+    # Demonstrates geometric transformations like rotation and flipping.
 
     import gui_image_studio
 
@@ -325,11 +310,8 @@ Working with Different Image Formats
 
 .. code-block:: python
 
-    """
-    Example: Image Format Conversion and Optimization
-
-    Shows how to convert between different image formats and optimize file sizes.
-    """
+    # Example: Image Format Conversion and Optimization
+    # Shows how to convert between different image formats and optimize file sizes.
 
     import gui_image_studio
     import os
@@ -381,11 +363,8 @@ Batch Processing Basics
 
 .. code-block:: python
 
-    """
-    Example: Basic Batch Processing
-
-    Shows how to process multiple images with the same operations.
-    """
+    # Example: Basic Batch Processing
+    # Shows how to process multiple images with the same operations.
 
     import gui_image_studio
     import os

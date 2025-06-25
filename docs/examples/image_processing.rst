@@ -10,11 +10,8 @@ Advanced Filtering
 
 .. code-block:: python
 
-    """
-    Example: Advanced Image Filtering
-
-    Demonstrates how to implement and apply custom image filters.
-    """
+    # Example: Advanced Image Filtering
+    # Demonstrates how to implement and apply custom image filters.
 
     import gui_image_studio
     from PIL import Image, ImageFilter, ImageEnhance
@@ -65,11 +62,8 @@ Advanced Filtering
 
 .. code-block:: python
 
-    """
-    Example: Image Processing Pipeline
-
-    Shows how to create a multi-step processing pipeline for batch operations.
-    """
+    # Example: Image Processing Pipeline
+    # Shows how to create a multi-step processing pipeline for batch operations.
 
     import gui_image_studio
     from typing import List, Callable, Any
@@ -159,11 +153,8 @@ Color Manipulation
 
 .. code-block:: python
 
-    """
-    Example: Advanced Color Manipulation
-
-    Demonstrates sophisticated color manipulation techniques.
-    """
+    # Example: Advanced Color Manipulation
+    # Demonstrates sophisticated color manipulation techniques.
 
     import gui_image_studio
     from PIL import Image, ImageEnhance
@@ -248,11 +239,8 @@ Color Manipulation
 
 .. code-block:: python
 
-    """
-    Example: Color Palette Extraction
-
-    Extract dominant colors from images and create color palettes.
-    """
+    # Example: Color Palette Extraction
+    # Extract dominant colors from images and create color palettes.
 
     import gui_image_studio
     from PIL import Image
@@ -351,11 +339,8 @@ Geometric Transformations
 
 .. code-block:: python
 
-    """
-    Example: Advanced Geometric Transformations
-
-    Demonstrates complex geometric transformations and perspective effects.
-    """
+    # Example: Advanced Geometric Transformations
+    # Demonstrates complex geometric transformations and perspective effects.
 
     import gui_image_studio
     from PIL import Image, ImageDraw
@@ -443,11 +428,8 @@ Performance Optimization
 
 .. code-block:: python
 
-    """
-    Example: Optimized Batch Processing
-
-    Demonstrates efficient techniques for processing large numbers of images.
-    """
+    # Example: Optimized Batch Processing
+    # Demonstrates efficient techniques for processing large numbers of images.
 
     import gui_image_studio
     import os

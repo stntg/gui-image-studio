@@ -186,12 +186,9 @@ All examples follow these conventions:
 
 .. code-block:: python
 
-    """
-    Example: Basic Image Processing
-
-    This example demonstrates basic image loading, processing, and saving
-    operations using GUI Image Studio.
-    """
+    # Example: Basic Image Processing
+    # This example demonstrates basic image loading, processing, and saving
+    # operations using GUI Image Studio.
 
     import gui_image_studio
     from typing import Optional
