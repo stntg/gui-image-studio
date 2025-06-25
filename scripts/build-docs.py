@@ -118,6 +118,74 @@ def create_sample_images():
         return False
 
 
+def _clean_build_directory():
+    """Clean the previous build directory."""
+    print("🧹 Cleaning previous build...")
+    import shutil as sh
+    
+    if Path("_build").exists():
+        sh.rmtree("_build")
+
+
+def _build_with_sphinx_direct(format_type, clean):
+    """Build documentation using sphinx-build directly."""
+    print("❌ Make command not found. Using sphinx-build directly...")
+    sphinx_build = find_executable("sphinx-build")
+    
+    if clean:
+        _clean_build_directory()
+    
+    print(f"📚 Building {format_type} documentation...")
+    
+    if format_type == "html":
+        return run_command([sphinx_build, "-b", "html", ".", "_build/html"])
+    elif format_type == "pdf":
+        return _build_pdf_with_sphinx(sphinx_build)
+    else:
+        return run_command(
+            [sphinx_build, "-b", format_type, ".", f"_build/{format_type}"]
+        )
+
+
+def _build_pdf_with_sphinx(sphinx_build):
+    """Build PDF documentation using sphinx-build and pdflatex."""
+    result = run_command([sphinx_build, "-b", "latex", ".", "_build/latex"])
+    
+    if result.returncode == 0:
+        latex_dir = Path("_build/latex")
+        if latex_dir.exists():
+            original_dir = os.getcwd()
+            os.chdir(latex_dir)
+            try:
+                pdflatex = find_executable("pdflatex")
+                result = run_command([pdflatex, "*.tex"], check=False)
+            finally:
+                os.chdir(original_dir)
+    
+    return result
+
+
+def _build_with_make(make_cmd, format_type, clean):
+    """Build documentation using make command."""
+    if clean:
+        print("🧹 Cleaning previous build...")
+        run_command([make_cmd, "clean"])
+    
+    print(f"📚 Building {format_type} documentation...")
+    return run_command([make_cmd, format_type])
+
+
+def _show_build_output_location(format_type):
+    """Show the location of the built documentation."""
+    if format_type == "html":
+        output_path = Path("_build/html/index.html").resolve()
+        print(f"📄 Documentation available at: {output_path}")
+    elif format_type == "pdf":
+        pdf_files = list(Path("_build/latex").glob("*.pdf"))
+        if pdf_files:
+            print(f"📄 PDF available at: {pdf_files[0].resolve()}")
+
+
 def build_docs(format_type="html", clean=False):
     """Build documentation in specified format."""
     docs_dir = Path("docs")
@@ -131,59 +199,17 @@ def build_docs(format_type="html", clean=False):
 
     try:
         make_cmd = get_make_command()
-
-        if not make_cmd:
-            print("❌ Make command not found. Using sphinx-build directly...")
-            # Fallback to using sphinx-build directly
-            sphinx_build = find_executable("sphinx-build")
-
-            if clean:
-                print("🧹 Cleaning previous build...")
-                import shutil as sh
-
-                if Path("_build").exists():
-                    sh.rmtree("_build")
-
-            # Build documentation using sphinx-build
-            print(f"📚 Building {format_type} documentation...")
-            if format_type == "html":
-                result = run_command([sphinx_build, "-b", "html", ".", "_build/html"])
-            elif format_type == "pdf":
-                result = run_command([sphinx_build, "-b", "latex", ".", "_build/latex"])
-                if result.returncode == 0:
-                    # Build PDF from LaTeX
-                    latex_dir = Path("_build/latex")
-                    if latex_dir.exists():
-                        os.chdir(latex_dir)
-                        pdflatex = find_executable("pdflatex")
-                        result = run_command([pdflatex, "*.tex"], check=False)
-                        os.chdir("..")
-            else:
-                result = run_command(
-                    [sphinx_build, "-b", format_type, ".", f"_build/{format_type}"]
-                )
+        
+        # Choose build method based on available tools
+        if make_cmd:
+            result = _build_with_make(make_cmd, format_type, clean)
         else:
-            # Use make command
-            if clean:
-                print("🧹 Cleaning previous build...")
-                run_command([make_cmd, "clean"])
+            result = _build_with_sphinx_direct(format_type, clean)
 
-            # Build documentation
-            print(f"📚 Building {format_type} documentation...")
-            result = run_command([make_cmd, format_type])
-
+        # Handle build result
         if result.returncode == 0:
             print(f"✅ {format_type.upper()} documentation built successfully")
-
-            # Show output location
-            if format_type == "html":
-                output_path = Path("_build/html/index.html").resolve()
-                print(f"📄 Documentation available at: {output_path}")
-            elif format_type == "pdf":
-                pdf_files = list(Path("_build/latex").glob("*.pdf"))
-                if pdf_files:
-                    print(f"📄 PDF available at: {pdf_files[0].resolve()}")
-
+            _show_build_output_location(format_type)
             return True
         else:
             print(f"❌ {format_type.upper()} build failed")
@@ -247,6 +273,51 @@ def serve_docs(port=8000, open_browser=True):
         print("\n👋 Documentation server stopped")
 
 
+def _run_single_check(command, check_name, success_msg, failure_msg):
+    """Run a single documentation check and report results."""
+    print(f"\n{check_name}")
+    result = run_command(command, check=False)
+    
+    if result.returncode == 0:
+        print(f"✅ {success_msg}")
+    else:
+        print(f"⚠️ {failure_msg}")
+    
+    return result.returncode == 0
+
+
+def _run_checks_with_sphinx(sphinx_build):
+    """Run documentation checks using sphinx-build directly."""
+    print("❌ Make command not found. Using sphinx-build directly for checks...")
+    
+    checks = [
+        ([sphinx_build, "-b", "linkcheck", ".", "_build/linkcheck"], 
+         "📎 Checking links...", "Link check passed", "Some links may be broken"),
+        ([sphinx_build, "-b", "doctest", ".", "_build/doctest"], 
+         "🧪 Running doctests...", "Doctests passed", "Some doctests failed"),
+        ([sphinx_build, "-b", "coverage", ".", "_build/coverage"], 
+         "📊 Checking documentation coverage...", "Coverage check completed", "Coverage check had issues")
+    ]
+    
+    for command, check_name, success_msg, failure_msg in checks:
+        _run_single_check(command, check_name, success_msg, failure_msg)
+
+
+def _run_checks_with_make(make_cmd):
+    """Run documentation checks using make command."""
+    checks = [
+        ([make_cmd, "linkcheck"], 
+         "📎 Checking links...", "Link check passed", "Some links may be broken"),
+        ([make_cmd, "doctest"], 
+         "🧪 Running doctests...", "Doctests passed", "Some doctests failed"),
+        ([make_cmd, "coverage"], 
+         "📊 Checking documentation coverage...", "Coverage check completed", "Coverage check had issues")
+    ]
+    
+    for command, check_name, success_msg, failure_msg in checks:
+        _run_single_check(command, check_name, success_msg, failure_msg)
+
+
 def run_checks():
     """Run documentation quality checks."""
     docs_dir = Path("docs")
@@ -261,66 +332,11 @@ def run_checks():
         print("🔍 Running documentation checks...")
         make_cmd = get_make_command()
 
-        if not make_cmd:
-            print(
-                "❌ Make command not found. Using sphinx-build directly for checks..."
-            )
-            sphinx_build = find_executable("sphinx-build")
-
-            # Link check
-            print("\n📎 Checking links...")
-            result = run_command(
-                [sphinx_build, "-b", "linkcheck", ".", "_build/linkcheck"], check=False
-            )
-            if result.returncode == 0:
-                print("✅ Link check passed")
-            else:
-                print("⚠️ Some links may be broken")
-
-            # Doctest
-            print("\n🧪 Running doctests...")
-            result = run_command(
-                [sphinx_build, "-b", "doctest", ".", "_build/doctest"], check=False
-            )
-            if result.returncode == 0:
-                print("✅ Doctests passed")
-            else:
-                print("⚠️ Some doctests failed")
-
-            # Coverage
-            print("\n📊 Checking documentation coverage...")
-            result = run_command(
-                [sphinx_build, "-b", "coverage", ".", "_build/coverage"], check=False
-            )
-            if result.returncode == 0:
-                print("✅ Coverage check completed")
-            else:
-                print("⚠️ Coverage check had issues")
+        if make_cmd:
+            _run_checks_with_make(make_cmd)
         else:
-            # Use make command
-            # Link check
-            print("\n📎 Checking links...")
-            result = run_command([make_cmd, "linkcheck"], check=False)
-            if result.returncode == 0:
-                print("✅ Link check passed")
-            else:
-                print("⚠️ Some links may be broken")
-
-            # Doctest
-            print("\n🧪 Running doctests...")
-            result = run_command([make_cmd, "doctest"], check=False)
-            if result.returncode == 0:
-                print("✅ Doctests passed")
-            else:
-                print("⚠️ Some doctests failed")
-
-            # Coverage
-            print("\n📊 Checking documentation coverage...")
-            result = run_command([make_cmd, "coverage"], check=False)
-            if result.returncode == 0:
-                print("✅ Coverage check completed")
-            else:
-                print("⚠️ Coverage check had issues")
+            sphinx_build = find_executable("sphinx-build")
+            _run_checks_with_sphinx(sphinx_build)
 
         return True
 
@@ -328,8 +344,8 @@ def run_checks():
         os.chdir(original_cwd)
 
 
-def main():
-    """Main entry point."""
+def _setup_argument_parser():
+    """Setup and configure the argument parser."""
     parser = argparse.ArgumentParser(
         description="Build and serve GUI Image Studio documentation"
     )
@@ -365,6 +381,59 @@ def main():
     # Setup command
     subparsers.add_parser("setup", help="Setup documentation environment")
 
+    return parser
+
+
+def _handle_build_command(args):
+    """Handle the build command."""
+    success = build_docs(args.format, args.clean)
+    if success and args.format == "html":
+        output_path = Path("docs/_build/html/index.html")
+        if output_path.exists():
+            print(f"\n🌐 Open in browser: file://{output_path.resolve()}")
+
+
+def _handle_setup_command():
+    """Handle the setup command."""
+    print("🔧 Setting up documentation environment...")
+
+    # Install dependencies
+    print("📦 Installing documentation dependencies...")
+    run_command(
+        [sys.executable, "-m", "pip", "install", "-r", "docs/requirements-docs.txt"]
+    )
+
+    # Install package in development mode
+    print("📦 Installing GUI Image Studio in development mode...")
+    run_command([sys.executable, "-m", "pip", "install", "-e", "."])
+
+    # Create sample images
+    create_sample_images()
+
+    # Build documentation
+    build_docs("html", clean=True)
+
+    print("✅ Documentation environment setup complete!")
+    print("💡 Try: python scripts/build-docs.py serve")
+
+
+def _execute_command(args):
+    """Execute the appropriate command based on arguments."""
+    command_handlers = {
+        "build": lambda: _handle_build_command(args),
+        "serve": lambda: serve_docs(args.port, not args.no_browser),
+        "check": run_checks,
+        "setup": _handle_setup_command,
+    }
+    
+    handler = command_handlers.get(args.command)
+    if handler:
+        handler()
+
+
+def main():
+    """Main entry point."""
+    parser = _setup_argument_parser()
     args = parser.parse_args()
 
     if not args.command:
@@ -381,41 +450,8 @@ def main():
     # Create sample images
     create_sample_images()
 
-    # Execute command
-    if args.command == "build":
-        success = build_docs(args.format, args.clean)
-        if success and args.format == "html":
-            output_path = Path("docs/_build/html/index.html")
-            if output_path.exists():
-                print(f"\n🌐 Open in browser: file://{output_path.resolve()}")
-
-    elif args.command == "serve":
-        serve_docs(args.port, not args.no_browser)
-
-    elif args.command == "check":
-        run_checks()
-
-    elif args.command == "setup":
-        print("🔧 Setting up documentation environment...")
-
-        # Install dependencies
-        print("📦 Installing documentation dependencies...")
-        run_command(
-            [sys.executable, "-m", "pip", "install", "-r", "docs/requirements-docs.txt"]
-        )
-
-        # Install package in development mode
-        print("📦 Installing GUI Image Studio in development mode...")
-        run_command([sys.executable, "-m", "pip", "install", "-e", "."])
-
-        # Create sample images
-        create_sample_images()
-
-        # Build documentation
-        build_docs("html", clean=True)
-
-        print("✅ Documentation environment setup complete!")
-        print("💡 Try: python scripts/build-docs.py serve")
+    # Execute the appropriate command
+    _execute_command(args)
 
 
 if __name__ == "__main__":
