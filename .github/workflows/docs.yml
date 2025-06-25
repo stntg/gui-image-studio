@@ -155,18 +155,18 @@ jobs:
         retention-days: 30
 
     - name: Setup Pages
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
       uses: actions/configure-pages@v4
 
     - name: Upload to GitHub Pages
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
       uses: actions/upload-pages-artifact@v3
       with:
         path: docs/_build/html
 
-  # Deploy to GitHub Pages (only on main branch)
+  # Deploy to GitHub Pages (only on develop branch)
   deploy:
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -350,7 +350,7 @@ jobs:
 
         if [[ "${{ needs.build.result }}" == "success" ]]; then
           echo "✅ Documentation built successfully"
-          if [[ "${{ github.ref }}" == "refs/heads/main" && "${{ github.event_name }}" == "push" ]]; then
+          if [[ "${{ github.ref }}" == "refs/heads/develop" && "${{ github.event_name }}" == "push" ]]; then
             echo "🚀 Documentation deployed to GitHub Pages"
           fi
         else
