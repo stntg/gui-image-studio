@@ -307,7 +307,12 @@ file for details.
 
 ## Changelog
 
-### Version 1.0.0
+### Version 1.0.1
+
+- Security fixes
+- Fix Python code block syntax errors in documentation
+
+#### Version 1.0.0
 
 - Initial release
 - Basic image embedding functionality
