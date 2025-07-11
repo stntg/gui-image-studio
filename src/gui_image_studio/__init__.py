@@ -66,7 +66,7 @@ __all__ = [
 ]
 
 
-def launch_designer():
+def launch_designer() -> None:
     """Launch the GUI Image Studio."""
     try:
         from .image_studio import main
@@ -97,7 +97,7 @@ except ImportError:
     CUSTOMTKINTER_AVAILABLE = False
 
 
-def get_available_frameworks():
+def get_available_frameworks() -> list[str]:
     """Return list of available GUI frameworks."""
     frameworks = []
     if TKINTER_AVAILABLE:
@@ -107,7 +107,7 @@ def get_available_frameworks():
     return frameworks
 
 
-def check_dependencies():
+def check_dependencies() -> list[str]:
     """Check if all required dependencies are available."""
     missing = []
 

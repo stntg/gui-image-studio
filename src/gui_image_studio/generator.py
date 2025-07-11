@@ -11,8 +11,10 @@ from PIL import Image
 
 
 def embed_images_from_folder(
-    folder_path, output_file="embedded_images.py", compression_quality=85
-):
+    folder_path: str,
+    output_file: str = "embedded_images.py",
+    compression_quality: int = 85,
+) -> None:
     """
     Processes all valid images in a folder, applies optional JPEG/WebP compression,
     categorizes them by theme (if the filename starts with a theme followed by
@@ -26,10 +28,10 @@ def embed_images_from_folder(
             compression.
     """
     # Dictionary that will map theme names to image key: base64 value pairs.
-    images_dict = {}
+    images_dict: dict[str, dict[str, str]] = {}
 
     # Function to store image under given theme and key
-    def store_image(theme, key, encoded):
+    def store_image(theme: str, key: str, encoded: str) -> None:
         if theme not in images_dict:
             images_dict[theme] = {}
         images_dict[theme][key] = encoded
@@ -107,7 +109,7 @@ def embed_images_from_folder(
     )
 
 
-def generate_embedded_images():
+def generate_embedded_images() -> None:
     """Console script entry point for generating embedded images."""
     import argparse
 

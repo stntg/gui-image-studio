@@ -11,7 +11,7 @@ from .generator import embed_images_from_folder
 from .sample_creator import create_sample_images as _create_sample_images
 
 
-def generate_embedded_images():
+def generate_embedded_images() -> None:
     """Console script entry point for generating embedded images."""
     parser = argparse.ArgumentParser(
         description="Generate embedded images from a folder",
@@ -55,7 +55,7 @@ def generate_embedded_images():
         sys.exit(1)
 
 
-def create_sample_images():
+def create_sample_images() -> None:
     """Console script entry point for creating sample images."""
     parser = argparse.ArgumentParser(
         description="Create sample images for testing gui_image_studio functionality",
@@ -93,7 +93,7 @@ def create_sample_images():
         sys.exit(1)
 
 
-def launch_designer():
+def launch_designer() -> None:
     """Console script entry point for launching the image studio GUI."""
     parser = argparse.ArgumentParser(
         description="Launch the GUI Image Studio",

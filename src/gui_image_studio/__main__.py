@@ -10,7 +10,7 @@ from .cli import generate_embedded_images
 from .sample_creator import create_sample_images
 
 
-def main():
+def main() -> None:
     """Main entry point for the module."""
     if len(sys.argv) > 1:
         command = sys.argv[1].lower()
@@ -30,7 +30,7 @@ def main():
         print_help()
 
 
-def print_help():
+def print_help() -> None:
     """Print help information."""
     print("GUI Image Studio - Image Resource Management for Python GUI Applications")
     print()

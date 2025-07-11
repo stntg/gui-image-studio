@@ -19,7 +19,7 @@ except ImportError:
     HAS_NUMPY = False
 
 
-def create_sample_images():
+def create_sample_images() -> None:
     """Create a variety of sample images for testing gui_image_studio functionality."""
 
     # Create images directory
@@ -57,7 +57,7 @@ def create_sample_images():
     print(f"Sample images created in '{images_dir}' directory")
 
 
-def create_basic_icon(filepath):
+def create_basic_icon(filepath: str) -> None:
     """Create a basic icon with a simple design."""
     img = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
@@ -89,7 +89,7 @@ def create_basic_icon(filepath):
     img.save(filepath)
 
 
-def create_themed_icon(filepath, theme):
+def create_themed_icon(filepath: str, theme: str) -> None:
     """Create themed variants of icons."""
     img = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
@@ -160,7 +160,7 @@ def create_themed_icon(filepath, theme):
     img.save(filepath)
 
 
-def create_button_icon(filepath, text, theme="default"):
+def create_button_icon(filepath: str, text: str, theme: str = "default") -> None:
     """Create button-style icons with text."""
     img = Image.new("RGBA", (80, 32), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
@@ -199,7 +199,7 @@ def create_button_icon(filepath, text, theme="default"):
     img.save(filepath)
 
 
-def create_logo(filepath, theme="default"):
+def create_logo(filepath: str, theme: str = "default") -> None:
     """Create a logo/banner image."""
     img = Image.new("RGBA", (200, 60), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
@@ -226,7 +226,7 @@ def create_logo(filepath, theme="default"):
     img.save(filepath)
 
 
-def create_animated_gif(filepath, theme="default"):
+def create_animated_gif(filepath: str, theme: str = "default") -> None:
     """Create a simple animated GIF."""
     frames = []
 
@@ -287,7 +287,7 @@ def create_animated_gif(filepath, theme="default"):
     )
 
 
-def create_shape_icon(filepath, shape):
+def create_shape_icon(filepath: str, shape: str) -> None:
     """Create simple shape icons for transformation testing."""
     img = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
@@ -316,7 +316,7 @@ def create_shape_icon(filepath, shape):
     img.save(filepath)
 
 
-def create_colorful_image(filepath):
+def create_colorful_image(filepath: str) -> None:
     """Create a colorful image for testing tint and saturation effects."""
     img = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)

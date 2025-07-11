@@ -19,12 +19,13 @@ import threepanewindows
 from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageFont, ImageTk
 
 from .generator import embed_images_from_folder
+from .embedded_icons import get_icon_path, cleanup_icon
 
 
 class EnhancedImageDesignerGUI:
     """Main GUI application for image design and code generation."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.root = tk.Tk()
         self.root.title("GUI Image Studio - Enhanced")
         self.root.geometry("1200x700")
@@ -42,6 +43,9 @@ class EnhancedImageDesignerGUI:
         self.brush_color = "#000000"
         self.canvas_size = (300, 300)
         self.zoom_level = 1.0
+
+        # Icon paths for cleanup
+        self.icon_paths: List[str] = []
         self.show_grid = False
         self.drawing = False
         self.start_x = 0
@@ -83,7 +87,8 @@ class EnhancedImageDesignerGUI:
         self.update_canvas()  # Show initial instructions
         self.update_preview()  # Show initial preview
 
-        # After creating self.root (or root), center the window on the desktop and ensure it's fully visible above the taskbar
+        # After creating self.root (or root), center the window on the desktop
+        # and ensure it's fully visible above the taskbar
         self.root.update_idletasks()
         w = self.root.winfo_width()
         h = self.root.winfo_height()
@@ -102,7 +107,7 @@ class EnhancedImageDesignerGUI:
         print(f"Window centered at {x}, {y} with size {w}x{h}")
         print(f"w width: {w}, height: {h}, screen width: {ws}, screen height: {hs}")
 
-    def setup_button_styles(self):
+    def setup_button_styles(self) -> None:
         """Setup custom button styles for prominent display."""
         style = ttk.Style()
 
@@ -131,7 +136,7 @@ class EnhancedImageDesignerGUI:
             "ProminentLoad.TButton", background=[("active", "#1976D2")]
         )  # Darker blue on hover
 
-    def setup_ui(self):
+    def setup_ui(self) -> None:
         """Setup the enhanced user interface with threepanewindows."""
         # Create menu bar first
         self.setup_menu()
@@ -139,10 +144,21 @@ class EnhancedImageDesignerGUI:
         # Configure custom button styles for prominence
         self.setup_button_styles()
 
-        # Configure pane configurations
+        # Configure pane configurations with embedded icons
+        tools_icon = get_icon_path("tools")
+        canvas_icon = get_icon_path("canvas")
+        settings_icon = get_icon_path("settings")
+
+        # Track icon paths for cleanup
+        self.icon_paths.extend([tools_icon, canvas_icon, settings_icon])
         left_config = threepanewindows.PaneConfig(
             title="Tools & Images",
             icon="🛠️",
+            window_icon=tools_icon,
+            custom_titlebar=True,
+            custom_titlebar_shadow=True,
+            detached_height=600,  # Fixed height for detached window
+            detached_scrollable=True,  # Enable scrollbars if content is too tall
             min_width=200,
             max_width=200,
             default_width=200,
@@ -153,12 +169,22 @@ class EnhancedImageDesignerGUI:
         )
 
         center_config = threepanewindows.PaneConfig(
-            title="Canvas", icon="🎨", resizable=True, detachable=False, closable=False
+            title="Canvas",
+            icon="🎨",
+            window_icon=canvas_icon,
+            resizable=True,
+            detachable=False,
+            closable=False,
         )
 
         right_config = threepanewindows.PaneConfig(
             title="Properties & Code",
             icon="⚙️",
+            window_icon=settings_icon,
+            custom_titlebar=True,
+            custom_titlebar_shadow=False,  # No shadow for this panel
+            detached_height=500,  # Different height for this panel
+            detached_scrollable=True,
             min_width=200,
             max_width=200,
             default_width=200,
@@ -189,19 +215,19 @@ class EnhancedImageDesignerGUI:
         self.center_frame = self.three_pane.get_pane_frame("center")
         self.right_frame = self.three_pane.get_pane_frame("right")
 
-    def build_left_panel(self, parent):
+    def build_left_panel(self, parent) -> None:
         """Build the left panel with tools and image management."""
         self.setup_left_panel(parent)
 
-    def build_center_panel(self, parent):
+    def build_center_panel(self, parent) -> None:
         """Build the center panel with the drawing canvas."""
         self.setup_center_panel(parent)
 
-    def build_right_panel(self, parent):
+    def build_right_panel(self, parent) -> None:
         """Build the right panel with properties and code generation."""
         self.setup_right_panel(parent)
 
-    def setup_menu(self):
+    def setup_menu(self) -> None:
         """Setup the menu bar."""
         menubar = tk.Menu(self.root)
         self.root.config(menu=menubar)
@@ -700,9 +726,29 @@ class EnhancedImageDesignerGUI:
         preview_frame = ttk.LabelFrame(code_frame, text="Live Preview")
         preview_frame.pack(fill=tk.BOTH, expand=True, padx=2, pady=2)
 
-        # Preview canvas - smaller height
-        self.preview_canvas = tk.Canvas(preview_frame, bg="white", height=100)
-        self.preview_canvas.pack(fill=tk.BOTH, expand=True, padx=2, pady=2)
+        # Preview canvas with scrollbar support
+        preview_container = ttk.Frame(preview_frame)
+        preview_container.pack(fill=tk.BOTH, expand=True, padx=2, pady=2)
+
+        # Create canvas and scrollbar
+        self.preview_canvas = tk.Canvas(preview_container, bg="white", height=100)
+        self.preview_scrollbar = ttk.Scrollbar(
+            preview_container, orient="vertical", command=self.preview_canvas.yview
+        )
+        self.preview_canvas.configure(yscrollcommand=self.preview_scrollbar.set)
+
+        # Add tooltip to scrollbar for better UX
+        self._create_tooltip(
+            self.preview_scrollbar,
+            "Scroll through icons\n• Mouse wheel\n• Trackpad gestures\n• Drag to scroll\n• Arrow keys (↑↓ = line, ←→ = fast)",
+        )
+
+        # Pack canvas and scrollbar
+        self.preview_canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.preview_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        # Initially hide scrollbar
+        self.preview_scrollbar.pack_forget()
 
         # Bind framework/usage changes to update preview
         framework_combo.bind("<<ComboboxSelected>>", self.update_preview)
@@ -1041,6 +1087,14 @@ class EnhancedImageDesignerGUI:
         # Clear previous preview
         self.preview_canvas.delete("all")
 
+        # Clear old image references to prevent memory leaks and conflicts
+        for attr_name in list(dir(self.preview_canvas)):
+            if attr_name.startswith("preview_img_"):
+                delattr(self.preview_canvas, attr_name)
+
+        # Force canvas update to ensure clearing is visible
+        self.preview_canvas.update_idletasks()
+
         if not self.current_images:
             # Show placeholder when no images
             canvas_width = self.preview_canvas.winfo_width()
@@ -1068,7 +1122,23 @@ class EnhancedImageDesignerGUI:
         usage_type = self.usage_var.get()
 
         # Generate preview based on framework and usage type
-        self.generate_preview(framework, usage_type)
+        try:
+            self.generate_preview(framework, usage_type)
+        except Exception as e:
+            print(f"Error generating preview: {e}")
+            # Show error message in preview
+            canvas_width = self.preview_canvas.winfo_width()
+            canvas_height = self.preview_canvas.winfo_height()
+            center_x = canvas_width // 2
+            center_y = canvas_height // 2
+            self.preview_canvas.create_text(
+                center_x,
+                center_y,
+                text="Preview update error",
+                fill="#ff0000",
+                font=("Arial", 9),
+            )
+            self.preview_canvas.update_idletasks()
 
     def generate_preview(self, framework, usage_type):
         """Generate visual preview for the selected framework and usage type."""
@@ -1079,27 +1149,47 @@ class EnhancedImageDesignerGUI:
             self.root.after(100, lambda: self.generate_preview(framework, usage_type))
             return
 
-        # Convert first few images to PhotoImage for display
+        # Convert images to PhotoImage for display
         preview_images = []
-        count = 0
-        max_images = 6  # Limit preview to 6 images
 
-        for name, pil_image in self.current_images.items():
-            if count >= max_images:
-                break
+        # For certain usage types, only show the currently selected image
+        single_image_modes = ["general", "backgrounds", "sprites"]
 
-            try:
-                # Resize image for preview if too large
-                display_image = pil_image.copy()
-                if display_image.width > 64 or display_image.height > 64:
-                    display_image.thumbnail((64, 64), Image.Resampling.LANCZOS)
+        if usage_type in single_image_modes:
+            # Only show the currently selected image
+            if self.selected_image and self.selected_image in self.current_images:
+                name = self.selected_image
+                pil_image = self.current_images[name]
+                try:
+                    # For single image modes, use larger preview size
+                    display_image = pil_image.copy()
+                    max_size = 200 if usage_type == "backgrounds" else 128
+                    if (
+                        display_image.width > max_size
+                        or display_image.height > max_size
+                    ):
+                        display_image.thumbnail(
+                            (max_size, max_size), Image.Resampling.LANCZOS
+                        )
 
-                photo = ImageTk.PhotoImage(display_image)
-                preview_images.append((name, photo, display_image))
-                count += 1
-            except Exception as e:
-                print(f"Error creating preview for {name}: {e}")
-                continue
+                    photo = ImageTk.PhotoImage(display_image)
+                    preview_images.append((name, photo, display_image))
+                except Exception as e:
+                    print(f"Error creating preview for {name}: {e}")
+        else:
+            # For other modes (buttons, icons, ui_elements), show ALL images
+            for name, pil_image in self.current_images.items():
+                try:
+                    # Resize image for preview if too large
+                    display_image = pil_image.copy()
+                    if display_image.width > 64 or display_image.height > 64:
+                        display_image.thumbnail((64, 64), Image.Resampling.LANCZOS)
+
+                    photo = ImageTk.PhotoImage(display_image)
+                    preview_images.append((name, photo, display_image))
+                except Exception as e:
+                    print(f"Error creating preview for {name}: {e}")
+                    continue
 
         if not preview_images:
             return
@@ -1118,23 +1208,49 @@ class EnhancedImageDesignerGUI:
         else:  # general
             self.preview_general(preview_images, framework)
 
+        # Force canvas update to ensure new content is visible
+        self.preview_canvas.update_idletasks()
+
     def preview_buttons(self, preview_images, framework):
-        """Preview images as buttons."""
+        """Preview images as buttons with scrolling support."""
+        canvas_width = self.preview_canvas.winfo_width()
+        canvas_height = self.preview_canvas.winfo_height()
+
+        # Ensure canvas is ready
+        if canvas_width <= 1 or canvas_height <= 1:
+            self.root.after(50, lambda: self.preview_buttons(preview_images, framework))
+            return
+
+        image_count = len(preview_images)
         self.preview_canvas.create_text(
             10,
             10,
-            text=f"{framework.title()} Buttons:",
+            text=f"{framework.title()} Buttons ({image_count} image{'s' if image_count != 1 else ''}):",
             anchor=tk.NW,
             font=("Arial", 10, "bold"),
         )
 
+        if not preview_images:
+            self.preview_canvas.create_text(
+                canvas_width // 2,
+                canvas_height // 2,
+                text="No images to preview",
+                fill="#888888",
+                font=("Arial", 12),
+                anchor=tk.CENTER,
+            )
+            return
+
         x, y = 20, 30
+        max_y = y  # Track the maximum Y position for scrolling
+
         for name, photo, pil_image in preview_images:
             # Draw button-like rectangle
             btn_width = photo.width() + 60
             btn_height = photo.height() + 20
 
-            if x + btn_width > self.preview_canvas.winfo_width() - 10:
+            # Check if button fits on current row
+            if x + btn_width > canvas_width - 10:
                 x = 20
                 y += btn_height + 10
 
@@ -1163,43 +1279,149 @@ class EnhancedImageDesignerGUI:
             )
 
             # Keep reference to prevent garbage collection
-            setattr(self.preview_canvas, f"preview_img_{name}", photo)
+            setattr(self.preview_canvas, f"preview_button_{name}", photo)
 
+            # Update position for next button
             x += btn_width + 10
+            max_y = max(max_y, y + btn_height)
+
+        # Set scroll region to enable scrolling if content exceeds canvas height
+        total_height = max_y + 20  # Add some bottom margin
+        if total_height > canvas_height:
+            self.preview_canvas.configure(scrollregion=(0, 0, 0, total_height))
+            # Show scrollbar
+            self.preview_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+            # Enable various scrolling methods
+            self._bind_scrolling_events()
+
+            # Add scroll hint at the bottom for touch/trackpad users
+            self._add_scroll_hint(canvas_width, canvas_height)
+        else:
+            # Reset scroll region if content fits
+            self.preview_canvas.configure(scrollregion=(0, 0, 0, 0))
+            # Hide scrollbar
+            self.preview_scrollbar.pack_forget()
+            # Remove scrolling bindings
+            self._unbind_scrolling_events()
 
     def preview_icons(self, preview_images, framework):
-        """Preview images as icons."""
+        """Preview images as icons with adaptive layout and scrolling."""
+        canvas_width = self.preview_canvas.winfo_width()
+        canvas_height = self.preview_canvas.winfo_height()
+
+        # Ensure canvas is ready
+        if canvas_width <= 1 or canvas_height <= 1:
+            self.root.after(50, lambda: self.preview_icons(preview_images, framework))
+            return
+
+        image_count = len(preview_images)
         self.preview_canvas.create_text(
             10,
             10,
-            text=f"{framework.title()} Icons:",
+            text=f"{framework.title()} Icons ({image_count} image{'s' if image_count != 1 else ''}):",
             anchor=tk.NW,
             font=("Arial", 10, "bold"),
         )
 
-        x, y = 20, 30
-        cols = 0
-        max_cols = 6
+        if not preview_images:
+            self.preview_canvas.create_text(
+                canvas_width // 2,
+                canvas_height // 2,
+                text="No images to preview",
+                fill="#888888",
+                font=("Arial", 12),
+                anchor=tk.CENTER,
+            )
+            return
+
+        # Layout parameters
+        margin = 10
+        start_y = 35  # Below header
+        current_y = start_y
+        icon_spacing = 8
+
+        # Determine layout based on canvas width
+        # If canvas is narrow (< 150px), place text below icon
+        # If canvas is wide enough, place text to the right of icon
+        narrow_layout = canvas_width < 150
 
         for name, photo, pil_image in preview_images:
-            if cols >= max_cols:
-                cols = 0
-                x = 20
-                y += 80
+            # Calculate item height based on layout
+            if narrow_layout:
+                # Icon above text layout
+                item_height = photo.height() + 20  # Icon + text space
+                icon_x = margin + max(
+                    32, photo.width() // 2
+                )  # Center icon or use minimum space
+                text_x = icon_x
+                text_y = current_y + photo.height() + 5
+                text_anchor = tk.N
+            else:
+                # Icon beside text layout
+                item_height = max(photo.height(), 16) + icon_spacing
+                icon_x = margin
+                text_x = margin + photo.width() + 10
+                text_y = current_y + photo.height() // 2
+                text_anchor = tk.W
 
-            # Icon with label
-            self.preview_canvas.create_image(x + 32, y + 16, image=photo)
+            # Check if we have enough space, if not, we'll rely on scrolling
+            icon_y = current_y
 
-            # Label below icon
-            display_name = name.replace(".png", "").replace("_", " ")
-            self.preview_canvas.create_text(
-                x + 32, y + 50, text=display_name, anchor=tk.N, font=("Arial", 8)
+            # Draw icon with border for better visibility
+            border_size = 1
+            self.preview_canvas.create_rectangle(
+                icon_x - border_size,
+                icon_y - border_size,
+                icon_x + photo.width() + border_size,
+                icon_y + photo.height() + border_size,
+                outline="#dddddd",
+                width=1,
             )
 
-            setattr(self.preview_canvas, f"preview_img_{name}", photo)
+            # Draw icon
+            self.preview_canvas.create_image(icon_x, icon_y, image=photo, anchor=tk.NW)
 
-            x += 70
-            cols += 1
+            # Draw label
+            display_name = name.replace(".png", "").replace("_", " ")
+            # Truncate long names based on available space
+            if narrow_layout and len(display_name) > 15:
+                display_name = display_name[:12] + "..."
+            elif not narrow_layout and len(display_name) > 20:
+                display_name = display_name[:17] + "..."
+
+            self.preview_canvas.create_text(
+                text_x,
+                text_y,
+                text=display_name,
+                anchor=text_anchor,
+                font=("Arial", 8),
+                fill="#333333",
+            )
+
+            # Keep reference to prevent garbage collection
+            setattr(self.preview_canvas, f"preview_icon_{name}", photo)
+
+            # Move to next position
+            current_y += item_height + icon_spacing
+
+        # Set scroll region to enable scrolling if content exceeds canvas height
+        total_height = current_y + margin
+        if total_height > canvas_height:
+            self.preview_canvas.configure(scrollregion=(0, 0, 0, total_height))
+            # Show scrollbar
+            self.preview_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+            # Enable various scrolling methods
+            self._bind_scrolling_events()
+
+            # Add scroll hint at the bottom for touch/trackpad users
+            self._add_scroll_hint(canvas_width, canvas_height)
+        else:
+            # Reset scroll region if content fits
+            self.preview_canvas.configure(scrollregion=(0, 0, 0, 0))
+            # Hide scrollbar
+            self.preview_scrollbar.pack_forget()
+            # Remove scrolling bindings
+            self._unbind_scrolling_events()
 
     def preview_backgrounds(self, preview_images, framework):
         """Preview images as backgrounds."""
@@ -1221,9 +1443,31 @@ class EnhancedImageDesignerGUI:
             font=("Arial", 10, "bold"),
         )
 
-        # Use first image as background
+        if not preview_images:
+            # Show message when no image is selected
+            self.preview_canvas.create_text(
+                canvas_width // 2,
+                canvas_height // 2,
+                text="Select an image to see background preview",
+                fill="#888888",
+                font=("Arial", 12),
+                anchor=tk.CENTER,
+            )
+            return
+
+        # Use selected image as background
         if preview_images:
             name, photo, pil_image = preview_images[0]
+
+            # Show current image name
+            self.preview_canvas.create_text(
+                10,
+                25,
+                text=f"Current Image: {name}",
+                anchor=tk.NW,
+                font=("Arial", 9),
+                fill="#666666",
+            )
 
             # Calculate available space
             available_width = canvas_width - 40
@@ -1299,10 +1543,33 @@ class EnhancedImageDesignerGUI:
             font=("Arial", 10, "bold"),
         )
 
+        if not preview_images:
+            # Show message when no image is selected
+            self.preview_canvas.create_text(
+                canvas_width // 2,
+                canvas_height // 2,
+                text="Select an image to see sprite preview",
+                fill="#888888",
+                font=("Arial", 12),
+                anchor=tk.CENTER,
+            )
+            return
+
+        # Show current image name
+        name, photo, pil_image = preview_images[0]
+        self.preview_canvas.create_text(
+            10,
+            25,
+            text=f"Current Sprite: {name}",
+            anchor=tk.NW,
+            font=("Arial", 9),
+            fill="#666666",
+        )
+
         # Simulate a game scene with proper bounds
         margin = 15
         scene_x = margin
-        scene_y = 30
+        scene_y = 45  # Adjusted for the additional text
         scene_width = canvas_width - (2 * margin)
         scene_height = canvas_height - scene_y - margin
 
@@ -1331,27 +1598,17 @@ class EnhancedImageDesignerGUI:
                 width=1,
             )
 
-            # Place sprites on the ground with proper spacing
-            if preview_images:
-                available_width = scene_width - 40  # Leave margins
-                sprite_spacing = min(80, available_width // len(preview_images))
-                sprite_x = scene_x + 20
+            # Place the selected sprite in the center of the scene
+            sprite_x = scene_x + (scene_width - photo.width()) // 2
+            sprite_y = ground_y - photo.height()
+            if sprite_y < scene_y + 10:  # If sprite is too tall, place it lower
+                sprite_y = scene_y + 10
 
-                for name, photo, pil_image in preview_images:
-                    if sprite_x + photo.width() > scene_x + scene_width - 20:
-                        break  # Don't overflow scene
+            self.preview_canvas.create_image(
+                sprite_x, sprite_y, image=photo, anchor=tk.NW
+            )
 
-                    # Place sprite on ground
-                    sprite_y = ground_y - photo.height()
-                    if sprite_y < scene_y + 10:  # If sprite is too tall, place it lower
-                        sprite_y = scene_y + 10
-
-                    self.preview_canvas.create_image(
-                        sprite_x, sprite_y, image=photo, anchor=tk.NW
-                    )
-
-                    setattr(self.preview_canvas, f"preview_sprite_{name}", photo)
-                    sprite_x += max(photo.width() + 10, sprite_spacing)
+            setattr(self.preview_canvas, f"preview_sprite_{name}", photo)
 
     def preview_ui_elements(self, preview_images, framework):
         """Preview images as UI elements."""
@@ -1394,10 +1651,16 @@ class EnhancedImageDesignerGUI:
 
             # Place images as toolbar icons with proper spacing
             icon_x = ui_x + 8
-            icon_spacing = min(50, ui_width // max(len(preview_images[:4]), 1))
+            toolbar_images = 0
+            max_toolbar_images = max(
+                4, min(8, len(preview_images))
+            )  # Show 4-8 images in toolbar
 
-            for i, (name, photo, pil_image) in enumerate(preview_images[:4]):
-                if icon_x + photo.width() > ui_x + ui_width - 8:
+            for i, (name, photo, pil_image) in enumerate(preview_images):
+                if toolbar_images >= max_toolbar_images:
+                    break
+
+                if icon_x + photo.width() + 8 > ui_x + ui_width - 8:
                     break  # Don't overflow toolbar
 
                 # Center icon vertically in toolbar
@@ -1407,7 +1670,8 @@ class EnhancedImageDesignerGUI:
                 )
 
                 setattr(self.preview_canvas, f"preview_ui_{name}", photo)
-                icon_x += max(photo.width() + 8, icon_spacing)
+                icon_x += photo.width() + 8
+                toolbar_images += 1
 
             # Main content area
             content_y = ui_y + toolbar_height + 10
@@ -1424,15 +1688,53 @@ class EnhancedImageDesignerGUI:
                     width=1,
                 )
 
-                # Add some content text
-                self.preview_canvas.create_text(
-                    ui_x + ui_width // 2,
-                    content_y + content_height // 2,
-                    text="Main Content Area",
-                    fill="#666666",
-                    font=("Arial", 10),
-                    anchor=tk.CENTER,
-                )
+                # Add remaining images in content area if any
+                remaining_images = preview_images[toolbar_images:]
+                if remaining_images and content_height > 40:
+                    # Show some images in content area
+                    content_icon_x = ui_x + 10
+                    content_icon_y = content_y + 10
+                    content_images_shown = 0
+                    max_content_images = min(6, len(remaining_images))
+
+                    for name, photo, pil_image in remaining_images[:max_content_images]:
+                        if content_icon_x + photo.width() + 10 > ui_x + ui_width - 10:
+                            content_icon_x = ui_x + 10
+                            content_icon_y += photo.height() + 10
+
+                        if (
+                            content_icon_y + photo.height()
+                            > content_y + content_height - 10
+                        ):
+                            break  # Don't overflow content area
+
+                        self.preview_canvas.create_image(
+                            content_icon_x, content_icon_y, image=photo, anchor=tk.NW
+                        )
+                        setattr(self.preview_canvas, f"preview_content_{name}", photo)
+                        content_icon_x += photo.width() + 10
+                        content_images_shown += 1
+
+                    # Add text if there's space
+                    if content_icon_y + 30 < content_y + content_height - 10:
+                        self.preview_canvas.create_text(
+                            ui_x + ui_width // 2,
+                            content_y + content_height - 20,
+                            text=f"Content Area ({content_images_shown} images)",
+                            fill="#666666",
+                            font=("Arial", 9),
+                            anchor=tk.CENTER,
+                        )
+                else:
+                    # Show default text if no remaining images
+                    self.preview_canvas.create_text(
+                        ui_x + ui_width // 2,
+                        content_y + content_height // 2,
+                        text="Main Content Area",
+                        fill="#666666",
+                        font=("Arial", 10),
+                        anchor=tk.CENTER,
+                    )
 
             # Status bar
             status_y = content_y + content_height + 5
@@ -1449,9 +1751,12 @@ class EnhancedImageDesignerGUI:
                     width=1,
                 )
 
-                # Status icon and text
-                if len(preview_images) > 4:
-                    name, photo, pil_image = preview_images[4]
+                # Status icon and text - use last image if available
+                status_image_index = min(
+                    len(preview_images) - 1, toolbar_images + 6
+                )  # Try to use a different image
+                if status_image_index >= 0 and status_image_index < len(preview_images):
+                    name, photo, pil_image = preview_images[status_image_index]
                     # Scale status icon to fit
                     status_icon_size = min(16, photo.height(), status_height - 4)
                     if (
@@ -1496,6 +1801,20 @@ class EnhancedImageDesignerGUI:
             self.root.after(50, lambda: self.preview_general(preview_images, framework))
             return
 
+        if not preview_images:
+            # Show message when no image is selected
+            self.preview_canvas.create_text(
+                canvas_width // 2,
+                canvas_height // 2,
+                text="Select an image to see preview",
+                fill="#888888",
+                font=("Arial", 12),
+                anchor=tk.CENTER,
+            )
+            return
+
+        # Show current selected image info
+        name, photo, pil_image = preview_images[0]  # Only one image for general mode
         self.preview_canvas.create_text(
             10,
             10,
@@ -1504,68 +1823,273 @@ class EnhancedImageDesignerGUI:
             font=("Arial", 10, "bold"),
         )
 
-        # Dynamic grid layout based on canvas size
+        self.preview_canvas.create_text(
+            10,
+            25,
+            text=f"Current Image: {name}",
+            anchor=tk.NW,
+            font=("Arial", 9),
+            fill="#666666",
+        )
+
+        # Center the image in the available space
         margin = 20
-        start_x = margin
-        start_y = 35
         available_width = canvas_width - (2 * margin)
+        available_height = canvas_height - 60  # Account for header text
 
-        # Calculate grid dimensions
-        if preview_images:
-            avg_width = sum(photo.width() for _, photo, _ in preview_images) // len(
-                preview_images
-            )
-            max_cols = max(1, available_width // (avg_width + 25))
-        else:
-            max_cols = 4
+        # Calculate centered position
+        center_x = canvas_width // 2
+        center_y = (canvas_height + 40) // 2  # Offset for header
 
-        x, y = start_x, start_y
-        col = 0
-        row_height = 0
+        # Draw image with border
+        img_x = center_x - photo.width() // 2
+        img_y = center_y - photo.height() // 2
 
-        for name, photo, pil_image in preview_images:
-            # Check if we need to wrap to next row
-            if col >= max_cols or (
-                col > 0 and x + photo.width() + 25 > canvas_width - margin
-            ):
-                col = 0
-                x = start_x
-                y += row_height + 35  # Space for image + label + padding
-                row_height = 0
+        self.preview_canvas.create_rectangle(
+            img_x - 2,
+            img_y - 2,
+            img_x + photo.width() + 2,
+            img_y + photo.height() + 2,
+            outline="#cccccc",
+            width=2,
+        )
+        self.preview_canvas.create_image(img_x, img_y, image=photo, anchor=tk.NW)
 
-            # Check if we have enough vertical space
-            if y + photo.height() + 25 > canvas_height - 10:
-                break  # Don't overflow canvas
+        # Show image dimensions
+        self.preview_canvas.create_text(
+            center_x,
+            img_y + photo.height() + 15,
+            text=f"{pil_image.width} × {pil_image.height} pixels",
+            anchor=tk.N,
+            font=("Arial", 8),
+            fill="#666666",
+        )
 
-            # Draw image with border
-            self.preview_canvas.create_rectangle(
-                x - 1,
-                y - 1,
-                x + photo.width() + 1,
-                y + photo.height() + 1,
-                outline="#cccccc",
-                width=1,
-            )
-            self.preview_canvas.create_image(x, y, image=photo, anchor=tk.NW)
+        setattr(self.preview_canvas, f"preview_general_{name}", photo)
 
-            # Label below image
-            display_name = name.replace(".png", "").replace("_", " ")
-            if len(display_name) > 12:  # Truncate long names
-                display_name = display_name[:12] + "..."
-            self.preview_canvas.create_text(
-                x + photo.width() // 2,
-                y + photo.height() + 8,
-                text=display_name,
-                anchor=tk.N,
+    def _on_mousewheel(self, event):
+        """Handle mouse wheel scrolling in preview canvas."""
+        if hasattr(self, "preview_canvas"):
+            # Check if canvas has scroll region set
+            scroll_region = self.preview_canvas.cget("scrollregion")
+            if scroll_region and scroll_region != "0 0 0 0":
+                # Determine scroll direction and amount
+                if event.delta:
+                    # Windows and MacOS
+                    delta = -1 * (event.delta / 120)
+                elif event.num == 4:
+                    # Linux scroll up
+                    delta = -1
+                elif event.num == 5:
+                    # Linux scroll down
+                    delta = 1
+                else:
+                    return
+
+                # Scroll the canvas (multiply by 3 for more responsive scrolling)
+                self.preview_canvas.yview_scroll(int(delta * 3), "units")
+
+    def _bind_scrolling_events(self):
+        """Bind all scrolling events for different input methods."""
+        try:
+            # Mouse wheel scrolling (traditional mouse)
+            self.preview_canvas.bind("<MouseWheel>", self._on_mousewheel)
+
+            # Linux mouse wheel support (only bind if available)
+            try:
+                self.preview_canvas.bind("<Button-4>", self._on_mousewheel)
+                self.preview_canvas.bind("<Button-5>", self._on_mousewheel)
+            except tk.TclError:
+                pass  # Not available on this system
+
+            # Trackpad scrolling (only bind if available)
+            try:
+                self.preview_canvas.bind("<Shift-MouseWheel>", self._on_trackpad_scroll)
+            except tk.TclError:
+                pass  # Not available on this system
+
+            # Basic keyboard scrolling (only common keys that exist on all keyboards)
+            self.preview_canvas.bind("<Up>", self._on_key_scroll)
+            self.preview_canvas.bind("<Down>", self._on_key_scroll)
+            # Use Left/Right as alternatives for Page Up/Down on limited keyboards
+            self.preview_canvas.bind("<Left>", self._on_key_scroll)
+            self.preview_canvas.bind("<Right>", self._on_key_scroll)
+
+            # Optional keys (only bind if they exist)
+            try:
+                self.preview_canvas.bind("<Page_Up>", self._on_key_scroll)
+                self.preview_canvas.bind("<Page_Down>", self._on_key_scroll)
+            except tk.TclError:
+                pass  # Not available on this keyboard
+
+            try:
+                self.preview_canvas.bind("<Home>", self._on_key_scroll)
+                self.preview_canvas.bind("<End>", self._on_key_scroll)
+            except tk.TclError:
+                pass  # Not available on this keyboard
+
+            # Make canvas focusable for keyboard events and enable drag scrolling
+            self.preview_canvas.focus_set()
+            self.preview_canvas.bind("<Button-1>", self._on_canvas_click)
+            self.preview_canvas.bind("<B1-Motion>", self._on_drag_motion)
+            self.preview_canvas.bind("<ButtonRelease-1>", self._on_drag_end)
+
+            # Initialize drag state
+            if not hasattr(self, "_drag_data"):
+                self._drag_data = {"y": 0, "scrolling": False, "start_y": 0}
+
+        except Exception as e:
+            print(f"Warning: Some scrolling features may not be available: {e}")
+
+    def _unbind_scrolling_events(self):
+        """Remove all scrolling event bindings."""
+        events_to_unbind = [
+            "<MouseWheel>",
+            "<Button-4>",
+            "<Button-5>",
+            "<Shift-MouseWheel>",
+            "<Up>",
+            "<Down>",
+            "<Left>",
+            "<Right>",
+            "<Page_Up>",
+            "<Page_Down>",
+            "<Home>",
+            "<End>",
+            "<Button-1>",
+            "<B1-Motion>",
+            "<ButtonRelease-1>",
+        ]
+        for event in events_to_unbind:
+            try:
+                self.preview_canvas.unbind(event)
+            except tk.TclError:
+                pass  # Event wasn't bound or doesn't exist
+
+    def _on_trackpad_scroll(self, event):
+        """Handle trackpad scrolling events."""
+        if hasattr(self, "preview_canvas"):
+            scroll_region = self.preview_canvas.cget("scrollregion")
+            if scroll_region and scroll_region != "0 0 0 0":
+                # Trackpad scrolling is usually more sensitive, so use smaller delta
+                if event.delta:
+                    delta = -1 * (event.delta / 120) * 0.5  # Reduced sensitivity
+                    self.preview_canvas.yview_scroll(int(delta * 2), "units")
+
+    def _on_key_scroll(self, event):
+        """Handle keyboard scrolling for accessibility."""
+        if hasattr(self, "preview_canvas"):
+            scroll_region = self.preview_canvas.cget("scrollregion")
+            if scroll_region and scroll_region != "0 0 0 0":
+                if event.keysym == "Up":
+                    self.preview_canvas.yview_scroll(-1, "units")
+                elif event.keysym == "Down":
+                    self.preview_canvas.yview_scroll(1, "units")
+                elif event.keysym == "Left":
+                    # Use Left arrow as Page Up alternative for limited keyboards
+                    self.preview_canvas.yview_scroll(-3, "units")
+                elif event.keysym == "Right":
+                    # Use Right arrow as Page Down alternative for limited keyboards
+                    self.preview_canvas.yview_scroll(3, "units")
+                elif event.keysym == "Page_Up":
+                    self.preview_canvas.yview_scroll(-5, "units")
+                elif event.keysym == "Page_Down":
+                    self.preview_canvas.yview_scroll(5, "units")
+                elif event.keysym == "Home":
+                    self.preview_canvas.yview_moveto(0)
+                elif event.keysym == "End":
+                    self.preview_canvas.yview_moveto(1)
+
+    def _add_scroll_hint(self, canvas_width, canvas_height):
+        """Add a visual hint that content is scrollable."""
+        # Add a subtle gradient/fade effect at the bottom to indicate more content
+        hint_height = 20
+        hint_y = canvas_height - hint_height
+
+        # Create a semi-transparent overlay to indicate scrollable content
+        self.preview_canvas.create_rectangle(
+            0,
+            hint_y,
+            canvas_width,
+            canvas_height,
+            fill="white",
+            stipple="gray25",
+            outline="",
+        )
+
+        # Add scroll hint text with keyboard info
+        self.preview_canvas.create_text(
+            canvas_width // 2,
+            canvas_height - 10,
+            text="↕ Scroll: wheel, drag, or ↑↓←→ keys",
+            fill="#888888",
+            font=("Arial", 7),
+            anchor=tk.CENTER,
+        )
+
+    def _on_canvas_click(self, event):
+        """Handle canvas click - focus and prepare for potential drag."""
+        self.preview_canvas.focus_set()
+        if hasattr(self, "preview_canvas"):
+            scroll_region = self.preview_canvas.cget("scrollregion")
+            if scroll_region and scroll_region != "0 0 0 0":
+                self._drag_data["y"] = event.y
+                self._drag_data["start_y"] = event.y
+                self._drag_data["scrolling"] = False  # Will be set to True on motion
+
+    def _on_drag_motion(self, event):
+        """Handle drag motion for scrolling."""
+        if hasattr(self, "preview_canvas") and hasattr(self, "_drag_data"):
+            scroll_region = self.preview_canvas.cget("scrollregion")
+            if scroll_region and scroll_region != "0 0 0 0":
+                # Check if this is significant movement (more than 5 pixels)
+                if not self._drag_data["scrolling"]:
+                    if abs(event.y - self._drag_data["start_y"]) > 5:
+                        self._drag_data["scrolling"] = True
+                        self.preview_canvas.configure(cursor="hand2")
+
+                if self._drag_data["scrolling"]:
+                    # Calculate drag distance
+                    delta_y = self._drag_data["y"] - event.y
+                    self._drag_data["y"] = event.y
+
+                    # Convert to scroll units (adjust sensitivity)
+                    scroll_amount = int(delta_y / 8)  # Adjust sensitivity as needed
+                    if scroll_amount != 0:
+                        self.preview_canvas.yview_scroll(scroll_amount, "units")
+
+    def _on_drag_end(self, event):
+        """End drag scrolling."""
+        if hasattr(self, "_drag_data"):
+            self._drag_data["scrolling"] = False
+            # Reset cursor
+            self.preview_canvas.configure(cursor="")
+
+    def _create_tooltip(self, widget, text):
+        """Create a simple tooltip for a widget."""
+
+        def on_enter(event):
+            tooltip = tk.Toplevel()
+            tooltip.wm_overrideredirect(True)
+            tooltip.wm_geometry(f"+{event.x_root+10}+{event.y_root+10}")
+            label = tk.Label(
+                tooltip,
+                text=text,
+                background="lightyellow",
+                relief="solid",
+                borderwidth=1,
                 font=("Arial", 8),
             )
+            label.pack()
+            widget.tooltip = tooltip
 
-            setattr(self.preview_canvas, f"preview_general_{name}", photo)
+        def on_leave(event):
+            if hasattr(widget, "tooltip"):
+                widget.tooltip.destroy()
+                del widget.tooltip
 
-            # Update position for next image
-            x += photo.width() + 25
-            row_height = max(row_height, photo.height())
-            col += 1
+        widget.bind("<Enter>", on_enter)
+        widget.bind("<Leave>", on_leave)
 
     # Menu action methods
     def clear_canvas(self):
@@ -2883,6 +3407,10 @@ Happy creating! 🎉
         except (OSError, FileNotFoundError) as e:
             # Temp directory cleanup failed, but this is not critical
             print(f"Warning: Could not clean up temp directory {self.temp_dir}: {e}")
+
+        # Cleanup icon files
+        for icon_path in self.icon_paths:
+            cleanup_icon(icon_path)
 
 
 class ImageSizeDialog:

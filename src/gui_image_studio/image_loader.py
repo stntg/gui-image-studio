@@ -1,7 +1,7 @@
 import base64
 from dataclasses import dataclass
 from io import BytesIO
-from typing import Optional, Tuple
+from typing import Any, Optional, Tuple
 
 from PIL import Image, ImageEnhance, ImageOps, ImageSequence
 
@@ -13,7 +13,7 @@ except ImportError:
     class EmbeddedImages:
         embedded_images = {"default": {}}
 
-    embedded_images = EmbeddedImages()
+    embedded_images: Any = EmbeddedImages()
 
 
 @dataclass
@@ -50,7 +50,7 @@ class ImageConfig:
         }
 
 
-def _get_image_data(image_name, theme):
+def _get_image_data(image_name: str, theme: str) -> Image.Image:
     """
     Retrieve and decode image data from embedded images.
 
@@ -76,7 +76,7 @@ def _get_image_data(image_name, theme):
     return Image.open(stream)
 
 
-def _apply_image_transformations(img, **transforms):
+def _apply_image_transformations(img: Image.Image, **transforms: Any) -> Image.Image:
     """
     Apply various transformations to a PIL Image.
 
@@ -109,7 +109,12 @@ def _apply_image_transformations(img, **transforms):
         img = ImageEnhance.Brightness(img).enhance(transparency)
 
     if size:
-        img = img.resize(size, Image.LANCZOS)
+        # Use LANCZOS resampling - handle different Pillow versions
+        try:
+            resample = Image.Resampling.LANCZOS
+        except AttributeError:
+            resample = Image.LANCZOS  # type: ignore
+        img = img.resize(size, resample)
 
     if contrast != 1.0:
         img = ImageEnhance.Contrast(img).enhance(contrast)
@@ -131,7 +136,9 @@ def _apply_image_transformations(img, **transforms):
     return img
 
 
-def _create_framework_image(img, framework, size):
+def _create_framework_image(
+    img: Image.Image, framework: str, size: Optional[Tuple[int, int]]
+) -> Any:
     """
     Convert PIL Image to framework-specific image object.
 
@@ -153,7 +160,7 @@ def _create_framework_image(img, framework, size):
         return ImageTk.PhotoImage(img)
 
 
-def _is_animated_gif(img, animated):
+def _is_animated_gif(img: Image.Image, animated: bool) -> bool:
     """
     Check if image is an animated GIF that should be processed as animated.
 
@@ -172,7 +179,13 @@ def _is_animated_gif(img, animated):
     )
 
 
-def _process_animated_gif(img, framework, size, frame_delay, **transforms):
+def _process_animated_gif(
+    img: Image.Image,
+    framework: str,
+    size: Optional[Tuple[int, int]],
+    frame_delay: int,
+    **transforms: Any,
+) -> list[Any]:
     """
     Process an animated GIF by applying transformations to each frame.
 
@@ -202,7 +215,7 @@ def _process_animated_gif(img, framework, size, frame_delay, **transforms):
     return {"animated_frames": frames, "frame_delay": frame_delay}
 
 
-def _process_image_with_config(config: ImageConfig):
+def _process_image_with_config(config: ImageConfig) -> Any:
     """
     Process an image based on the provided configuration.
 
@@ -230,21 +243,21 @@ def _process_image_with_config(config: ImageConfig):
 
 
 def get_image(
-    image_name,
-    framework="tkinter",
-    size=(32, 32),
-    theme="default",
-    grayscale=False,
-    rotate=0,
-    transparency=1.0,
-    format_override=None,
-    animated=False,
-    frame_delay=100,
-    tint_color=None,
-    tint_intensity=0.0,
-    contrast=1.0,
-    saturation=1.0,
-):
+    image_name: str,
+    framework: str = "tkinter",
+    size: Tuple[int, int] = (32, 32),
+    theme: str = "default",
+    grayscale: bool = False,
+    rotate: int = 0,
+    transparency: float = 1.0,
+    format_override: Optional[str] = None,
+    animated: bool = False,
+    frame_delay: int = 100,
+    tint_color: Optional[str] = None,
+    tint_intensity: float = 0.0,
+    contrast: float = 1.0,
+    saturation: float = 1.0,
+) -> Any:
     """
     Retrieve an embedded image with dynamic transformations and optional animated
     GIF support.
@@ -296,7 +309,7 @@ def get_image(
     return _process_image_with_config(config)
 
 
-def get_image_from_config(config: ImageConfig):
+def get_image_from_config(config: ImageConfig) -> Any:
     """
     Retrieve an embedded image using an ImageConfig object.
 
