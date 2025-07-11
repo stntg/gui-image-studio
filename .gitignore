@@ -104,11 +104,13 @@ celerybeat.pid
 # Environments
 .env
 .venv
+.zencoder/
 env/
 venv/
 ENV/
 env.bak/
 venv.bak/
+gui-image-studio.code-workspace
 
 # Spyder project settings
 .spyderproject

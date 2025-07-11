@@ -7,6 +7,7 @@ FUNCTIONALITY IS IDENTICAL TO THE ORIGINAL - ONLY THE UI LAYOUT USES THREEPANEWI
 """
 
 import base64
+import gc
 import json
 import os
 import tempfile
@@ -14,6 +15,14 @@ import tkinter as tk
 from io import BytesIO
 from tkinter import colorchooser, filedialog, messagebox, simpledialog, ttk
 from typing import Dict, List, Optional, Tuple
+
+# Optional memory monitoring
+try:
+    import psutil
+
+    PSUTIL_AVAILABLE = True
+except ImportError:
+    PSUTIL_AVAILABLE = False
 
 import threepanewindows
 from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageFont, ImageTk
@@ -33,6 +42,13 @@ class EnhancedImageDesignerGUI:
 
         # Application state
         self.current_images: Dict[str, Image.Image] = {}
+        self.original_images: Dict[str, Image.Image] = (
+            {}
+        )  # Store originals for rotation
+        self.base_images: Dict[str, Image.Image] = (
+            {}
+        )  # Store base images (before rotation)
+        self.current_rotations: Dict[str, int] = {}  # Track current rotation angles
         self.image_previews: Dict[str, ImageTk.PhotoImage] = {}
         self.selected_image: Optional[str] = None
         self.temp_dir = tempfile.mkdtemp()
@@ -106,6 +122,9 @@ class EnhancedImageDesignerGUI:
 
         print(f"Window centered at {x}, {y} with size {w}x{h}")
         print(f"w width: {w}, height: {h}, screen width: {ws}, screen height: {hs}")
+
+        # Set up proper cleanup on window close
+        self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
     def setup_button_styles(self) -> None:
         """Setup custom button styles for prominent display."""
@@ -591,19 +610,67 @@ class EnhancedImageDesignerGUI:
         ttk.Label(transform_frame, text="Rotation:", font=("Arial", 8)).pack(
             anchor=tk.W, padx=3
         )
+
+        # Rotation controls frame
+        rotation_controls_frame = ttk.Frame(transform_frame)
+        rotation_controls_frame.pack(fill=tk.X, padx=3, pady=2)
+
+        # Rotation slider
         self.rotation_var = tk.IntVar()
         rotation_scale = ttk.Scale(
-            transform_frame,
+            rotation_controls_frame,
             from_=0,
             to=360,
             variable=self.rotation_var,
             orient=tk.HORIZONTAL,
-            command=self.apply_rotation,
+            command=self.update_rotation_display,
         )
-        rotation_scale.pack(fill=tk.X, padx=3, pady=2)
+        rotation_scale.pack(fill=tk.X, pady=(0, 2))
 
-        # Also bind variable changes to rotation
-        self.rotation_var.trace("w", self.apply_rotation)
+        # Rotation input and apply frame using grid layout like size controls
+        rotation_input_frame = ttk.Frame(rotation_controls_frame)
+        rotation_input_frame.pack(fill=tk.X)
+
+        # Rotation input box with consistent styling
+        ttk.Label(rotation_input_frame, text="Angle:", font=("Arial", 8)).grid(
+            row=0, column=0, sticky=tk.W
+        )
+        self.rotation_entry = ttk.Entry(
+            rotation_input_frame, width=4, font=("Arial", 8)
+        )
+        self.rotation_entry.grid(row=0, column=1, padx=1)
+        self.rotation_entry.bind("<Return>", self.on_rotation_entry_change)
+        self.rotation_entry.bind("<FocusOut>", self.on_rotation_entry_change)
+
+        # Apply rotation button with consistent styling
+        self.apply_rotation_btn = tk.Button(
+            rotation_input_frame,
+            text="Apply",
+            command=self.apply_rotation,
+            font=("Arial", 8),
+            relief="raised",
+            bd=1,
+            width=6,
+        )
+        self.apply_rotation_btn.grid(row=0, column=2, padx=2)
+
+        # Reset rotation button with consistent styling
+        reset_rotation_btn = tk.Button(
+            rotation_input_frame,
+            text="Reset",
+            command=self.reset_rotation,
+            font=("Arial", 8),
+            relief="raised",
+            bd=1,
+            width=6,
+        )
+        reset_rotation_btn.grid(row=0, column=3, padx=1)
+
+        # Configure grid weights for rotation input frame
+        rotation_input_frame.columnconfigure(2, weight=1)
+
+        # Initialize rotation display
+        self.update_rotation_display()
 
         # Filters in a more compact grid layout
         filters_frame = ttk.Frame(transform_frame)
@@ -956,6 +1023,9 @@ class EnhancedImageDesignerGUI:
                 name = f"{base_name}_{counter}"
 
             self.current_images[name] = image
+            self.original_images[name] = image.copy()  # Store original for rotation
+            self.base_images[name] = image.copy()  # Store base image (before rotation)
+            self.current_rotations[name] = 0  # Initialize rotation angle
             self.update_image_list()
             self.select_image(name)
 
@@ -972,6 +1042,19 @@ class EnhancedImageDesignerGUI:
         if file_path:
             try:
                 image = Image.open(file_path)
+
+                # Check image size before processing
+                max_load_size = 4096  # Maximum dimension for loading
+                if image.width > max_load_size or image.height > max_load_size:
+                    messagebox.showerror(
+                        "Image Too Large",
+                        f"Image is too large to load safely:\n"
+                        f"Size: {image.width}x{image.height}\n"
+                        f"Maximum: {max_load_size}x{max_load_size}\n\n"
+                        f"Please resize the image before loading.",
+                    )
+                    return
+
                 # Convert to RGBA for consistency
                 if image.mode != "RGBA":
                     image = image.convert("RGBA")
@@ -988,6 +1071,12 @@ class EnhancedImageDesignerGUI:
                     name = f"{base_name}_{counter}"
 
                 self.current_images[name] = image
+                self.original_images[name] = image.copy()  # Store original for rotation
+                self.base_images[name] = (
+                    image.copy()
+                )  # Store base image (before rotation)
+                self.current_rotations[name] = 0  # Initialize rotation angle
+                self.cleanup_memory()  # Clean up before updating UI
                 self.update_image_list()
                 self.select_image(name)
 
@@ -1012,6 +1101,9 @@ class EnhancedImageDesignerGUI:
             new_name = f"{base_name}_copy_{counter}"
 
         self.current_images[new_name] = copy
+        self.original_images[new_name] = copy.copy()  # Store original for rotation
+        self.base_images[new_name] = copy.copy()  # Store base image (before rotation)
+        self.current_rotations[new_name] = 0  # Initialize rotation angle
         self.update_image_list()
         self.select_image(new_name)
 
@@ -1022,9 +1114,19 @@ class EnhancedImageDesignerGUI:
             return
 
         if messagebox.askyesno("Confirm", f"Delete image '{self.selected_image}'?"):
-            del self.current_images[self.selected_image]
+            # Clean up memory properly
+            if self.selected_image in self.current_images:
+                del self.current_images[self.selected_image]
+            if self.selected_image in self.original_images:
+                del self.original_images[self.selected_image]
+            if self.selected_image in self.base_images:
+                del self.base_images[self.selected_image]
+            if self.selected_image in self.current_rotations:
+                del self.current_rotations[self.selected_image]
             if self.selected_image in self.image_previews:
+                old_photo = self.image_previews[self.selected_image]
                 del self.image_previews[self.selected_image]
+                del old_photo
 
             self.selected_image = None
             self.update_image_list()
@@ -2099,17 +2201,28 @@ class EnhancedImageDesignerGUI:
             current_img = self.current_images[self.selected_image]
             new_img = Image.new("RGBA", current_img.size, (255, 255, 255, 0))
             self.current_images[self.selected_image] = new_img
+            self.original_images[self.selected_image] = (
+                new_img.copy()
+            )  # Update original too
+            self.base_images[self.selected_image] = new_img.copy()  # Update base too
+            self.current_rotations[self.selected_image] = 0  # Reset rotation
+            # Reset rotation when clearing
+            self.rotation_var.set(0)
+            self.update_rotation_display()
             self.update_canvas()
             self.update_preview()
 
     def zoom_in(self):
         """Zoom in on the canvas."""
-        self.zoom_level = min(self.zoom_level * 1.2, 10.0)
+        # More conservative zoom limit to prevent memory issues
+        self.zoom_level = min(self.zoom_level * 1.2, 5.0)
+        self.cleanup_memory()  # Clean up before updating
         self.update_canvas()
 
     def zoom_out(self):
         """Zoom out on the canvas."""
         self.zoom_level = max(self.zoom_level / 1.2, 0.1)
+        self.cleanup_memory()  # Clean up before updating
         self.update_canvas()
 
     def reset_zoom(self):
@@ -2692,6 +2805,11 @@ Happy creating! 🎉
         else:
             self.zoom_level = 1.0
 
+        # Set rotation to current rotation for this image
+        current_rotation = self.current_rotations.get(name, 0)
+        self.rotation_var.set(current_rotation)
+        self.update_rotation_display()
+
         # Update canvas and preview
         self.update_canvas()
         self.update_preview()
@@ -2714,16 +2832,81 @@ Happy creating! 🎉
 
         image = self.current_images[self.selected_image]
 
+        # Check if image is too large to process safely
+        max_image_size = 4096  # Maximum original image dimension
+        if image.width > max_image_size or image.height > max_image_size:
+            # Show error and clear canvas
+            self.canvas.delete("all")
+            self.canvas.create_text(
+                200,
+                200,
+                text=f"Image too large to display safely\n({image.width}x{image.height})\nMaximum size: {max_image_size}x{max_image_size}",
+                fill="red",
+                font=("Arial", 12),
+                anchor=tk.CENTER,
+            )
+            return
+
+        # Clean up old PhotoImage to prevent memory leaks
+        if self.selected_image in self.image_previews:
+            old_photo = self.image_previews[self.selected_image]
+            # Force garbage collection of the old PhotoImage
+            del old_photo
+
         # Create display image with zoom
         display_size = (
             int(image.width * self.zoom_level),
             int(image.height * self.zoom_level),
         )
-        display_image = image.resize(display_size, Image.NEAREST)
 
-        # Convert to PhotoImage
-        photo = ImageTk.PhotoImage(display_image)
-        self.image_previews[self.selected_image] = photo
+        # Limit maximum display size to prevent memory issues
+        max_display_size = 2048  # Maximum dimension in pixels
+        if display_size[0] > max_display_size or display_size[1] > max_display_size:
+            # Calculate scaling factor to fit within max size
+            scale_factor = min(
+                max_display_size / display_size[0], max_display_size / display_size[1]
+            )
+            display_size = (
+                int(display_size[0] * scale_factor),
+                int(display_size[1] * scale_factor),
+            )
+
+        try:
+            display_image = image.resize(display_size, Image.NEAREST)
+
+            # Convert to PhotoImage
+            photo = ImageTk.PhotoImage(display_image)
+            self.image_previews[self.selected_image] = photo
+
+            # Clean up the temporary display_image to free memory
+            del display_image
+
+        except MemoryError:
+            # Handle memory error gracefully
+            self.canvas.delete("all")
+            self.canvas.create_text(
+                200,
+                200,
+                text="Not enough memory to display image\nTry reducing zoom level or image size",
+                fill="red",
+                font=("Arial", 12),
+                anchor=tk.CENTER,
+            )
+            # Reset zoom to a safer level
+            self.zoom_level = 1.0
+            return
+        except Exception as e:
+            # Handle other errors
+            self.canvas.delete("all")
+            self.canvas.create_text(
+                200,
+                200,
+                text=f"Error displaying image:\n{str(e)}",
+                fill="red",
+                font=("Arial", 12),
+                anchor=tk.CENTER,
+            )
+            return
 
         # Clear and update canvas
         self.canvas.delete("all")
@@ -2741,6 +2924,14 @@ Happy creating! 🎉
         # Update preview when canvas changes
         if hasattr(self, "preview_canvas"):
             self.root.after_idle(self.update_preview)
+
+        # Periodic memory cleanup (every 10th canvas update)
+        if not hasattr(self, "_cleanup_counter"):
+            self._cleanup_counter = 0
+        self._cleanup_counter += 1
+        if self._cleanup_counter >= 10:
+            self._cleanup_counter = 0
+            self.root.after_idle(self.cleanup_memory)
 
     def show_canvas_instructions(self):
         """Show instructions on empty canvas."""
@@ -3181,6 +3372,9 @@ Happy creating! 🎉
         resized = image.resize((width, height), Image.LANCZOS)
         self.current_images[self.selected_image] = resized
 
+        # Update base image to the resized version and reset rotation
+        self.update_base_image()
+
         self.update_canvas()
 
     def zoom_in(self):
@@ -3254,6 +3448,7 @@ Happy creating! 🎉
         image = self.current_images[self.selected_image]
         sharpened = image.filter(ImageFilter.SHARPEN)
         self.current_images[self.selected_image] = sharpened
+        self.update_base_image()  # Update base image after filter
         self.update_canvas()
 
     def apply_emboss(self):
@@ -3264,6 +3459,7 @@ Happy creating! 🎉
         image = self.current_images[self.selected_image]
         embossed = image.filter(ImageFilter.EMBOSS)
         self.current_images[self.selected_image] = embossed
+        self.update_base_image()  # Update base image after filter
         self.update_canvas()
 
     def apply_rotation(self, *args):
@@ -3272,14 +3468,215 @@ Happy creating! 🎉
             return
 
         angle = self.rotation_var.get()
-        if angle == 0:
-            return  # No rotation needed
+        # Initialize base image if not exists
 
-        image = self.current_images[self.selected_image]
-        # Rotate the image (PIL rotates counter-clockwise)
-        rotated = image.rotate(angle, expand=True, fillcolor=(255, 255, 255, 0))
-        self.current_images[self.selected_image] = rotated
-        self.update_canvas()
+        if self.selected_image not in self.base_images:
+            self.base_images[self.selected_image] = self.current_images[
+                self.selected_image
+            ].copy()
+            self.current_rotations[self.selected_image] = 0
+
+        # Use base image for rotation to maintain current size but prevent cumulative rotation
+        base_image = self.base_images[self.selected_image]
+
+        if angle == 0:
+            # If angle is 0, use base image directly
+            self.current_images[self.selected_image] = base_image.copy()
+            self.current_rotations[self.selected_image] = 0
+            self.update_canvas()
+            return
+
+        # Check if rotation would create a very large image
+        if angle % 90 != 0:  # Non-90 degree rotations can increase size significantly
+            # Estimate new size after rotation
+            import math
+
+            rad = math.radians(abs(angle))
+            new_width = int(
+                abs(base_image.width * math.cos(rad))
+                + abs(base_image.height * math.sin(rad))
+            )
+            new_height = int(
+                abs(base_image.width * math.sin(rad))
+                + abs(base_image.height * math.cos(rad))
+            )
+
+            max_rotation_size = 3000  # Conservative limit for rotated images
+            if new_width > max_rotation_size or new_height > max_rotation_size:
+                messagebox.showerror(
+                    "Rotation Error",
+                    f"Rotation would create an image too large to handle safely:\n"
+                    f"Estimated size: {new_width}x{new_height}\n"
+                    f"Maximum: {max_rotation_size}x{max_rotation_size}\n\n"
+                    f"Try using 90-degree rotations instead.",
+                )
+                return
+
+        # Clean up old PhotoImage first to free memory
+        if self.selected_image in self.image_previews:
+            old_photo = self.image_previews[self.selected_image]
+            del self.image_previews[self.selected_image]
+            del old_photo
+
+        # Force garbage collection before rotation
+        gc.collect()
+
+        try:
+            # Rotate the base image (PIL rotates counter-clockwise)
+            rotated = base_image.rotate(
+                angle, expand=True, fillcolor=(255, 255, 255, 0)
+            )
+
+            # Clean up old image reference
+            old_image = self.current_images[self.selected_image]
+            self.current_images[self.selected_image] = rotated
+            self.current_rotations[self.selected_image] = angle
+            del old_image
+
+            # Force garbage collection to free memory
+            gc.collect()
+
+            self.update_canvas()
+
+            # Check memory usage after rotation
+            self.check_memory_usage()
+
+        except MemoryError:
+            messagebox.showerror(
+                "Memory Error",
+                "Not enough memory to rotate this image.\n"
+                "Try closing other applications or using a smaller image.",
+            )
+        except Exception as e:
+            messagebox.showerror("Rotation Error", f"Failed to rotate image: {str(e)}")
+
+    def update_base_image(self):
+        """Update the base image to the current image state and reset rotation."""
+        if self.selected_image:
+            self.base_images[self.selected_image] = self.current_images[
+                self.selected_image
+            ].copy()
+            self.current_rotations[self.selected_image] = 0
+            self.rotation_var.set(0)
+            self.update_rotation_display()
+
+    def cleanup_memory(self):
+        """Force cleanup of unused memory and PhotoImage objects."""
+        # Force garbage collection
+        gc.collect()
+
+        # Clean up any orphaned PhotoImage objects
+        for key in list(self.image_previews.keys()):
+            if key not in self.current_images:
+                old_photo = self.image_previews[key]
+                del self.image_previews[key]
+                del old_photo
+
+        # Clean up orphaned original images
+        for key in list(self.original_images.keys()):
+            if key not in self.current_images:
+                del self.original_images[key]
+
+        # Clean up orphaned base images
+        for key in list(self.base_images.keys()):
+            if key not in self.current_images:
+                del self.base_images[key]
+
+        # Clean up orphaned rotation tracking
+        for key in list(self.current_rotations.keys()):
+            if key not in self.current_images:
+                del self.current_rotations[key]
+
+        # Force another garbage collection
+        gc.collect()
+
+    def update_rotation_display(self, *args):
+        """Update the rotation input box to show current slider value."""
+        if hasattr(self, "rotation_entry"):
+            current_value = self.rotation_var.get()
+            self.rotation_entry.delete(0, tk.END)
+            self.rotation_entry.insert(0, str(current_value))
+
+    def on_rotation_entry_change(self, event=None):
+        """Handle changes to the rotation input box."""
+        try:
+            value = float(self.rotation_entry.get())
+            # Normalize angle to 0-360 range
+            value = value % 360
+            self.rotation_var.set(int(value))
+            self.update_rotation_display()
+        except ValueError:
+            # Invalid input, reset to current slider value
+            self.update_rotation_display()
+
+    def reset_rotation(self):
+        """Reset rotation to 0 degrees."""
+        self.rotation_var.set(0)
+        self.update_rotation_display()
+        # Apply the reset rotation
+        self.apply_rotation()
+
+    def check_memory_usage(self):
+        """Check current memory usage and warn if it's getting high."""
+        if not PSUTIL_AVAILABLE:
+            return
+
+        try:
+            process = psutil.Process()
+            memory_info = process.memory_info()
+            memory_mb = memory_info.rss / 1024 / 1024  # Convert to MB
+
+            # Warn if memory usage exceeds 500MB
+            if memory_mb > 500:
+                messagebox.showwarning(
+                    "High Memory Usage",
+                    f"Memory usage is high: {memory_mb:.1f} MB\n\n"
+                    "Consider:\n"
+                    "• Closing unused images\n"
+                    "• Reducing zoom level\n"
+                    "• Working with smaller images\n"
+                    "• Restarting the application",
+                )
+                # Force aggressive cleanup
+                self.cleanup_memory()
+
+        except Exception:
+            # Ignore errors in memory monitoring
+            pass
+
+    def on_closing(self):
+        """Handle application closing with proper cleanup."""
+        try:
+            # Clean up all images and previews
+            self.current_images.clear()
+            self.original_images.clear()
+            self.base_images.clear()
+            self.current_rotations.clear()
+            for photo in self.image_previews.values():
+                del photo
+            self.image_previews.clear()
+
+            # Clean up icon paths
+            for icon_path in self.icon_paths:
+                try:
+                    cleanup_icon(icon_path)
+                except:
+                    pass
+
+            # Force garbage collection
+            gc.collect()
+
+        except Exception as e:
+            print(f"Error during cleanup: {e}")
+        finally:
+            self.root.destroy()
+
+    def __del__(self):
+        """Destructor to ensure cleanup."""
+        try:
+            self.cleanup_memory()
+        except:
+            pass
 
     def preview_code(self):
         """Preview the generated embedded code."""
