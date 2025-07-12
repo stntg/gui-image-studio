@@ -7,17 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Planned Additions
+### Added
 
-- Planned features for future releases
-
-### Changed
-
-- Planned improvements for future releases
+- **Info Button**: Comprehensive image information display in Image Properties section
+  - Shows detailed file properties, metadata, and technical specifications
+  - Displays color analysis with unique colors count and most common colors
+  - Provides memory usage estimates and pixel count information
+  - Includes smart recommendations based on image characteristics
+  - Features icon-based UI with fallback to text symbol
+  - Positioned next to Apply button in Image Properties for intuitive access
 
 ### Fixed
 
-- Planned bug fixes for future releases
+- **Transparency Preservation**: Fixed critical issue in transparent background feature
+  - Existing transparent areas are now preserved when making additional areas transparent
+  - Semi-transparent pixels maintain their exact alpha values
+  - Only processes non-transparent pixels that match the selected color
+  - Enhanced user feedback shows existing vs. newly transparent pixel counts
+  - Prevents loss of transparency work when applying multiple transparency operations
+
+### Changed
+
+- Improved transparency operation feedback with detailed pixel statistics
+- Enhanced error handling in image information display
+- Better path resolution for icon loading across different environments
 
 
 ## [1.0.1] - 2025-06-25

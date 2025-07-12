@@ -250,6 +250,55 @@ python -c "import gui_image_studio; gui_image_studio.launch_designer()"
 - **Delete**: Right-click image in list → Delete
 - **Export**: Right-click image in list → Export
 
+### 🔍 **Image Information (Info Button)**
+
+The **Info Button** (ⓘ) provides comprehensive information about your current image.
+
+#### **Location**
+- **Right Panel**: Image Properties section
+- **Position**: Next to the "Apply" button for size changes
+- **Icon**: Uses info-icon.png with fallback to text symbol
+
+#### **Information Displayed**
+
+##### **📋 Basic Properties**
+- **Filename**: Current image name and format
+- **Dimensions**: Width × Height in pixels
+- **Aspect Ratio**: Calculated ratio (e.g., 1:1 for square)
+- **File Size**: Memory usage when available
+- **Color Mode**: RGB, RGBA, Grayscale, etc.
+
+##### **🎨 Color Analysis**
+- **Transparency**: Whether image has transparent areas
+- **Unique Colors**: Count of distinct colors (sampled for performance)
+- **Most Common Colors**: Top colors with percentages
+- **Color Mode Details**: Explanation of current color format
+
+##### **⚙️ Technical Details**
+- **Total Pixels**: Complete pixel count
+- **Memory Usage**: Estimated RAM usage
+- **Metadata**: EXIF data when available
+- **Processing Stats**: Information about recent operations
+
+##### **💡 Smart Recommendations**
+- **Size Suggestions**: Based on image dimensions
+- **Format Advice**: PNG for transparency, JPEG for photos
+- **Usage Tips**: Optimal applications for current image
+- **Performance Notes**: Memory and loading considerations
+
+#### **How to Use**
+1. Load or create an image
+2. Look for the ⓘ icon in the Image Properties section
+3. Click to open the information dialog
+4. Scroll through comprehensive details
+5. Use recommendations to optimize your image
+
+#### **Benefits**
+- **Quality Control**: Verify image specifications
+- **Optimization**: Get suggestions for better performance
+- **Debugging**: Understand image properties for troubleshooting
+- **Learning**: Understand how different settings affect your images
+
 ---
 
 ## Code Generation

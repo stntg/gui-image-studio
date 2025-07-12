@@ -12,6 +12,7 @@ import json
 import os
 import tempfile
 import tkinter as tk
+from collections import Counter
 from io import BytesIO
 from tkinter import colorchooser, filedialog, messagebox, simpledialog, ttk
 from typing import Dict, List, Optional, Tuple
@@ -29,6 +30,49 @@ from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageFont, ImageTk
 
 from .generator import embed_images_from_folder
 from .embedded_icons import get_icon_path, cleanup_icon
+
+
+class ToolTip:
+    """Simple tooltip class for widgets."""
+
+    def __init__(self, widget, text):
+        self.widget = widget
+        self.text = text
+        self.tooltip_window = None
+        self.widget.bind("<Enter>", self.on_enter)
+        self.widget.bind("<Leave>", self.on_leave)
+
+    def on_enter(self, event=None):
+        """Show tooltip on mouse enter."""
+        if self.tooltip_window or not self.text:
+            return
+
+        x, y, _, _ = (
+            self.widget.bbox("insert") if hasattr(self.widget, "bbox") else (0, 0, 0, 0)
+        )
+        x += self.widget.winfo_rootx() + 20
+        y += self.widget.winfo_rooty() + 20
+
+        self.tooltip_window = tw = tk.Toplevel(self.widget)
+        tw.wm_overrideredirect(True)
+        tw.wm_geometry(f"+{x}+{y}")
+
+        label = tk.Label(
+            tw,
+            text=self.text,
+            justify=tk.LEFT,
+            background="#ffffe0",
+            relief=tk.SOLID,
+            borderwidth=1,
+            font=("Arial", 8),
+        )
+        label.pack(ipadx=1)
+
+    def on_leave(self, event=None):
+        """Hide tooltip on mouse leave."""
+        if self.tooltip_window:
+            self.tooltip_window.destroy()
+            self.tooltip_window = None
 
 
 class EnhancedImageDesignerGUI:
@@ -119,9 +163,6 @@ class EnhancedImageDesignerGUI:
         x = max((ws // 2) - (w // 2), 0)
         y = max((hs - TASKBAR_HEIGHT) // 2 - (h // 2), 0)
         self.root.geometry(f"{w}x{h}+{x}+{y}")
-
-        print(f"Window centered at {x}, {y} with size {w}x{h}")
-        print(f"w width: {w}, height: {h}, screen width: {ws}, screen height: {hs}")
 
         # Set up proper cleanup on window close
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
@@ -319,6 +360,12 @@ class EnhancedImageDesignerGUI:
             label="Quick Start Guide", command=self.show_quick_start, accelerator="F1"
         )
         help_menu.add_command(label="Drawing Tools Help", command=self.show_tools_help)
+        help_menu.add_command(
+            label="Image Information Help", command=self.show_info_help
+        )
+        help_menu.add_command(
+            label="Transparency Features Help", command=self.show_transparency_help
+        )
         help_menu.add_command(label="Code Generation Help", command=self.show_code_help)
         help_menu.add_command(label="Keyboard Shortcuts", command=self.show_shortcuts)
         help_menu.add_separator()
@@ -599,6 +646,67 @@ class EnhancedImageDesignerGUI:
             width=6,
         ).grid(row=0, column=4, padx=2)
 
+        # Image info button with icon - positioned next to Apply button in Image Properties
+        try:
+            # Load the info icon from sample_images folder
+            # Current file is in src/gui_image_studio/image_studio.py
+            # Need to go up to project root: src/gui_image_studio -> src -> project_root
+            current_dir = os.path.dirname(__file__)  # src/gui_image_studio
+            src_dir = os.path.dirname(current_dir)  # src
+            project_root = os.path.dirname(src_dir)  # project root
+            info_icon_path = os.path.join(
+                project_root, "sample_images", "info-icon.png"
+            )
+
+            if os.path.exists(info_icon_path):
+                info_icon_img = Image.open(info_icon_path)
+                # Resize to fit button (18x18 pixels for better visibility)
+                info_icon_img = info_icon_img.resize((18, 18), Image.Resampling.LANCZOS)
+                info_icon_photo = ImageTk.PhotoImage(info_icon_img)
+
+                info_btn = tk.Button(
+                    size_frame,
+                    image=info_icon_photo,
+                    command=self.show_image_info,
+                    relief="raised",
+                    bd=1,
+                    width=24,
+                    height=24,
+                    bg="#f0f0f0",
+                )
+                # Keep a reference to prevent garbage collection
+                info_btn.image = info_icon_photo
+            else:
+                # Fallback to text if icon not found
+                info_btn = tk.Button(
+                    size_frame,
+                    text="ⓘ",
+                    command=self.show_image_info,
+                    font=("Arial", 10, "bold"),
+                    relief="raised",
+                    bd=1,
+                    width=3,
+                    fg="blue",
+                )
+        except Exception as e:
+            # Fallback to text if any error occurs
+            info_btn = tk.Button(
+                size_frame,
+                text="ⓘ",
+                command=self.show_image_info,
+                font=("Arial", 10, "bold"),
+                relief="raised",
+                bd=1,
+                width=3,
+                fg="blue",
+            )
+
+        info_btn.grid(row=0, column=5, padx=1)
+        ToolTip(
+            info_btn,
+            "Show detailed image information\n• File properties and metadata\n• Color analysis and statistics\n• Technical details and recommendations",
+        )
+
         # Configure grid weights for size frame
         size_frame.columnconfigure(4, weight=1)
 
@@ -641,6 +749,7 @@ class EnhancedImageDesignerGUI:
         self.rotation_entry.grid(row=0, column=1, padx=1)
         self.rotation_entry.bind("<Return>", self.on_rotation_entry_change)
         self.rotation_entry.bind("<FocusOut>", self.on_rotation_entry_change)
+        self.rotation_entry.bind("<KeyRelease>", self.on_rotation_entry_change)
 
         # Apply rotation button with consistent styling
         self.apply_rotation_btn = tk.Button(
@@ -703,6 +812,38 @@ class EnhancedImageDesignerGUI:
             bd=1,
             width=6,
         ).grid(row=0, column=2, padx=1, pady=1)
+
+        # Transparent background button
+        transp_btn = tk.Button(
+            filters_frame,
+            text="Transp.",
+            command=self.apply_transparent_background,
+            font=("Arial", 8),
+            relief="raised",
+            bd=1,
+            width=6,
+        )
+        transp_btn.grid(row=1, column=0, padx=1, pady=1)
+        ToolTip(
+            transp_btn,
+            "Make background transparent\n• Choose color with picker or use top-left pixel\n• Adjustable tolerance for precision\n• Perfect for sprites and icons",
+        )
+
+        # Remove background button (smart background removal)
+        remove_bg_btn = tk.Button(
+            filters_frame,
+            text="Rm BG",
+            command=self.remove_background,
+            font=("Arial", 8),
+            relief="raised",
+            bd=1,
+            width=6,
+        )
+        remove_bg_btn.grid(row=1, column=1, padx=1, pady=1)
+        ToolTip(
+            remove_bg_btn,
+            "Smart background removal\n• Choose color manually or auto-detect\n• Analyzes image corners for background\n• Adjustable tolerance for precision",
+        )
 
         # Configure grid weights for filters
         filters_frame.columnconfigure(0, weight=1)
@@ -2252,6 +2393,18 @@ class EnhancedImageDesignerGUI:
         """Show drawing tools help."""
         HelpWindow(self.root, "Drawing Tools Help", self.get_tools_help_content())
 
+    def show_info_help(self):
+        """Show image information help."""
+        HelpWindow(self.root, "Image Information Help", self.get_info_help_content())
+
+    def show_transparency_help(self):
+        """Show transparency features help."""
+        HelpWindow(
+            self.root,
+            "Transparency Features Help",
+            self.get_transparency_help_content(),
+        )
+
     def show_code_help(self):
         """Show code generation help."""
         HelpWindow(self.root, "Code Generation Help", self.get_code_help_content())
@@ -2302,12 +2455,18 @@ Welcome to GUI Image Studio! Here's how to get started:
    • Change Framework (tkinter/customtkinter)
    • Try different Usage Types (buttons, icons, etc.)
 
-5. GENERATE CODE
+5. CHECK IMAGE DETAILS
+   • Click the Info button (ⓘ) in Image Properties for detailed analysis
+   • View color information, memory usage, and optimization tips
+   • Get smart recommendations for your image
+
+6. GENERATE CODE
    • Click "Preview Code" to see generated Python code
    • Click "Generate File" to save code to a .py file
    • Copy and paste into your Python project
 
 🎯 PRO TIP: For pixel art, use Pencil tool + Grid + 400% zoom!
+💡 NEW: Use the Info button to understand your image properties!
 
 Need more help? Check the other help sections in the Help menu.
 """
@@ -2334,6 +2493,13 @@ Need more help? Check the other help sections in the Help menu.
 • Best for: Corrections, creating transparency
 • Usage: Left-click and drag to erase
 • Tips: Creates true transparency in PNG format
+
+🌟 TRANSPARENCY TOOLS
+• Transp. Button: Make specific colors transparent
+• Rm BG Button: Smart background removal
+• Multiple selection methods: Color picker, click-to-select, auto-detect
+• Preserves existing transparency when adding new transparent areas
+• Adjustable tolerance for precise color matching
 
 ─ LINE TOOL
 • Purpose: Draw straight lines
@@ -2369,6 +2535,206 @@ T TEXT TOOL
 • Click the color square to choose colors
 • Supports RGB and transparency
 • Recent colors are remembered
+
+🔍 INFO BUTTON (ⓘ)
+• Location: Image Properties section, next to Apply button
+• Purpose: Comprehensive image analysis and information
+• Shows: File properties, color analysis, memory usage, metadata
+• Provides: Smart recommendations and optimization tips
+• Benefits: Quality control, debugging, learning about image formats
+"""
+
+    def get_info_help_content(self):
+        """Get image information help content."""
+        return """
+🔍 IMAGE INFORMATION FEATURE
+
+📍 LOCATION & ACCESS
+The Info Button (ⓘ) is located in the Image Properties section of the right panel, positioned next to the "Apply" button for size changes.
+
+🎯 PURPOSE
+Provides comprehensive analysis and detailed information about your current image, helping you make informed decisions about optimization, format selection, and usage.
+
+📊 INFORMATION CATEGORIES
+
+📋 BASIC PROPERTIES
+• Filename: Current image name with extension
+• Format: Image format (PNG, JPEG, BMP, etc.)
+• Dimensions: Width × Height in pixels
+• Aspect Ratio: Calculated ratio (e.g., 16:9, 1:1, 4:3)
+• File Size: Actual file size when available
+• Total Pixels: Complete pixel count
+
+🎨 COLOR ANALYSIS
+• Color Mode: RGB, RGBA, Grayscale, Palette, etc.
+• Transparency: Whether alpha channel exists and is used
+• Unique Colors: Count of distinct colors (sampled for performance)
+• Most Common Colors: Top 5 colors with usage percentages
+• Color Distribution: Analysis of color usage patterns
+
+⚙️ TECHNICAL DETAILS
+• Memory Usage: Estimated RAM footprint
+• Processing Complexity: Performance implications
+• Metadata: EXIF data and creation information (when available)
+• Storage Requirements: Disk space considerations
+
+💡 SMART RECOMMENDATIONS
+• Size Optimization: Suggestions based on image dimensions
+• Format Advice: PNG for transparency, JPEG for photos
+• Usage Tips: Optimal applications for current image
+• Performance Notes: Memory and loading considerations
+
+🚀 HOW TO USE
+1. Load or create an image in GUI Image Studio
+2. Ensure an image is selected in the image list
+3. Look for the ⓘ icon in the Image Properties section
+4. Click the info button to open the information dialog
+5. Scroll through the comprehensive details
+6. Apply recommendations as needed
+
+🎯 USE CASES
+• Quality Control: Verify image meets specifications
+• Optimization: Get suggestions for better performance
+• Debugging: Understand properties causing issues
+• Learning: Gain insights into image formats and processing
+• Decision Making: Choose optimal settings based on analysis
+
+💡 BENEFITS
+• Make informed decisions about image processing
+• Understand memory and performance implications
+• Learn about image properties and optimization
+• Troubleshoot image-related issues effectively
+• Bridge the gap between design and technical implementation
+
+🔧 TECHNICAL FEATURES
+• Icon-based UI with graceful fallback to text symbol
+• Efficient sampling for large images to maintain performance
+• Cross-platform compatibility with robust path resolution
+• Error handling with safe calculations and memory protection
+• Scrollable dialog with proper sizing and positioning
+"""
+
+    def get_transparency_help_content(self):
+        """Get transparency features help content."""
+        return """
+🌟 TRANSPARENCY FEATURES GUIDE
+
+🎯 OVERVIEW
+GUI Image Studio provides advanced transparency tools that preserve existing transparent areas while allowing you to make additional areas transparent. Perfect for creating sprites, icons, and graphics with complex transparency patterns.
+
+🛠️ TRANSPARENCY TOOLS
+
+🔹 TRANSPARENT BACKGROUND BUTTON ("Transp.")
+Location: Transformations section
+Purpose: Make specific colors transparent in your image
+
+Features:
+• 🎨 Color Picker: Use system color chooser for exact colors
+• 🖱️ Click to Select: Click directly on canvas to pick colors
+• 📍 Top-Left Pixel: Use top-left pixel color automatically
+• 🎯 Adjustable Tolerance: 0-100 range for precision control
+• 🔄 Transparency Preservation: Maintains existing transparent areas
+
+🔹 REMOVE BACKGROUND BUTTON ("Rm BG")
+Location: Transformations section
+Purpose: Smart background removal using corner detection
+
+Features:
+• 🔍 Auto-detect: Analyze image corners for background color
+• 🖱️ Click to Select: Interactive background selection
+• 🎨 Color Picker: Manual background color selection
+• 🧠 Smart Analysis: Handles complex backgrounds intelligently
+• 📊 Detailed Feedback: Processing statistics and completion info
+
+🌟 KEY ENHANCEMENT: TRANSPARENCY PRESERVATION
+
+❌ OLD BEHAVIOR (FIXED)
+Previously, making additional areas transparent would:
+• Overwrite existing transparent pixels
+• Make semi-transparent areas fully opaque
+• Lose transparency work when applying multiple operations
+
+✅ NEW BEHAVIOR (ENHANCED)
+Now, transparency operations:
+• Preserve existing transparent areas completely
+• Maintain semi-transparent pixels at their exact alpha levels
+• Only process non-transparent pixels that match selected color
+• Allow progressive transparency editing without data loss
+
+🔧 HOW IT WORKS
+1. System checks each pixel's current alpha value
+2. Skips pixels that are already transparent (alpha = 0)
+3. Only processes opaque pixels (alpha > 0) that match color criteria
+4. Preserves original alpha values for non-matching pixels
+5. Shows detailed statistics of existing vs. newly transparent pixels
+
+📋 USAGE INSTRUCTIONS
+
+FOR SPRITES/ICONS:
+1. Load your image
+2. Click "Transp." button
+3. Choose color selection method:
+   • Color picker for exact colors
+   • Click on canvas for visual selection
+   • Top-left pixel for simple backgrounds
+4. Set tolerance (start with 30)
+5. Apply and observe preserved transparency
+6. Save as PNG to maintain transparency
+
+FOR PHOTOS/COMPLEX IMAGES:
+1. Load your image
+2. Click "Rm BG" button
+3. Choose detection method:
+   • Auto-detect for uniform backgrounds
+   • Click on canvas for precise selection
+   • Color picker for specific colors
+4. Adjust tolerance based on complexity
+5. Review results and apply additional operations if needed
+
+🎯 BEST PRACTICES
+
+WORKFLOW OPTIMIZATION:
+• Start with solid backgrounds, then add transparency progressively
+• Use PNG format to preserve transparency
+• Check transparency status with Info button (ⓘ)
+• Test tolerance settings starting with 30
+• Apply transparency in multiple steps for complex images
+
+QUALITY CONTROL:
+• Use click-to-select for most intuitive color selection
+• Color picker provides most precise color matching
+• Auto-detect works best with solid, uniform backgrounds
+• Preview results before saving to ensure quality
+• Use Info button to verify transparency details
+
+PROGRESSIVE EDITING:
+• Apply transparency to different areas in separate operations
+• Each operation preserves previous transparency work
+• Build complex transparency patterns step by step
+• No need to worry about losing existing transparent areas
+
+💡 PRO TIPS
+• Lower tolerance (20-40) for precise selection, increase if needed
+• Click method is most intuitive for visual color selection
+• Color picker is most precise for exact color matching
+• Auto-detect works best with solid, uniform backgrounds
+• Always save as PNG to preserve transparency
+• Use Info button to check transparency status and statistics
+
+🔍 VERIFICATION
+Use the Info button (ⓘ) to:
+• Check transparency status before and after operations
+• View detailed color analysis and alpha channel information
+• Verify that existing transparency is preserved
+• Get recommendations for optimal transparency settings
+
+🚀 ADVANCED TECHNIQUES
+• Create complex transparency masks by applying multiple operations
+• Combine different selection methods for optimal results
+• Use varying tolerance levels for different areas of the same image
+• Build transparency patterns that would be difficult with traditional tools
+
+The enhanced transparency features make GUI Image Studio a powerful tool for creating professional graphics with complex transparency requirements while ensuring that your work is never lost during the editing process.
 """
 
     def get_code_help_content(self):
@@ -2574,6 +2940,22 @@ INTEGRATION BEST PRACTICES
 • Keep image dimensions consistent within categories
 • Document your image usage patterns
 
+🌟 TRANSPARENCY BEST PRACTICES
+
+WORKING WITH TRANSPARENCY
+• Use PNG format to preserve transparency
+• Info button (ⓘ) shows transparency status and details
+• Existing transparent areas are preserved when adding new ones
+• Use "Transp." button for precise color-based transparency
+• Use "Rm BG" button for smart background removal
+
+TRANSPARENCY WORKFLOW
+• Start with solid background, then make areas transparent
+• Apply transparency progressively - existing work is preserved
+• Use click-to-select for visual color selection
+• Adjust tolerance based on color complexity (30 recommended)
+• Check results with Info button before finalizing
+
 🔧 TROUBLESHOOTING QUICK FIXES
 
 PERFORMANCE ISSUES
@@ -2587,12 +2969,14 @@ VISUAL ISSUES
 • Verify colors are correct in target framework
 • Test at actual usage size, not zoomed
 • Ensure sufficient contrast for visibility
+• Use Info button to analyze color distribution
 
 CODE INTEGRATION PROBLEMS
 • Verify all required libraries are installed
 • Check that image names don't conflict
 • Test generated code in clean environment
 • Ensure proper import statements are included
+• Use Info button to verify image specifications
 """
 
     def get_troubleshooting_content(self):
@@ -2617,6 +3001,7 @@ Solutions:
 • Check if image file is corrupted (try opening in other programs)
 • Ensure image isn't too large (max recommended: 1024x1024)
 • Try creating a new image instead of loading
+• Use Info button (ⓘ) to check image properties and format details
 
 DRAWING TOOLS NOT WORKING
 Problem: Tools don't draw or behave unexpectedly
@@ -2741,7 +3126,7 @@ If problems persist:
         return """
 🎨 GUI IMAGE STUDIO
 
-Version: 1.0.0
+Version: 1.1.0
 A comprehensive toolkit for creating and embedding images in Python GUI applications.
 
 📋 FEATURES
@@ -2751,6 +3136,8 @@ A comprehensive toolkit for creating and embedding images in Python GUI applicat
 • Automatic Python code generation with examples
 • Base64 embedding for distribution without external files
 • Multi-theme organization and management
+• 🔍 Comprehensive image information and analysis (NEW!)
+• 🌟 Advanced transparency features with preservation (ENHANCED!)
 
 🛠️ BUILT WITH
 • Python 3.7+
@@ -3462,6 +3849,681 @@ Happy creating! 🎉
         self.update_base_image()  # Update base image after filter
         self.update_canvas()
 
+    def apply_transparent_background(self):
+        """Convert image background to transparent (useful for sprites/icons)."""
+        if not self.selected_image:
+            messagebox.showwarning("No Image", "Please select an image first.")
+            return
+
+        image = self.current_images[self.selected_image]
+
+        # Convert to RGBA if not already
+        if image.mode != "RGBA":
+            image = image.convert("RGBA")
+
+        # Get image data
+        data = image.getdata()
+
+        # Let user choose how to select the background color
+        choice_dialog = tk.Toplevel(self.root)
+        choice_dialog.title("Background Color Selection")
+        choice_dialog.geometry("400x200")
+        choice_dialog.transient(self.root)
+        choice_dialog.grab_set()
+
+        # Center the dialog
+        choice_dialog.update_idletasks()
+        x = (choice_dialog.winfo_screenwidth() // 2) - (
+            choice_dialog.winfo_width() // 2
+        )
+        y = (choice_dialog.winfo_screenheight() // 2) - (
+            choice_dialog.winfo_height() // 2
+        )
+        choice_dialog.geometry(f"+{x}+{y}")
+
+        choice_result = [None]  # Use list to store result from nested function
+
+        def on_choice(value):
+            choice_result[0] = value
+            choice_dialog.destroy()
+
+        tk.Label(
+            choice_dialog,
+            text="How would you like to select the background color?",
+            font=("Arial", 10, "bold"),
+        ).pack(pady=10)
+
+        tk.Button(
+            choice_dialog,
+            text="🎨 Use Color Picker",
+            command=lambda: on_choice("picker"),
+            font=("Arial", 9),
+            width=25,
+            pady=5,
+        ).pack(pady=5)
+
+        tk.Button(
+            choice_dialog,
+            text="🖱️ Click on Canvas to Select",
+            command=lambda: on_choice("click"),
+            font=("Arial", 9),
+            width=25,
+            pady=5,
+        ).pack(pady=5)
+
+        tk.Button(
+            choice_dialog,
+            text="📍 Use Top-Left Pixel",
+            command=lambda: on_choice("topleft"),
+            font=("Arial", 9),
+            width=25,
+            pady=5,
+        ).pack(pady=5)
+
+        tk.Button(
+            choice_dialog,
+            text="❌ Cancel",
+            command=lambda: on_choice(None),
+            font=("Arial", 9),
+            width=25,
+            pady=5,
+        ).pack(pady=5)
+
+        # Wait for user choice
+        self.root.wait_window(choice_dialog)
+        choice = choice_result[0]
+
+        if choice is None:  # User cancelled
+            return
+
+        if choice == "picker":  # User chose color picker
+            # Use color chooser
+            color_result = colorchooser.askcolor(
+                title="Select Background Color to Make Transparent"
+            )
+            if color_result[1] is None:  # User cancelled color picker
+                return
+            # Convert hex to RGB
+            hex_color = color_result[1]
+            bg_color = tuple(int(hex_color[i : i + 2], 16) for i in (1, 3, 5))
+        elif choice == "click":  # User chose click to select
+            # Enable click-to-select mode
+            messagebox.showinfo(
+                "Click to Select",
+                "Click on the canvas to select the background color.\n\n"
+                "The color of the pixel you click will be used as the background color.",
+            )
+
+            # Set up click handler
+            bg_color = self.get_color_from_canvas_click()
+            if bg_color is None:  # User cancelled or failed
+                return
+        else:  # Use top-left pixel
+            bg_color = data[0][:3]  # RGB values only
+
+        # Show user what background color will be used
+        bg_color_hex = "#{:02x}{:02x}{:02x}".format(*bg_color)
+
+        # Ask user for tolerance level
+        tolerance = simpledialog.askinteger(
+            "Color Tolerance",
+            f"Selected background color: {bg_color_hex}\n\n"
+            f"Enter color tolerance (0-100):\n\n"
+            f"• 0 = Exact color match only\n"
+            f"• 30 = Similar colors (recommended)\n"
+            f"• 60+ = Broader color range\n\n"
+            f"Higher values affect more pixels",
+            initialvalue=30,
+            minvalue=0,
+            maxvalue=100,
+        )
+
+        if tolerance is None:  # User cancelled
+            return
+
+        # Create new data with transparent background, preserving existing transparency
+        new_data = []
+        pixels_made_transparent = 0
+
+        for item in data:
+            # Get current alpha value (preserve existing transparency)
+            current_alpha = item[3] if len(item) == 4 else 255
+
+            # Check if pixel is close to background color AND not already transparent
+            if (
+                current_alpha > 0  # Only process non-transparent pixels
+                and abs(item[0] - bg_color[0]) <= tolerance
+                and abs(item[1] - bg_color[1]) <= tolerance
+                and abs(item[2] - bg_color[2]) <= tolerance
+            ):
+                # Make transparent
+                new_data.append((item[0], item[1], item[2], 0))
+                pixels_made_transparent += 1
+            else:
+                # Keep original alpha value (preserves existing transparency)
+                new_data.append((item[0], item[1], item[2], current_alpha))
+
+        # Update image
+        image.putdata(new_data)
+        self.current_images[self.selected_image] = image
+        self.update_base_image()  # Update base image after transformation
+        self.update_canvas()
+
+        # Show completion message
+        total_pixels = len(data)
+        percentage = (pixels_made_transparent / total_pixels) * 100
+
+        # Count existing transparent pixels for better reporting
+        existing_transparent = sum(
+            1 for item in data if (len(item) == 4 and item[3] == 0)
+        )
+
+        messagebox.showinfo(
+            "Transparent Background Complete",
+            f"Background color: {bg_color_hex}\n"
+            f"Tolerance: {tolerance}\n\n"
+            f"Total pixels: {total_pixels:,}\n"
+            f"Already transparent: {existing_transparent:,}\n"
+            f"Newly made transparent: {pixels_made_transparent:,} ({percentage:.1f}%)\n\n"
+            f"✅ Existing transparency preserved!\n"
+            f"💡 Tip: Save as PNG to preserve transparency!",
+        )
+
+    def get_color_from_canvas_click(self):
+        """Allow user to click on canvas to select a color."""
+        if not self.selected_image:
+            return None
+
+        selected_color = [None]  # Use list to store result
+        original_cursor = self.canvas.cget("cursor")
+
+        def on_canvas_click(event):
+            # Convert canvas coordinates to image coordinates
+            canvas_x = self.canvas.canvasx(event.x)
+            canvas_y = self.canvas.canvasy(event.y)
+
+            # Account for canvas offset (10 pixels border)
+            image_x = int((canvas_x - 10) / self.zoom_level)
+            image_y = int((canvas_y - 10) / self.zoom_level)
+
+            # Get image and check bounds
+            image = self.current_images[self.selected_image]
+            if 0 <= image_x < image.width and 0 <= image_y < image.height:
+                # Get pixel color
+                if image.mode == "RGBA":
+                    pixel = image.getpixel((image_x, image_y))
+                    selected_color[0] = pixel[:3]  # RGB only
+                else:
+                    pixel = image.getpixel((image_x, image_y))
+                    if isinstance(pixel, tuple):
+                        selected_color[0] = pixel[:3]
+                    else:
+                        # Grayscale
+                        selected_color[0] = (pixel, pixel, pixel)
+
+            # Restore cursor and unbind
+            self.canvas.config(cursor=original_cursor)
+            self.canvas.unbind("<Button-1>")
+
+        def on_escape(event):
+            # Cancel selection
+            selected_color[0] = None
+            self.canvas.config(cursor=original_cursor)
+            self.canvas.unbind("<Button-1>")
+            self.canvas.unbind("<Escape>")
+
+        # Set up click handler
+        self.canvas.config(cursor="crosshair")
+        self.canvas.bind("<Button-1>", on_canvas_click)
+        self.canvas.bind("<Escape>", on_escape)
+        self.canvas.focus_set()
+
+        # Wait for click (simple polling approach)
+        while selected_color[0] is None and self.canvas.cget("cursor") == "crosshair":
+            self.root.update()
+            self.root.after(50)  # Small delay to prevent high CPU usage
+
+        # Clean up bindings
+        self.canvas.unbind("<Button-1>")
+        self.canvas.unbind("<Escape>")
+
+        return selected_color[0]
+
+    def remove_background(self):
+        """Smart background removal using edge detection and flood fill."""
+        if not self.selected_image:
+            messagebox.showwarning("No Image", "Please select an image first.")
+            return
+
+        image = self.current_images[self.selected_image]
+
+        # Convert to RGBA if not already
+        if image.mode != "RGBA":
+            image = image.convert("RGBA")
+
+        # Create a copy for processing
+        processed = image.copy()
+        width, height = processed.size
+
+        # Let user choose background detection method
+        choice_dialog = tk.Toplevel(self.root)
+        choice_dialog.title("Background Detection Method")
+        choice_dialog.geometry("400x220")
+        choice_dialog.transient(self.root)
+        choice_dialog.grab_set()
+
+        # Center the dialog
+        choice_dialog.update_idletasks()
+        x = (choice_dialog.winfo_screenwidth() // 2) - (
+            choice_dialog.winfo_width() // 2
+        )
+        y = (choice_dialog.winfo_screenheight() // 2) - (
+            choice_dialog.winfo_height() // 2
+        )
+        choice_dialog.geometry(f"+{x}+{y}")
+
+        choice_result = [None]  # Use list to store result from nested function
+
+        def on_choice(value):
+            choice_result[0] = value
+            choice_dialog.destroy()
+
+        tk.Label(
+            choice_dialog,
+            text="How would you like to select the background color?",
+            font=("Arial", 10, "bold"),
+        ).pack(pady=10)
+
+        tk.Button(
+            choice_dialog,
+            text="🎨 Use Color Picker",
+            command=lambda: on_choice("picker"),
+            font=("Arial", 9),
+            width=25,
+            pady=5,
+        ).pack(pady=3)
+
+        tk.Button(
+            choice_dialog,
+            text="🖱️ Click on Canvas to Select",
+            command=lambda: on_choice("click"),
+            font=("Arial", 9),
+            width=25,
+            pady=5,
+        ).pack(pady=3)
+
+        tk.Button(
+            choice_dialog,
+            text="🔍 Auto-detect from Corners",
+            command=lambda: on_choice("auto"),
+            font=("Arial", 9),
+            width=25,
+            pady=5,
+        ).pack(pady=3)
+
+        tk.Button(
+            choice_dialog,
+            text="❌ Cancel",
+            command=lambda: on_choice(None),
+            font=("Arial", 9),
+            width=25,
+            pady=5,
+        ).pack(pady=3)
+
+        # Wait for user choice
+        self.root.wait_window(choice_dialog)
+        choice = choice_result[0]
+
+        if choice is None:  # User cancelled
+            return
+
+        if choice == "picker":  # User chose color picker
+            # Use color chooser
+            color_result = colorchooser.askcolor(
+                title="Select Background Color to Remove"
+            )
+            if color_result[1] is None:  # User cancelled color picker
+                return
+            # Convert hex to RGB
+            hex_color = color_result[1]
+            most_common_bg = tuple(int(hex_color[i : i + 2], 16) for i in (1, 3, 5))
+        elif choice == "click":  # User chose click to select
+            # Enable click-to-select mode
+            messagebox.showinfo(
+                "Click to Select",
+                "Click on the canvas to select the background color.\n\n"
+                "The color of the pixel you click will be used as the background color.",
+            )
+
+            # Set up click handler
+            most_common_bg = self.get_color_from_canvas_click()
+            if most_common_bg is None:  # User cancelled or failed
+                return
+        else:  # Auto-detect from corners
+            # Get corner pixels to determine likely background colors
+            corners = [
+                processed.getpixel((0, 0)),
+                processed.getpixel((width - 1, 0)),
+                processed.getpixel((0, height - 1)),
+                processed.getpixel((width - 1, height - 1)),
+            ]
+
+            # Find the most common corner color (likely background)
+            corner_colors = [pixel[:3] for pixel in corners]  # RGB only
+            color_counts = Counter(corner_colors)
+
+            if len(color_counts) == 1:
+                # All corners are the same color
+                most_common_bg = color_counts.most_common(1)[0][0]
+            else:
+                # Show user the detected colors and let them choose
+                colors_info = []
+                for i, (color, count) in enumerate(color_counts.most_common()):
+                    hex_color = "#{:02x}{:02x}{:02x}".format(*color)
+                    colors_info.append(
+                        f"{i+1}. {hex_color} (appears in {count} corners)"
+                    )
+
+                colors_text = "\n".join(colors_info)
+                choice_num = simpledialog.askinteger(
+                    "Multiple Background Colors Detected",
+                    f"Found these colors in image corners:\n\n{colors_text}\n\n"
+                    f"Enter the number of the color to use as background (1-{len(color_counts)}):",
+                    initialvalue=1,
+                    minvalue=1,
+                    maxvalue=len(color_counts),
+                )
+
+                if choice_num is None:
+                    return
+
+                most_common_bg = list(color_counts.keys())[choice_num - 1]
+
+        # Show user what background color will be used
+        bg_color_hex = "#{:02x}{:02x}{:02x}".format(*most_common_bg)
+
+        # Ask user for tolerance level
+        tolerance = simpledialog.askinteger(
+            "Background Removal Tolerance",
+            f"Background color to remove: {bg_color_hex}\n\n"
+            f"Enter color tolerance (0-100):\n\n"
+            f"• 0 = Exact color match only\n"
+            f"• 40 = Similar colors (recommended)\n"
+            f"• 70+ = Broader color range\n\n"
+            f"Higher values remove more pixels",
+            initialvalue=40,
+            minvalue=0,
+            maxvalue=100,
+        )
+
+        if tolerance is None:  # User cancelled
+            return
+
+        # Apply flood fill from corners with the background color
+        data = list(processed.getdata())
+
+        def is_background_color(pixel_rgb, bg_rgb, tol):
+            return (
+                abs(pixel_rgb[0] - bg_rgb[0]) <= tol
+                and abs(pixel_rgb[1] - bg_rgb[1]) <= tol
+                and abs(pixel_rgb[2] - bg_rgb[2]) <= tol
+            )
+
+        # Process each pixel
+        new_data = []
+        pixels_made_transparent = 0
+
+        for i, pixel in enumerate(data):
+            pixel_rgb = pixel[:3]
+            if is_background_color(pixel_rgb, most_common_bg, tolerance):
+                # Make background transparent
+                new_data.append((pixel_rgb[0], pixel_rgb[1], pixel_rgb[2], 0))
+                pixels_made_transparent += 1
+            else:
+                # Keep foreground opaque
+                new_data.append((pixel_rgb[0], pixel_rgb[1], pixel_rgb[2], 255))
+
+        # Update image
+        processed.putdata(new_data)
+        self.current_images[self.selected_image] = processed
+        self.update_base_image()  # Update base image after transformation
+        self.update_canvas()
+
+        # Show completion message
+        total_pixels = len(data)
+        percentage = (pixels_made_transparent / total_pixels) * 100
+        messagebox.showinfo(
+            "Background Removal Complete",
+            f"Background color: {bg_color_hex}\n"
+            f"Tolerance: {tolerance}\n\n"
+            f"Processed {total_pixels:,} pixels\n"
+            f"Made {pixels_made_transparent:,} pixels transparent ({percentage:.1f}%)\n\n"
+            f"💡 Tip: Save as PNG to preserve transparency!",
+        )
+
+    def show_image_info(self):
+        """Show comprehensive information about the selected image."""
+        if not self.selected_image:
+            messagebox.showwarning("No Image", "Please select an image first.")
+            return
+
+        image = self.current_images[self.selected_image]
+
+        # Create info window
+        info_window = tk.Toplevel(self.root)
+        info_window.title(f"Image Information - {self.selected_image}")
+        info_window.geometry("600x500")
+        info_window.transient(self.root)
+
+        # Center the window
+        info_window.update_idletasks()
+        x = (info_window.winfo_screenwidth() // 2) - (info_window.winfo_width() // 2)
+        y = (info_window.winfo_screenheight() // 2) - (info_window.winfo_height() // 2)
+        info_window.geometry(f"+{x}+{y}")
+
+        # Create scrollable text widget
+        text_frame = ttk.Frame(info_window)
+        text_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        # Text widget with scrollbar
+        text_widget = tk.Text(text_frame, wrap=tk.WORD, font=("Consolas", 10))
+        scrollbar = ttk.Scrollbar(
+            text_frame, orient=tk.VERTICAL, command=text_widget.yview
+        )
+        text_widget.configure(yscrollcommand=scrollbar.set)
+
+        text_widget.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        # Gather image information
+        info_text = self.get_comprehensive_image_info(image)
+
+        # Insert information into text widget
+        text_widget.insert(tk.END, info_text)
+        text_widget.config(state=tk.DISABLED)  # Make read-only
+
+        # Add close button
+        close_btn = tk.Button(
+            info_window,
+            text="Close",
+            command=info_window.destroy,
+            font=("Arial", 10),
+            width=10,
+        )
+        close_btn.pack(pady=5)
+
+    def get_comprehensive_image_info(self, image):
+        """Generate comprehensive information about an image."""
+        import os
+        from collections import Counter
+
+        info_lines = []
+        info_lines.append("🖼️  IMAGE INFORMATION")
+        info_lines.append("=" * 50)
+        info_lines.append("")
+
+        # Basic Properties
+        info_lines.append("📋 BASIC PROPERTIES")
+        info_lines.append("-" * 20)
+        info_lines.append(f"Filename: {self.selected_image}")
+        info_lines.append(
+            f"Format: {image.format if hasattr(image, 'format') else 'Unknown'}"
+        )
+        info_lines.append(f"Mode: {image.mode}")
+        info_lines.append(f"Size: {image.size[0]} × {image.size[1]} pixels")
+        info_lines.append(f"Aspect Ratio: {image.size[0]/image.size[1]:.3f}")
+
+        # Calculate file size if available
+        try:
+            if hasattr(image, "filename") and image.filename:
+                file_size = os.path.getsize(image.filename)
+                info_lines.append(f"File Size: {self.format_file_size(file_size)}")
+        except:
+            pass
+
+        info_lines.append("")
+
+        # Color Information
+        info_lines.append("🎨 COLOR INFORMATION")
+        info_lines.append("-" * 20)
+
+        # Check if image has transparency
+        has_transparency = False
+        if image.mode in ("RGBA", "LA") or "transparency" in image.info:
+            has_transparency = True
+        info_lines.append(f"Has Transparency: {'Yes' if has_transparency else 'No'}")
+
+        # Color mode details
+        mode_descriptions = {
+            "RGB": "Red, Green, Blue (24-bit color)",
+            "RGBA": "Red, Green, Blue, Alpha (32-bit with transparency)",
+            "L": "Grayscale (8-bit)",
+            "LA": "Grayscale with Alpha (16-bit)",
+            "P": "Palette mode (8-bit indexed color)",
+            "CMYK": "Cyan, Magenta, Yellow, Black",
+            "1": "Black and white (1-bit)",
+        }
+        info_lines.append(
+            f"Color Mode: {mode_descriptions.get(image.mode, image.mode)}"
+        )
+
+        # Analyze colors (sample for performance)
+        try:
+            # Sample the image for color analysis (to avoid performance issues with large images)
+            sample_size = min(image.size[0] * image.size[1], 10000)  # Max 10k pixels
+            if sample_size < image.size[0] * image.size[1]:
+                # Resize for sampling
+                sample_ratio = (sample_size / (image.size[0] * image.size[1])) ** 0.5
+                sample_size = (
+                    int(image.size[0] * sample_ratio),
+                    int(image.size[1] * sample_ratio),
+                )
+                sample_image = image.resize(sample_size, Image.Resampling.LANCZOS)
+            else:
+                sample_image = image
+
+            colors = list(sample_image.getdata())
+
+            # Convert to RGB if needed for analysis
+            if sample_image.mode == "RGBA":
+                colors = [color[:3] for color in colors if len(color) >= 3]
+            elif sample_image.mode == "L":
+                colors = [(c, c, c) for c in colors]
+            elif sample_image.mode == "P":
+                sample_image = sample_image.convert("RGB")
+                colors = list(sample_image.getdata())
+
+            if colors:
+                unique_colors = len(set(colors))
+                info_lines.append(f"Unique Colors: {unique_colors:,} (sampled)")
+
+                # Most common colors
+                color_counter = Counter(colors)
+                most_common = color_counter.most_common(5)
+                info_lines.append("Most Common Colors:")
+                for i, (color, count) in enumerate(most_common, 1):
+                    if isinstance(color, tuple) and len(color) >= 3:
+                        hex_color = "#{:02x}{:02x}{:02x}".format(
+                            color[0], color[1], color[2]
+                        )
+                        percentage = (count / len(colors)) * 100
+                        info_lines.append(f"  {i}. {hex_color} - {percentage:.1f}%")
+        except Exception as e:
+            info_lines.append(f"Color analysis failed: {str(e)}")
+
+        info_lines.append("")
+
+        # Technical Details
+        info_lines.append("⚙️ TECHNICAL DETAILS")
+        info_lines.append("-" * 20)
+        total_pixels = image.size[0] * image.size[1]
+        info_lines.append(f"Total Pixels: {total_pixels:,}")
+
+        # Memory usage estimation
+        bytes_per_pixel = {
+            "RGB": 3,
+            "RGBA": 4,
+            "L": 1,
+            "LA": 2,
+            "P": 1,
+            "CMYK": 4,
+            "1": 0.125,
+        }
+        estimated_memory = total_pixels * bytes_per_pixel.get(image.mode, 3)
+        info_lines.append(
+            f"Estimated Memory: {self.format_file_size(int(estimated_memory))}"
+        )
+
+        # Image info/metadata
+        if hasattr(image, "info") and image.info:
+            info_lines.append("")
+            info_lines.append("📄 METADATA")
+            info_lines.append("-" * 20)
+            for key, value in image.info.items():
+                if isinstance(value, (str, int, float)):
+                    info_lines.append(f"{key}: {value}")
+
+        # Usage recommendations
+        info_lines.append("")
+        info_lines.append("💡 USAGE RECOMMENDATIONS")
+        info_lines.append("-" * 25)
+
+        # Size-based recommendations
+        if total_pixels > 1000000:  # > 1MP
+            info_lines.append("• Large image - consider resizing for web use")
+        elif total_pixels < 10000:  # < 10k pixels
+            info_lines.append("• Small image - good for icons or thumbnails")
+
+        # Format recommendations
+        if image.mode == "RGBA" or has_transparency:
+            info_lines.append("• Has transparency - save as PNG to preserve")
+        elif image.mode == "RGB":
+            info_lines.append("• RGB image - can save as JPEG for smaller file size")
+
+        # Aspect ratio recommendations
+        aspect_ratio = image.size[0] / image.size[1]
+        if abs(aspect_ratio - 1.0) < 0.1:
+            info_lines.append("• Square aspect ratio - good for profile pictures/icons")
+        elif aspect_ratio > 2.0:
+            info_lines.append("• Wide aspect ratio - good for banners/headers")
+        elif aspect_ratio < 0.5:
+            info_lines.append("• Tall aspect ratio - good for mobile layouts")
+
+        return "\n".join(info_lines)
+
+    def format_file_size(self, size_bytes):
+        """Format file size in human readable format."""
+        if size_bytes == 0:
+            return "0 B"
+
+        size_names = ["B", "KB", "MB", "GB"]
+        import math
+
+        i = int(math.floor(math.log(size_bytes, 1024)))
+        p = math.pow(1024, i)
+        s = round(size_bytes / p, 2)
+        return f"{s} {size_names[i]}"
+
     def apply_rotation(self, *args):
         """Apply rotation to current image based on rotation scale."""
         if not self.selected_image:
@@ -3594,20 +4656,30 @@ Happy creating! 🎉
         """Update the rotation input box to show current slider value."""
         if hasattr(self, "rotation_entry"):
             current_value = self.rotation_var.get()
-            self.rotation_entry.delete(0, tk.END)
-            self.rotation_entry.insert(0, str(current_value))
+            # Only update the entry box if the value is different to avoid feedback loops
+            current_entry_value = self.rotation_entry.get()
+            if current_entry_value != str(current_value):
+                self.rotation_entry.delete(0, tk.END)
+                self.rotation_entry.insert(0, str(current_value))
 
     def on_rotation_entry_change(self, event=None):
         """Handle changes to the rotation input box."""
         try:
-            value = float(self.rotation_entry.get())
+            entry_text = self.rotation_entry.get().strip()
+            # Skip empty or incomplete entries during real-time typing
+            if not entry_text or entry_text in ["-", ".", "-."]:
+                return
+
+            value = float(entry_text)
             # Normalize angle to 0-360 range
             value = value % 360
+            # Set the slider value - this will automatically trigger update_rotation_display
+            # via the slider's command callback, so we don't need to call it manually
             self.rotation_var.set(int(value))
-            self.update_rotation_display()
         except ValueError:
-            # Invalid input, reset to current slider value
-            self.update_rotation_display()
+            # Invalid input - silently ignore during real-time typing
+            # This prevents the entry box from being reset while the user is typing
+            pass
 
     def reset_rotation(self):
         """Reset rotation to 0 degrees."""

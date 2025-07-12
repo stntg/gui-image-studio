@@ -33,6 +33,8 @@ Quick links:
 - 🎯 High-quality compression options
 - 📝 Sample image generation for testing
 - 👁️ Real-time code preview and generation
+- 🔍 **Comprehensive Image Information** - Detailed image analysis with smart recommendations
+- 🌟 **Advanced Transparency Features** - Preserve existing transparency when making areas transparent
 
 ## Installation
 

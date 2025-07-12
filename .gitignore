@@ -158,7 +158,7 @@ dev/*.tmp
 dev/test_env/
 
 # Local testing files
-test_embedded_output.py
+
 
 # Development files folder
 dev_files/

@@ -8,6 +8,8 @@
 | **[USER_GUIDE.md](USER_GUIDE.md)** | Complete user manual | Learning the application |
 | **[IMAGE_USAGE_GUIDE.md](IMAGE_USAGE_GUIDE.md)** | Usage examples and patterns | Integration help |
 | **[PACKAGE_DOCUMENTATION.md](PACKAGE_DOCUMENTATION.md)** | Technical API reference | Developers, advanced users |
+| **[INFO_BUTTON_FEATURE.md](INFO_BUTTON_FEATURE.md)** | Info button comprehensive guide | Understanding image analysis |
+| **[TRANSPARENCY_FEATURES.md](TRANSPARENCY_FEATURES.md)** | Transparency tools and preservation | Working with transparent images |
 
 ## 🚀 Getting Started
 
