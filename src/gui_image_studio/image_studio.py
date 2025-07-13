@@ -35,21 +35,41 @@ from .embedded_icons import get_icon_path, cleanup_icon
 class ToolTip:
     """Simple tooltip class for widgets."""
 
-    def __init__(self, widget, text):
+    def __init__(self, widget: tk.Widget, text: str) -> None:
         self.widget = widget
         self.text = text
         self.tooltip_window = None
         self.widget.bind("<Enter>", self.on_enter)
         self.widget.bind("<Leave>", self.on_leave)
 
-    def on_enter(self, event=None):
+    def on_enter(self, event: Optional[tk.Event] = None) -> None:
         """Show tooltip on mouse enter."""
         if self.tooltip_window or not self.text:
             return
 
-        x, y, _, _ = (
-            self.widget.bbox("insert") if hasattr(self.widget, "bbox") else (0, 0, 0, 0)
-        )
+        # Get widget position for tooltip placement
+        try:
+            # For text widgets, try to get cursor position
+            if isinstance(self.widget, tk.Text) and hasattr(self.widget, "bbox"):
+                bbox = self.widget.bbox("insert")
+                if bbox:
+                    x, y, _, _ = bbox
+                else:
+                    x, y = 0, 0
+            elif isinstance(self.widget, tk.Entry) and hasattr(self.widget, "bbox"):
+                # For Entry widgets, bbox also supports "insert"
+                bbox = self.widget.bbox("insert")
+                if bbox:
+                    x, y, _, _ = bbox
+                else:
+                    x, y = 0, 0
+            else:
+                # For other widgets, use default position
+                x, y = 0, 0
+        except (tk.TclError, TypeError, AttributeError):
+            # Fallback if bbox fails
+            x, y = 0, 0
+            
         x += self.widget.winfo_rootx() + 20
         y += self.widget.winfo_rooty() + 20
 
@@ -68,11 +88,12 @@ class ToolTip:
         )
         label.pack(ipadx=1)
 
-    def on_leave(self, event=None):
+    def on_leave(self, event: Optional[tk.Event] = None) -> None:
         """Hide tooltip on mouse leave."""
         if self.tooltip_window:
             self.tooltip_window.destroy()
             self.tooltip_window = None
+        return
 
 
 class EnhancedImageDesignerGUI:
@@ -646,7 +667,8 @@ class EnhancedImageDesignerGUI:
             width=6,
         ).grid(row=0, column=4, padx=2)
 
-        # Image info button with icon - positioned next to Apply button in Image Properties
+        # Image info button with icon - positioned next to Apply button in Image
+        # Properties
         try:
             # Load the info icon from sample_images folder
             # Current file is in src/gui_image_studio/image_studio.py
@@ -704,7 +726,9 @@ class EnhancedImageDesignerGUI:
         info_btn.grid(row=0, column=5, padx=1)
         ToolTip(
             info_btn,
-            "Show detailed image information\n• File properties and metadata\n• Color analysis and statistics\n• Technical details and recommendations",
+            "Show detailed image information\n• File properties and metadata\n"
+            "• Color analysis and statistics\n• Technical details and "
+            "recommendations",
         )
 
         # Configure grid weights for size frame
@@ -826,7 +850,9 @@ class EnhancedImageDesignerGUI:
         transp_btn.grid(row=1, column=0, padx=1, pady=1)
         ToolTip(
             transp_btn,
-            "Make background transparent\n• Choose color with picker or use top-left pixel\n• Adjustable tolerance for precision\n• Perfect for sprites and icons",
+            "Make background transparent\n• Choose color with picker or use "
+            "top-left pixel\n• Adjustable tolerance for precision\n"
+            "• Perfect for sprites and icons",
         )
 
         # Remove background button (smart background removal)
@@ -842,7 +868,9 @@ class EnhancedImageDesignerGUI:
         remove_bg_btn.grid(row=1, column=1, padx=1, pady=1)
         ToolTip(
             remove_bg_btn,
-            "Smart background removal\n• Choose color manually or auto-detect\n• Analyzes image corners for background\n• Adjustable tolerance for precision",
+            "Smart background removal\n• Choose color manually or auto-detect\n"
+            "• Analyzes image corners for background\n"
+            "• Adjustable tolerance for precision",
         )
 
         # Configure grid weights for filters
@@ -948,7 +976,8 @@ class EnhancedImageDesignerGUI:
         # Add tooltip to scrollbar for better UX
         self._create_tooltip(
             self.preview_scrollbar,
-            "Scroll through icons\n• Mouse wheel\n• Trackpad gestures\n• Drag to scroll\n• Arrow keys (↑↓ = line, ←→ = fast)",
+            "Scroll through icons\n• Mouse wheel\n• Trackpad gestures\n"
+            "• Drag to scroll\n• Arrow keys (↑↓ = line, ←→ = fast)",
         )
 
         # Pack canvas and scrollbar
@@ -1087,7 +1116,8 @@ class EnhancedImageDesignerGUI:
             print(f"Warning: Invalid cursor settings file format: {e}. Using defaults.")
         except Exception as e:
             print(
-                f"Warning: Unexpected error loading cursor settings: {e}. Using defaults."
+                f"Warning: Unexpected error loading cursor settings: {e}. "
+                "Using defaults."
             )
 
     def save_cursor_settings(self):
@@ -1304,7 +1334,8 @@ class EnhancedImageDesignerGUI:
                 activeforeground="white",
             )
         else:
-            # Normal button appearance when images exist - using consistent colors across platforms
+            # Normal button appearance when images exist - using consistent colors
+            # across platforms
             self.new_image_btn.configure(
                 text="🆕 New",
                 bg="#f0f0f0",  # Light gray background (consistent across platforms)
@@ -3452,6 +3483,7 @@ Happy creating! 🎉
         elif self.current_tool in ["line", "rectangle", "circle"]:
             self.drawing = True
             self.start_x, self.start_y = x, y
+            print(f"Shape tool {self.current_tool} started at ({x}, {y})")  # Debug
 
         elif self.current_tool == "text":
             self.add_text(x, y)
@@ -3483,6 +3515,7 @@ Happy creating! 🎉
             x = int((self.canvas.canvasx(event.x) - 10) / self.zoom_level)
             y = int((self.canvas.canvasy(event.y) - 10) / self.zoom_level)
 
+            print(f"Shape tool {self.current_tool} finished at ({x}, {y}) from ({self.start_x}, {self.start_y})")  # Debug
             self.draw_shape(self.start_x, self.start_y, x, y)
             self.drawing = False
             self.clear_preview()
@@ -3673,25 +3706,56 @@ Happy creating! 🎉
         image = self.current_images[self.selected_image]
         draw = ImageDraw.Draw(image)
 
-        size = self.size_var.get()
-        color = self.brush_color
+        size = max(1, self.size_var.get())  # Ensure minimum size of 1
+        
+        # Convert hex color to RGBA tuple for PIL
+        try:
+            if self.brush_color.startswith('#'):
+                hex_color = self.brush_color[1:]
+                color = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+                color = color + (255,)  # Add alpha channel
+            else:
+                color = self.brush_color
+        except (ValueError, IndexError):
+            color = (0, 0, 0, 255)  # Default to black if color parsing fails
 
-        if self.current_tool == "line":
-            draw.line([x1, y1, x2, y2], fill=color, width=size)
-        elif self.current_tool == "rectangle":
-            # Ensure proper rectangle coordinates
-            left = min(x1, x2)
-            top = min(y1, y2)
-            right = max(x1, x2)
-            bottom = max(y1, y2)
-            draw.rectangle([left, top, right, bottom], outline=color, width=size)
-        elif self.current_tool == "circle":
-            # Calculate circle bounds
-            left = min(x1, x2)
-            top = min(y1, y2)
-            right = max(x1, x2)
-            bottom = max(y1, y2)
-            draw.ellipse([left, top, right, bottom], outline=color, width=size)
+        # Ensure coordinates are within image bounds
+        img_width, img_height = image.size
+        x1 = max(0, min(x1, img_width - 1))
+        y1 = max(0, min(y1, img_height - 1))
+        x2 = max(0, min(x2, img_width - 1))
+        y2 = max(0, min(y2, img_height - 1))
+
+        # Skip drawing if coordinates are the same (no shape to draw)
+        if x1 == x2 and y1 == y2:
+            return
+
+        try:
+            if self.current_tool == "line":
+                draw.line([x1, y1, x2, y2], fill=color, width=size)
+            elif self.current_tool == "rectangle":
+                # Ensure proper rectangle coordinates
+                left = min(x1, x2)
+                top = min(y1, y2)
+                right = max(x1, x2)
+                bottom = max(y1, y2)
+                # Ensure rectangle has some size
+                if right > left and bottom > top:
+                    draw.rectangle([left, top, right, bottom], outline=color, width=size)
+            elif self.current_tool == "circle":
+                # Calculate circle bounds
+                left = min(x1, x2)
+                top = min(y1, y2)
+                right = max(x1, x2)
+                bottom = max(y1, y2)
+                # Ensure ellipse has some size
+                if right > left and bottom > top:
+                    draw.ellipse([left, top, right, bottom], outline=color, width=size)
+        except Exception as e:
+            print(f"Error drawing {self.current_tool}: {e}")
+            print(f"Coordinates: ({x1}, {y1}) to ({x2}, {y2})")
+            print(f"Color: {color}, Size: {size}")
+            return
 
         self.update_canvas()
 
