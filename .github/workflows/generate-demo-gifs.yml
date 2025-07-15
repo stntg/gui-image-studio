@@ -34,7 +34,7 @@ jobs:
       
       # Confirm moviepy.editor is present
       - name: Verify MoviePy editor module
-        run: python -c "from moviepy.editor import ImageSequenceClip; print('✅ MoviePy editor is available')"
+        run: python -c "from moviepy import ImageSequenceClip; print('✅ MoviePy editor is available')"
 
       # Run demo generation script
       - name: Generate demo source video
