@@ -11,68 +11,64 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Checkout repo code
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # Python setup
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
-      - name: Install demo generator dependencies
+      # Clean + correct MoviePy install
+      - name: Reinstall MoviePy and dependencies
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          python -m pip install moviepy pillow numpy imageio imageio-ffmpeg gui-image-studio
+          python -m pip uninstall -y moviepy || true
+          python -m pip install --no-cache-dir "moviepy[all]" pillow numpy gui-image-studio
 
-      - name: Debug:Show installed packages
-        run: python -m pip list
-      
-      - name: Force reinstall MoviePy
-        run: |
-          python -m pip install --force-reinstall --no-cache-dir moviepy
-      
-      - name: Check MoviePy modules
-        run: |
-          python -c "import moviepy; print(dir(moviepy))"
-    
-      - name: Check MoviePy import directly
-        run: python -c "import moviepy.editor; print('✅ MoviePy is importable')"
+      # Confirm moviepy.editor is present
+      - name: Verify MoviePy editor module
+        run: python -c "from moviepy.editor import ImageSequenceClip; print('✅ MoviePy editor is available')"
 
-      - name: Clear Python bytecode cache
-        run: find . | grep __pycache__ | xargs rm -rf
-      
+      # Run demo generation script
       - name: Generate demo source video
         run: python scripts/demo_generator.py
 
+      # Install system tools for ffmpeg, gifsicle, imagemagick
       - name: Install system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg gifsicle imagemagick
 
+      # Extract version tag for annotations
       - name: Extract version
         id: version
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
-      - name: Generate platform-specific assets
+      # Generate GIFs and MP4
+      - name: Generate platform assets
         run: |
           mkdir -p demo-output
 
-          # Twitter GIF
+          # Twitter GIF (1200×675)
           ffmpeg -y -i demo/demo.mp4 \
             -vf "fps=12,scale=1200:-1:flags=lanczos,crop=1200:675" \
             -loop 0 demo-output/twitter.gif
 
-          # LinkedIn MP4
+          # LinkedIn MP4 (1200×628 with overlay text)
           ffmpeg -y -i demo/demo.mp4 \
             -vf "fps=12,scale=1200:-2:flags=lanczos,crop=1200:628,drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:text='gui-image-studio v${VERSION}':fontcolor=white:fontsize=24:box=1:boxcolor=black@0.5:boxborderw=5:x=(w-text_w)/2:y=h-40" \
             -c:v libx264 -pix_fmt yuv420p -movflags +faststart \
             demo-output/linkedin.mp4
 
-          # Reddit GIF
+          # Reddit GIF (800×600)
           ffmpeg -y -i demo/demo.mp4 \
             -vf "fps=12,scale=800:-1:flags=lanczos,crop=800:600" \
             -loop 0 demo-output/reddit.gif
 
+      # Annotate and optimize GIFs
       - name: Annotate & optimize Twitter GIF
         run: |
           convert demo-output/twitter.gif \
@@ -91,6 +87,7 @@ jobs:
             -annotate +0+8 "gui-image-studio v${VERSION}" \
             miff:- | gifsicle --optimize=3 > demo-output/reddit-optimized.gif
 
+      # Upload final assets
       - name: Upload demo artifacts
         uses: actions/upload-artifact@v4
         with:
