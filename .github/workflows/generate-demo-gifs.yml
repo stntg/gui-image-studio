@@ -80,7 +80,7 @@ jobs:
             -font /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf \
             -pointsize 20 -stroke black -strokewidth 2 -fill white \
             -annotate +0+10 "gui-image-studio v${VERSION}" \
-            miff:- | gifsicle --optimize=3 > demo-output/twitter-optimized.gif
+            gif:- | gifsicle --optimize=3 > demo-output/twitter-optimized.gif
 
       - name: Annotate & optimize Reddit GIF
         run: |
@@ -89,7 +89,7 @@ jobs:
             -font /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf \
             -pointsize 18 -stroke black -strokewidth 2 -fill white \
             -annotate +0+8 "gui-image-studio v${VERSION}" \
-            miff:- | gifsicle --optimize=3 > demo-output/reddit-optimized.gif
+            gif:- | gifsicle --optimize=3 > demo-output/reddit-optimized.gif
 
       # Upload final assets
       - name: Upload demo artifacts
