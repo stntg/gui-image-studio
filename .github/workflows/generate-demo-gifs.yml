@@ -15,59 +15,90 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Set up Python
+    - name: Set up Python 3.10
       uses: actions/setup-python@v4
       with:
         python-version: '3.10'
 
-    - name: Install demo generator dependencies
+    - name: Install demo generator deps
       run: |
-        python -m pip install --upgrade pip
-        python -m pip install moviepy imageio[ffmpeg] pillow gui-image-studio
+        python -m pip install --upgrade pip setuptools wheel
+        # install latest MoviePy directly from GitHub
+        python -m pip install git+https://github.com/Zulko/moviepy.git
+        python -m pip install imageio-ffmpeg pillow gui-image-studio
+
+    - name: Debug: Show installed packages
+      run: python -m pip list
 
     - name: Generate demo source video
-      run: python scripts/demo_generator.py
+      run: |
+        # Attempt MoviePy approach
+        python scripts/demo_generator.py || \
+        # Fallback: use imageio+ffmpeg if MoviePy import fails
+        python - <<'PYCODE'
+import imageio, subprocess, os
+from pathlib import Path
 
-    - name: Install system dependencies
+source = Path("demo/source.png")
+out_mp4 = Path("demo/demo.mp4")
+# generate a 5-frame slideshow at 1 fps
+frames = []
+for i, alpha in enumerate([0, .25, .5, .75, 1.0]):
+    img = imageio.imread(source)
+    # simple tint blend
+    overlay = (img * (1-alpha) + 255 * alpha).astype('uint8')
+    frame_path = f"demo/frame{i}.png"
+    imageio.imwrite(frame_path, overlay)
+    frames.append(frame_path)
+
+# call ffmpeg to stitch
+cmd = [
+    "ffmpeg", "-y",
+    "-framerate", "1",
+    "-i", "demo/frame%d.png",
+    "-c:v", "libx264", "-pix_fmt", "yuv420p",
+    str(out_mp4)
+]
+subprocess.run(cmd, check=True)
+print("Generated fallback demo video:", out_mp4)
+PYCODE
+
+    - name: Install system deps
       run: |
         sudo apt-get update
         sudo apt-get install -y ffmpeg gifsicle imagemagick
 
     - name: Extract version
       id: version
-      run: |
-        echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+      run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
-    - name: Generate platform-specific assets
+    - name: Generate platform assets & annotate
       run: |
         mkdir -p demo-output
 
-        # Twitter GIF (1200×675, 12fps, looping)
+        # Twitter GIF
         ffmpeg -y -i demo/demo.mp4 \
           -vf "fps=12,scale=1200:-1:flags=lanczos,crop=1200:675" \
           -loop 0 demo-output/twitter.gif
 
-        # LinkedIn MP4 (1200×628, 12fps + burned-in version text)
+        # LinkedIn MP4 w/ burned-in text
         ffmpeg -y -i demo/demo.mp4 \
           -vf "fps=12,scale=1200:-2:flags=lanczos,crop=1200:628,drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:text='gui-image-studio v${VERSION}':fontcolor=white:fontsize=24:box=1:boxcolor=black@0.5:boxborderw=5:x=(w-text_w)/2:y=h-40" \
           -c:v libx264 -pix_fmt yuv420p -movflags +faststart \
           demo-output/linkedin.mp4
 
-        # Reddit GIF (800×600, 12fps, looping)
+        # Reddit GIF
         ffmpeg -y -i demo/demo.mp4 \
           -vf "fps=12,scale=800:-1:flags=lanczos,crop=800:600" \
           -loop 0 demo-output/reddit.gif
 
-    - name: Annotate & optimize GIFs
-      run: |
-        # Twitter annotation & optimization
+        # Annotate & optimize GIFs
         convert demo-output/twitter.gif \
           -gravity South -font /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf \
           -pointsize 20 -stroke black -strokewidth 2 -fill white \
           -annotate +0+10 "gui-image-studio v${VERSION}" \
           miff:- | gifsicle --optimize=3 > demo-output/twitter-optimized.gif
 
-        # Reddit annotation & optimization
         convert demo-output/reddit.gif \
           -gravity South -font /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf \
           -pointsize 18 -stroke black -strokewidth 2 -fill white \
@@ -78,7 +109,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: demo-gifs
-        path: |
-          demo-output/twitter-optimized.gif
-          demo-output/linkedin.mp4
-          demo-output/reddit-optimized.gif
+        path: demo-output/
