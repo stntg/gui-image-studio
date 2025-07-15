@@ -24,7 +24,7 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install git+https://github.com/Zulko/moviepy.git imageio-ffmpeg pillow gui-image-studio
 
-      - name: Debug: Show installed packages
+      - name: Debug:Show installed packages
         run: python -m pip list
 
       - name: Generate demo source video
