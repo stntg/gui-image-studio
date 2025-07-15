@@ -3,7 +3,7 @@
 import os
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
-from moviepy.editor import ImageSequenceClip
+from moviepy import ImageSequenceClip
 
 import gui_image_studio as gis
 from gui_image_studio.image_loader import ImageConfig, get_image_from_config
