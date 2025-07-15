@@ -21,6 +21,11 @@ jobs:
         with:
           python-version: '3.10'
 
+      - name: Clean caches
+        run: |
+          find . -name '__pycache__' -exec rm -rf {} +
+          rm -rf $(python -c "import site; print(site.getsitepackages()[0])")/moviepy*
+
       # Clean + correct MoviePy install
       - name: Reinstall MoviePy and dependencies
         run: |
