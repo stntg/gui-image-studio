@@ -1,0 +1,84 @@
+name: Generate Demo GIFs
+
+on:
+  workflow_dispatch: {}
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  demo-gifs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install demo generator dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install git+https://github.com/Zulko/moviepy.git imageio-ffmpeg pillow gui-image-studio
+
+      - name: Debug: Show installed packages
+        run: python -m pip list
+
+      - name: Generate demo source video
+        run: python scripts/demo_generator.py
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg gifsicle imagemagick
+
+      - name: Extract version
+        id: version
+        run: |
+          echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
+      - name: Generate platform-specific assets
+        run: |
+          mkdir -p demo-output
+
+          # Twitter GIF (1200×675, 12fps, looping)
+          ffmpeg -y -i demo/demo.mp4 \
+            -vf "fps=12,scale=1200:-1:flags=lanczos,crop=1200:675" \
+            -loop 0 demo-output/twitter.gif
+
+          # LinkedIn MP4 (1200×628, 12fps + burned-in version text)
+          ffmpeg -y -i demo/demo.mp4 \
+            -vf "fps=12,scale=1200:-2:flags=lanczos,crop=1200:628,drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:text='gui-image-studio v${VERSION}':fontcolor=white:fontsize=24:box=1:boxcolor=black@0.5:boxborderw=5:x=(w-text_w)/2:y=h-40" \
+            -c:v libx264 -pix_fmt yuv420p -movflags +faststart demo-output/linkedin.mp4
+
+          # Reddit GIF (800×600, 12fps, looping)
+          ffmpeg -y -i demo/demo.mp4 \
+            -vf "fps=12,scale=800:-1:flags=lanczos,crop=800:600" \
+            -loop 0 demo-output/reddit.gif
+
+      - name: Annotate & optimize Twitter GIF
+        run: |
+          convert demo-output/twitter.gif \
+            -gravity South \
+            -font /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf \
+            -pointsize 20 -stroke black -strokewidth 2 -fill white \
+            -annotate +0+10 "gui-image-studio v${VERSION}" \
+            miff:- | gifsicle --optimize=3 > demo-output/twitter-optimized.gif
+
+      - name: Annotate & optimize Reddit GIF
+        run: |
+          convert demo-output/reddit.gif \
+            -gravity South \
+            -font /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf \
+            -pointsize 18 -stroke black -strokewidth 2 -fill white \
+            -annotate +0+8 "gui-image-studio v${VERSION}" \
+            miff:- | gifsicle --optimize=3 > demo-output/reddit-optimized.gif
+
+      - name: Upload demo artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-gifs
+          path: demo-output/twitter-optimized.gif, demo-output/linkedin.mp4, demo-output/reddit-optimized.gif
