@@ -24,14 +24,24 @@ def make_frames(source: Path):
         draw = ImageDraw.Draw(placeholder)
         font = ImageFont.load_default()
         text = "gui-image-studio\nDemo"
-        w, h = draw.multiline_textsize(text, font=font)
-        draw.multiline_text(
-            ((400-w)/2, (300-h)/2),
-            text,
-            fill=(255,255,255,255),
-            font=font,
-            align="center"
-        )
+        # manually compute multiline size
+        lines = text.split("\n")
+        line_spacing = 4
+        widths = []
+        heights = []
+        for line in lines:
+            w, h_line = draw.textsize(line, font=font)
+            widths.append(w)
+            heights.append(h_line)
+        total_height = sum(heights) + (len(lines) - 1) * line_spacing
+        max_width = max(widths)
+        x0 = (400 - max_width) / 2
+        y0 = (300 - total_height) / 2
+        # draw each line
+        y = y0
+        for i, line in enumerate(lines):
+            draw.text((x0, y), line, fill=(255,255,255,255), font=font)
+            y += heights[i] + line_spacing
         placeholder.save(source)
     base = Image.open(source).convert("RGBA")
     frames = [base]
