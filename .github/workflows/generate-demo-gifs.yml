@@ -26,9 +26,20 @@ jobs:
 
       - name: Debug:Show installed packages
         run: python -m pip list
-
+      
+      - name: Force reinstall MoviePy
+        run: |
+          python -m pip install --force-reinstall --no-cache-dir moviepy
+      
+      - name: Check MoviePy modules
+        run: |
+          python -c "import moviepy; print(dir(moviepy))"
+    
       - name: Check MoviePy import directly
         run: python -c "import moviepy.editor; print('✅ MoviePy is importable')"
+
+      - name: Clear Python bytecode cache
+        run: find . | grep __pycache__ | xargs rm -rf
       
       - name: Generate demo source video
         run: python scripts/demo_generator.py
