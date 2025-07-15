@@ -27,6 +27,9 @@ jobs:
       - name: Debug:Show installed packages
         run: python -m pip list
 
+      - name: Check MoviePy import directly
+        run: python -c "import moviepy.editor; print('✅ MoviePy is importable')"
+      
       - name: Generate demo source video
         run: python scripts/demo_generator.py
 
