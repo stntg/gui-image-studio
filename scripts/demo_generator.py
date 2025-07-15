@@ -2,6 +2,7 @@
 import os
 from pathlib import Path
 from PIL import Image
+from PIL import ImageDraw, ImageFont
 
 # Try both imports
 try:
@@ -16,6 +17,22 @@ def tint_image(img: Image.Image, color: tuple[int,int,int], alpha=0.5):
     return Image.blend(img, overlay, alpha)
 
 def make_frames(source: Path):
+    # If demo/source.png is missing, generate a simple placeholder
+    if not source.exists():
+        source.parent.mkdir(parents=True, exist_ok=True)
+        placeholder = Image.new("RGBA", (400, 300), (30, 144, 255, 255))
+        draw = ImageDraw.Draw(placeholder)
+        font = ImageFont.load_default()
+        text = "gui-image-studio\nDemo"
+        w, h = draw.multiline_textsize(text, font=font)
+        draw.multiline_text(
+            ((400-w)/2, (300-h)/2),
+            text,
+            fill=(255,255,255,255),
+            font=font,
+            align="center"
+        )
+        placeholder.save(source)
     base = Image.open(source).convert("RGBA")
     frames = [base]
     frames.append(base.rotate(30, expand=True))
