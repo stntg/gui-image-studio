@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 
-import os
 import base64
 from pathlib import Path
 from typing import Tuple
 
+import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 from moviepy import ImageSequenceClip
 
-# Monkey-patch gui-image-studio so get_image_from_config returns a PIL.Image
+# Monkey-patch gui-image-studio’s framework loader to return PIL.Image directly
 import gui_image_studio.image_loader as _loader
 _loader._create_framework_image = lambda pil_img, framework, size: pil_img
 
@@ -25,7 +25,6 @@ def create_placeholder(path: Path, size: Tuple[int, int] = (400, 300)) -> None:
     lines = text.split("\n")
     spacing = 4
 
-    # Measure each line
     widths, heights = [], []
     for line in lines:
         x0, y0, x1, y1 = draw.textbbox((0, 0), line, font=font)
@@ -37,7 +36,6 @@ def create_placeholder(path: Path, size: Tuple[int, int] = (400, 300)) -> None:
     x0 = (size[0] - max_w) / 2
     y0 = (size[1] - total_h) / 2
 
-    # Draw lines centered
     y = y0
     for line, h in zip(lines, heights):
         draw.text((x0, y), line, font=font, fill="white")
@@ -48,8 +46,8 @@ def create_placeholder(path: Path, size: Tuple[int, int] = (400, 300)) -> None:
 
 def embed_image(path: Path, name: str = "source.png") -> None:
     """
-    Base64-encode the local PNG and inject it into the embedded_images
-    under the "default" theme so get_image_from_config() can load it.
+    Base64-encode the local PNG and inject into the default theme registry
+    so get_image_from_config() can load it.
     """
     with open(path, "rb") as f:
         data = base64.b64encode(f.read()).decode("utf-8")
@@ -58,13 +56,13 @@ def embed_image(path: Path, name: str = "source.png") -> None:
 
 def make_frames() -> list[Image.Image]:
     """
-    Build frames by creating ImageConfig for each transform and then
-    calling get_image_from_config(cfg), which now returns a PIL.Image.
+    Build demo frames by configuring ImageConfig for each transform,
+    then calling get_image_from_config(cfg) which now returns a PIL.Image.
     """
     common = dict(
         image_name="source.png",
         theme="default",
-        framework="tkinter",  # ignored now that we patched the loader
+        framework="tkinter",  # ignored after our patch
         size=(400, 300),
     )
 
@@ -73,8 +71,13 @@ def make_frames() -> list[Image.Image]:
         ImageConfig(**common, rotate=30),
         ImageConfig(**common, tint_color=(0, 120, 255), tint_intensity=0.4),
         ImageConfig(**common, contrast=1.5),
-        # smaller size for last frame
-        ImageConfig(image_name="source.png", theme="default", framework="tkinter", size=(240, 180)),
+        # smaller size override
+        ImageConfig(
+            image_name="source.png",
+            theme="default",
+            framework="tkinter",
+            size=(240, 180),
+        ),
     ]
 
     frames = []
@@ -90,14 +93,20 @@ def generate_demo_video():
     demo_dir.mkdir(exist_ok=True)
     src = demo_dir / "source.png"
 
+    # Step-1: placeholder + embed
     if not src.exists():
         create_placeholder(src)
     embed_image(src)
 
-    out_mp4 = demo_dir / "demo.mp4"
-    frames = make_frames()
+    # Step-2: render PIL frames
+    pil_frames = make_frames()
 
-    clip = ImageSequenceClip(frames, fps=1)
+    # Step-3: convert to numpy arrays so MoviePy can see .shape
+    np_frames = [np.array(img.convert("RGB")) for img in pil_frames]
+
+    # Step-4: assemble video
+    out_mp4 = demo_dir / "demo.mp4"
+    clip = ImageSequenceClip(np_frames, fps=1)
     clip.write_videofile(
         str(out_mp4),
         codec="libx264",
