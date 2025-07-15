@@ -1,104 +1,118 @@
 #!/usr/bin/env python3
 
 import os
+import base64
 from pathlib import Path
+from typing import Tuple
 from PIL import Image, ImageDraw, ImageFont
 from moviepy import ImageSequenceClip
 
-import gui_image_studio as gis
-from gui_image_studio.image_loader import ImageConfig, get_image_from_config
+from gui_image_studio import embedded_images, get_image
+from gui_image_studio.image_loader import ImageConfig
 
 
-def make_placeholder(path: Path, size=(400, 300)) -> None:
-    """Create a simple fallback PNG if demo/source.png is missing."""
+def create_placeholder(path: Path, size: Tuple[int, int] = (400, 300)) -> None:
+    """Generate a fallback source PNG if one doesn't exist."""
     path.parent.mkdir(parents=True, exist_ok=True)
     img = Image.new("RGBA", size, (30, 144, 255, 255))
     draw = ImageDraw.Draw(img)
     font = ImageFont.load_default()
     text = "gui-image-studio\nDemo"
-
     lines = text.split("\n")
     spacing = 4
     widths, heights = [], []
+
     for line in lines:
         x0, y0, x1, y1 = draw.textbbox((0, 0), line, font=font)
         widths.append(x1 - x0)
         heights.append(y1 - y0)
 
-    total_h = sum(heights) + (len(lines) - 1) * spacing
+    total_h = sum(heights) + spacing * (len(lines) - 1)
     max_w = max(widths)
-    x_start = (size[0] - max_w) / 2
-    y_start = (size[1] - total_h) / 2
+    x0 = (size[0] - max_w) / 2
+    y0 = (size[1] - total_h) / 2
+    y = y0
 
-    y = y_start
     for line, h in zip(lines, heights):
-        draw.text((x_start, y), line, font=font, fill="white")
+        draw.text((x0, y), line, font=font, fill="white")
         y += h + spacing
 
     img.save(path)
 
 
-def make_frames(source: Path) -> list[Image.Image]:
-    """
-    Build frames using get_image_from_config() with different transformations.
-    Since get_image_from_config returns a framework-specific object,
-    we grab the raw PIL Image via its internal config logic.
-    """
-    if not source.exists():
-        make_placeholder(source)
+def embed_image(path: Path) -> None:
+    """Embed the PNG file into the default theme registry for get_image."""
+    with open(path, "rb") as f:
+        encoded = base64.b64encode(f.read()).decode("utf-8")
+        embedded_images.embedded_images.setdefault("default", {})["source.png"] = encoded
 
-    frames = []
-    base_params = {
-        "image_name": str(source.name),
-        "theme": "default",
+
+def extract_pil_image(config: ImageConfig) -> Image.Image:
+    """Extract raw PIL image from framework-specific get_image result."""
+    # Since we’re using framework="tkinter", the result is an ImageTk.PhotoImage
+    result = get_image_from_config(config)
+    if hasattr(result, "_PhotoImage__photo"):
+        # extract from Tkinter internal object
+        return Image.open(result._PhotoImage__photo)  # crude workaround if needed
+    else:
+        raise ValueError("Unsupported image wrapper returned")
+
+
+def make_frames(image_name: str) -> list[Image.Image]:
+    """Create demo frames using get_image transformations."""
+    base_kwargs = {
+        "image_name": image_name,
         "framework": "tkinter",
         "size": (400, 300),
+        "theme": "default"
     }
 
+    frames = []
+
     # 1. Original
-    cfg1 = ImageConfig(**base_params)
-    img1 = get_image_from_config(cfg1)._PhotoImage__photo.zoom(1)  # workaround to extract
-    frames.append(cfg1.to_transforms_dict()["size"])  # insert placeholder size
+    cfg1 = ImageConfig(**base_kwargs)
+    frames.append(get_image(cfg1.image_name, **cfg1.__dict__)._PhotoImage__photo.zoom(1))
 
     # 2. Rotated
-    cfg2 = ImageConfig(**base_params, rotate=30)
-    img2 = get_image_from_config(cfg2)._PhotoImage__photo.zoom(1)
-    frames.append(img2)
+    cfg2 = ImageConfig(**base_kwargs, rotate=30)
+    frames.append(get_image(cfg2.image_name, **cfg2.__dict__)._PhotoImage__photo.zoom(1))
 
     # 3. Tinted
-    cfg3 = ImageConfig(**base_params, tint_color=(0, 120, 255), tint_intensity=0.4)
-    img3 = get_image_from_config(cfg3)._PhotoImage__photo.zoom(1)
-    frames.append(img3)
+    cfg3 = ImageConfig(**base_kwargs, tint_color=(0, 120, 255), tint_intensity=0.4)
+    frames.append(get_image(cfg3.image_name, **cfg3.__dict__)._PhotoImage__photo.zoom(1))
 
     # 4. Contrast
-    cfg4 = ImageConfig(**base_params, contrast=1.5)
-    img4 = get_image_from_config(cfg4)._PhotoImage__photo.zoom(1)
-    frames.append(img4)
+    cfg4 = ImageConfig(**base_kwargs, contrast=1.5)
+    frames.append(get_image(cfg4.image_name, **cfg4.__dict__)._PhotoImage__photo.zoom(1))
 
-    # 5. Resized to 60%
-    cfg5 = ImageConfig(**base_params, size=(240, 180))
-    img5 = get_image_from_config(cfg5)._PhotoImage__photo.zoom(1)
-    frames.append(img5)
+    # 5. Resize smaller
+    cfg5 = ImageConfig(**base_kwargs, size=(240, 180))
+    frames.append(get_image(cfg5.image_name, **cfg5.__dict__)._PhotoImage__photo.zoom(1))
 
-    # Convert each frame to actual Image object if needed
-    pil_frames = [Image.open(frame) if isinstance(frame, str) else frame for frame in frames]
-    return pil_frames
+    return frames
 
 
 def generate_demo_video():
-    src = Path("demo/source.png")
+    src_path = Path("demo/source.png")
     out_dir = Path("demo")
     out_dir.mkdir(exist_ok=True)
     out_mp4 = out_dir / "demo.mp4"
 
-    frames = make_frames(src)
+    if not src_path.exists():
+        create_placeholder(src_path)
+    embed_image(src_path)
+
+    frames = make_frames("source.png")
+
+    # Ensure all are PIL Images
     clip = ImageSequenceClip(frames, fps=1)
     clip.write_videofile(str(out_mp4),
                          codec="libx264",
                          fps=1,
-                         ffmpeg_params=["-pix_fmt", "yuv420p"])
+                         ffmpeg_params=["-pix_fmt", "yuv420p"],
+                         logger=None)
 
-    print(f"✅ Demo video written to {out_mp4}")
+    print(f"✅ Demo video created at {out_mp4.absolute()}")
 
 
 if __name__ == "__main__":
