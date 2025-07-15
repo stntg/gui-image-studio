@@ -8,6 +8,10 @@ from typing import Tuple
 from PIL import Image, ImageDraw, ImageFont
 from moviepy import ImageSequenceClip
 
+# Monkey-patch gui-image-studio so get_image_from_config returns a PIL.Image
+import gui_image_studio.image_loader as _loader
+_loader._create_framework_image = lambda pil_img, framework, size: pil_img
+
 from gui_image_studio.image_loader import embedded_images, ImageConfig, get_image_from_config
 
 
@@ -21,7 +25,7 @@ def create_placeholder(path: Path, size: Tuple[int, int] = (400, 300)) -> None:
     lines = text.split("\n")
     spacing = 4
 
-    # Measure text
+    # Measure each line
     widths, heights = [], []
     for line in lines:
         x0, y0, x1, y1 = draw.textbbox((0, 0), line, font=font)
@@ -33,7 +37,7 @@ def create_placeholder(path: Path, size: Tuple[int, int] = (400, 300)) -> None:
     x0 = (size[0] - max_w) / 2
     y0 = (size[1] - total_h) / 2
 
-    # Draw each line centered
+    # Draw lines centered
     y = y0
     for line, h in zip(lines, heights):
         draw.text((x0, y), line, font=font, fill="white")
@@ -44,7 +48,7 @@ def create_placeholder(path: Path, size: Tuple[int, int] = (400, 300)) -> None:
 
 def embed_image(path: Path, name: str = "source.png") -> None:
     """
-    Base64-encode the local PNG and inject into embedded_images
+    Base64-encode the local PNG and inject it into the embedded_images
     under the "default" theme so get_image_from_config() can load it.
     """
     with open(path, "rb") as f:
@@ -54,36 +58,28 @@ def embed_image(path: Path, name: str = "source.png") -> None:
 
 def make_frames() -> list[Image.Image]:
     """
-    Build demo frames by configuring ImageConfig for each transform
-    and extracting the PIL Image from the Tkinter PhotoImage wrapper.
+    Build frames by creating ImageConfig for each transform and then
+    calling get_image_from_config(cfg), which now returns a PIL.Image.
     """
-    # Shared parameters for most frames
-    common_args = dict(
+    common = dict(
         image_name="source.png",
         theme="default",
-        framework="tkinter",
+        framework="tkinter",  # ignored now that we patched the loader
         size=(400, 300),
     )
 
     configs = [
-        ImageConfig(**common_args),
-        ImageConfig(**common_args, rotate=30),
-        ImageConfig(**common_args, tint_color=(0, 120, 255), tint_intensity=0.4),
-        ImageConfig(**common_args, contrast=1.5),
-        # Explicitly override size here without **common_args
-        ImageConfig(
-            image_name="source.png",
-            theme="default",
-            framework="tkinter",
-            size=(240, 180)
-        ),
+        ImageConfig(**common),
+        ImageConfig(**common, rotate=30),
+        ImageConfig(**common, tint_color=(0, 120, 255), tint_intensity=0.4),
+        ImageConfig(**common, contrast=1.5),
+        # smaller size for last frame
+        ImageConfig(image_name="source.png", theme="default", framework="tkinter", size=(240, 180)),
     ]
 
-    frames: list[Image.Image] = []
+    frames = []
     for cfg in configs:
-        photo = get_image_from_config(cfg)
-        # For tkinter, PhotoImage keeps the PIL image in _PhotoImage__photo
-        pil_img = photo._PhotoImage__photo
+        pil_img = get_image_from_config(cfg)
         frames.append(pil_img)
 
     return frames
@@ -94,14 +90,13 @@ def generate_demo_video():
     demo_dir.mkdir(exist_ok=True)
     src = demo_dir / "source.png"
 
-    # Create & embed placeholder if missing
     if not src.exists():
         create_placeholder(src)
     embed_image(src)
 
-    # Render frames and write video
     out_mp4 = demo_dir / "demo.mp4"
     frames = make_frames()
+
     clip = ImageSequenceClip(frames, fps=1)
     clip.write_videofile(
         str(out_mp4),
