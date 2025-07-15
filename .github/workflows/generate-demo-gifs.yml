@@ -26,13 +26,12 @@ jobs:
           find . -name '__pycache__' -exec rm -rf {} +
           rm -rf $(python -c "import site; print(site.getsitepackages()[0])")/moviepy*
 
-      # Clean + correct MoviePy install
-      - name: Reinstall MoviePy and dependencies
+      - name: Install MoviePy from GitHub source
         run: |
-          python -m pip install --upgrade pip setuptools wheel
           python -m pip uninstall -y moviepy || true
-          python -m pip install --no-cache-dir "moviepy[all]" pillow numpy gui-image-studio
-
+          python -m pip install --no-cache-dir git+https://github.com/Zulko/moviepy.git
+          python -m pip install pillow numpy imageio imageio-ffmpeg gui-image-studio
+      
       # Confirm moviepy.editor is present
       - name: Verify MoviePy editor module
         run: python -c "from moviepy.editor import ImageSequenceClip; print('✅ MoviePy editor is available')"
