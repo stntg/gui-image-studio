@@ -12,10 +12,7 @@ from gui_image_studio.image_loader import embedded_images, ImageConfig, get_imag
 
 
 def create_placeholder(path: Path, size: Tuple[int, int] = (400, 300)) -> None:
-    """
-    If demo/source.png is missing, generate a simple colored PNG
-    so our pipeline always has something to embed.
-    """
+    """Generate a fallback PNG if demo/source.png is missing."""
     path.parent.mkdir(parents=True, exist_ok=True)
     img = Image.new("RGBA", size, (30, 144, 255, 255))
     draw = ImageDraw.Draw(img)
@@ -24,7 +21,7 @@ def create_placeholder(path: Path, size: Tuple[int, int] = (400, 300)) -> None:
     lines = text.split("\n")
     spacing = 4
 
-    # measure each line
+    # Measure text
     widths, heights = [], []
     for line in lines:
         x0, y0, x1, y1 = draw.textbbox((0, 0), line, font=font)
@@ -36,7 +33,7 @@ def create_placeholder(path: Path, size: Tuple[int, int] = (400, 300)) -> None:
     x0 = (size[0] - max_w) / 2
     y0 = (size[1] - total_h) / 2
 
-    # draw lines centered
+    # Draw each line centered
     y = y0
     for line, h in zip(lines, heights):
         draw.text((x0, y), line, font=font, fill="white")
@@ -47,8 +44,8 @@ def create_placeholder(path: Path, size: Tuple[int, int] = (400, 300)) -> None:
 
 def embed_image(path: Path, name: str = "source.png") -> None:
     """
-    Read the local PNG and inject it into gui-image-studio's embedded_images
-    under the "default" theme, so get_image_from_config() can load it.
+    Base64-encode the local PNG and inject into embedded_images
+    under the "default" theme so get_image_from_config() can load it.
     """
     with open(path, "rb") as f:
         data = base64.b64encode(f.read()).decode("utf-8")
@@ -57,29 +54,35 @@ def embed_image(path: Path, name: str = "source.png") -> None:
 
 def make_frames() -> list[Image.Image]:
     """
-    Build a list of PIL Images by spinning up ImageConfig for each transform,
-    calling get_image_from_config(), then extracting the raw PIL image
-    out of the PhotoImage wrapper.
+    Build demo frames by configuring ImageConfig for each transform
+    and extracting the PIL Image from the Tkinter PhotoImage wrapper.
     """
-    configs = []
-
-    base = dict(
+    # Shared parameters for most frames
+    common_args = dict(
         image_name="source.png",
         theme="default",
         framework="tkinter",
         size=(400, 300),
     )
 
-    configs.append(ImageConfig(**base))
-    configs.append(ImageConfig(**base, rotate=30))
-    configs.append(ImageConfig(**base, tint_color=(0, 120, 255), tint_intensity=0.4))
-    configs.append(ImageConfig(**base, contrast=1.5))
-    configs.append(ImageConfig(**base, size=(240, 180)))
+    configs = [
+        ImageConfig(**common_args),
+        ImageConfig(**common_args, rotate=30),
+        ImageConfig(**common_args, tint_color=(0, 120, 255), tint_intensity=0.4),
+        ImageConfig(**common_args, contrast=1.5),
+        # Explicitly override size here without **common_args
+        ImageConfig(
+            image_name="source.png",
+            theme="default",
+            framework="tkinter",
+            size=(240, 180)
+        ),
+    ]
 
     frames: list[Image.Image] = []
     for cfg in configs:
         photo = get_image_from_config(cfg)
-        # PhotoImage stores the PIL image in _PhotoImage__photo
+        # For tkinter, PhotoImage keeps the PIL image in _PhotoImage__photo
         pil_img = photo._PhotoImage__photo
         frames.append(pil_img)
 
@@ -91,14 +94,14 @@ def generate_demo_video():
     demo_dir.mkdir(exist_ok=True)
     src = demo_dir / "source.png"
 
+    # Create & embed placeholder if missing
     if not src.exists():
         create_placeholder(src)
-
     embed_image(src)
 
+    # Render frames and write video
     out_mp4 = demo_dir / "demo.mp4"
     frames = make_frames()
-
     clip = ImageSequenceClip(frames, fps=1)
     clip.write_videofile(
         str(out_mp4),
