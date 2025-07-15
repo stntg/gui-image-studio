@@ -18,30 +18,44 @@ from gui_image_studio.image_loader import embedded_images, ImageConfig, get_imag
 DEMO_SIZE = (400, 300)  # canonical width × height
 
 
-def create_placeholder(path: Path, size: Tuple[int, int] = DEMO_SIZE) -> None:
+def create_placeholder(path: Path, size: Tuple[int,int] = (400, 300)) -> None:
+    """
+    Generate a colorful, shape-filled demo image so your rotations, tints
+    and contrasts really stand out.
+    """
     path.parent.mkdir(parents=True, exist_ok=True)
-    img = Image.new("RGBA", size, (30, 144, 255, 255))
+    w, h = size
+
+    # 1) Gradient background (red→blue horizontally, green ramp vertically)
+    img = Image.new("RGB", size)
+    for x in range(w):
+        for y in range(h):
+            r = int(255 * x / w)
+            b = 255 - r
+            g = int(128 + 127 * (y / h))
+            img.putpixel((x, y), (r, g, b))
+
     draw = ImageDraw.Draw(img)
+
+    # 2) White rectangle
+    draw.rectangle((50,  50, 150, 100), outline="white", width=4)
+
+    # 3) Yellow ellipse
+    draw.ellipse((200, 50, 300, 150), outline="yellow", width=4)
+
+    # 4) Green triangle
+    tri = [(100, 220), (200, 220), (150, 140)]
+    draw.polygon(tri, outline="green", width=4)
+
+    # 5) Diagonal white line
+    draw.line((0, h, w, 0), fill="white", width=2)
+
+    # 6) “Demo” text in bottom-right
     font = ImageFont.load_default()
-    text = "gui-image-studio\nDemo"
-    lines = text.split("\n")
-    spacing = 4
-
-    widths, heights = [], []
-    for line in lines:
-        x0, y0, x1, y1 = draw.textbbox((0, 0), line, font=font)
-        widths.append(x1 - x0)
-        heights.append(y1 - y0)
-
-    total_h = sum(heights) + spacing * (len(lines) - 1)
-    max_w = max(widths)
-    x0 = (size[0] - max_w) / 2
-    y0 = (size[1] - total_h) / 2
-
-    y = y0
-    for line, h in zip(lines, heights):
-        draw.text((x0, y), line, font=font, fill="white")
-        y += h + spacing
+    text = "Demo"
+    bbox = draw.textbbox((0, 0), text, font=font)
+    tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
+    draw.text((w - tw - 10, h - th - 10), text, fill="white", font=font)
 
     img.save(path)
 
