@@ -58,7 +58,7 @@ jobs:
 
           # Twitter GIF (1200×675)
           ffmpeg -y -i demo/demo.mp4 \
-            -vf "fps=12,scale=1200:-1:flags=lanczos,crop=1200:675" \
+            -vf "fps=12,scale=1200:-1:flags=lanczos,pad=1200:675:0:0:color=black" \
             -loop 0 demo-output/twitter.gif
 
           # LinkedIn MP4 (1200×628 with overlay text)
