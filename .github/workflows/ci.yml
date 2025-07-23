@@ -48,7 +48,7 @@ jobs:
 
     - name: Lint with black
       run: |
-        black src/gui_image_studio
+        black .
 
     - name: Lint with flake8
       run: |
