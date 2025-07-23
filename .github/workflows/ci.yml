@@ -48,7 +48,7 @@ jobs:
 
     - name: Lint with black
       run: |
-        black src/gui_image_studio
+        black .
       continue-on-error: true
 
     - name: Lint with flake8
@@ -110,9 +110,12 @@ jobs:
         python -m pip install --upgrade pip
         pip install -e .[dev]
 
+    - name: Lint with black again
+      run: black .
+
     - name: Check code formatting with black
       run: |
-        black --check src/gui-image-studio
+        black --check .
 
     - name: Check import sorting with isort
       run: |
