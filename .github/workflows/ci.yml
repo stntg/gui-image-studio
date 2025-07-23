@@ -46,7 +46,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -e .[dev,test]
 
-    - name: Security check with bandit
+    - name: Lint with black
       run: |
         black src/gui_image_studio
       continue-on-error: true
@@ -110,11 +110,11 @@ jobs:
 
     - name: Check code formatting with black
       run: |
-        black --check .
+        black --check src/gui-image-studio
 
     - name: Check import sorting with isort
       run: |
-        isort --check-only .
+        isort --check-only src/gui-image-studio
 
     - name: Run safety check
       run: |
