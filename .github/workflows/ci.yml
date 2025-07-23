@@ -119,7 +119,7 @@ jobs:
 
     - name: Check import sorting with isort
       run: |
-        isort --check-only src/gui-image-studio
+        isort --check-only .
 
     - name: Run safety check
       run: |
