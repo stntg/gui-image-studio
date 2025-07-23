@@ -14,6 +14,7 @@ omit =
     */cli.py
     # Temporarily omit GUI components that require display
     */image_studio.py
+    */embedded_icons.py
 
 [report]
 # Regexes for lines to exclude from consideration
