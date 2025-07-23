@@ -80,14 +80,14 @@ class SprayTool(BaseTool):
         # Create spray effect
         for _ in range(num_dots):
             # Random position within spray radius
-            angle = random.uniform(0, 2 * 3.14159)
-            distance = random.uniform(0, spray_radius)
+            angle = random.uniform(0, 2 * 3.14159) # nosec B311
+            distance = random.uniform(0, spray_radius) # nosec B311
 
             dot_x = int(x + distance * random.uniform(-1, 1)) # nosec B311
             dot_y = int(y + distance * random.uniform(-1, 1)) # nosec B311
 
             # Vary dot size slightly
-            dot_size = random.randint(1, max(1, size // 10))
+            dot_size = random.randint(1, max(1, size // 10)) # nosec B311
 
             # Draw spray dot
             try:
