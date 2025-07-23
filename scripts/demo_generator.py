@@ -8,8 +8,8 @@ from moviepy import ImageSequenceClip
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 
-import gui_image_studio.image_loader as _loader
 from gui_image_studio.image_loader import embedded_images, get_image_from_config, ImageConfig
+import gui_image_studio.image_loader as _loader
 
 # Monkey-patch gui-image-studio so it returns raw PIL Images
 _loader._create_framework_image = lambda pil_img, framework, size: pil_img
