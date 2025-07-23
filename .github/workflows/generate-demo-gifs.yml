@@ -1,0 +1,102 @@
+name: Generate Demo GIFs
+
+on:
+  workflow_dispatch: {}
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  demo-gifs:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout repo code
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Python setup
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Clean caches
+        run: |
+          find . -name '__pycache__' -exec rm -rf {} +
+          rm -rf $(python -c "import site; print(site.getsitepackages()[0])")/moviepy*
+
+      - name: Install MoviePy from GitHub source
+        run: |
+          python -m pip uninstall -y moviepy || true
+          python -m pip install --no-cache-dir git+https://github.com/Zulko/moviepy.git
+          python -m pip install pillow numpy imageio imageio-ffmpeg gui-image-studio
+      
+      # Confirm moviepy.editor is present
+      - name: Verify MoviePy editor module
+        run: python -c "from moviepy import ImageSequenceClip; print('✅ MoviePy editor is available')"
+
+      # Run demo generation script
+      - name: Generate demo source video
+        run: python scripts/demo_generator.py
+
+      # Install system tools for ffmpeg, gifsicle, imagemagick
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg gifsicle imagemagick
+
+      # Extract version tag for annotations
+      - name: Extract version
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
+      # Generate GIFs and MP4
+      - name: Generate platform assets
+        run: |
+          mkdir -p demo-output
+
+          # Twitter GIF (1200×675)
+          ffmpeg -y -i demo/demo.mp4 \
+            -vf "fps=12,scale=1200:-1:flags=lanczos,pad=1200:675:0:0:color=black" \
+            -loop 0 demo-output/twitter.gif
+
+          # LinkedIn MP4 (1200×628 with overlay text)
+          ffmpeg -y -i demo/demo.mp4 \
+            -vf "fps=12,scale=1200:-2:flags=lanczos,crop=1200:628,drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:text='gui-image-studio v${VERSION}':fontcolor=white:fontsize=24:box=1:boxcolor=black@0.5:boxborderw=5:x=(w-text_w)/2:y=h-40" \
+            -c:v libx264 -pix_fmt yuv420p -movflags +faststart \
+            demo-output/linkedin.mp4
+
+          # Reddit GIF (800×600)
+          ffmpeg -y -i demo/demo.mp4 \
+            -vf "fps=12,scale=800:-1:flags=lanczos,crop=800:600" \
+            -loop 0 demo-output/reddit.gif
+
+      # Annotate and optimize GIFs
+      - name: Annotate & optimize Twitter GIF
+        run: |
+          convert demo-output/twitter.gif \
+            -gravity South \
+            -font /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf \
+            -pointsize 20 -stroke black -strokewidth 2 -fill white \
+            -annotate +0+10 "gui-image-studio v${VERSION}" \
+            gif:- | gifsicle --optimize=3 > demo-output/twitter-optimized.gif
+
+      - name: Annotate & optimize Reddit GIF
+        run: |
+          convert demo-output/reddit.gif \
+            -gravity South \
+            -font /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf \
+            -pointsize 18 -stroke black -strokewidth 2 -fill white \
+            -annotate +0+8 "gui-image-studio v${VERSION}" \
+            gif:- | gifsicle --optimize=3 > demo-output/reddit-optimized.gif
+
+      # Upload final assets
+      - name: Upload demo artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-gifs
+          path: |
+            demo-output/twitter-optimized.gif
+            demo-output/linkedin.mp4
+            demo-output/reddit-optimized.gif
