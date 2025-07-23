@@ -4,15 +4,15 @@ import base64
 from pathlib import Path
 from typing import Tuple
 
+from moviepy import ImageSequenceClip
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont, ImageOps
-from moviepy import ImageSequenceClip
+
+import gui_image_studio.image_loader as _loader
+from gui_image_studio.image_loader import embedded_images, get_image_from_config, ImageConfig
 
 # Monkey-patch gui-image-studio so it returns raw PIL Images
-import gui_image_studio.image_loader as _loader
 _loader._create_framework_image = lambda pil_img, framework, size: pil_img
-
-from gui_image_studio.image_loader import embedded_images, ImageConfig, get_image_from_config
 
 DEMO_SIZE = (400, 300)
 FONT = ImageFont.load_default()
