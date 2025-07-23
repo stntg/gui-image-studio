@@ -45,9 +45,10 @@ def check_prerequisites():
         )
 
     # Check if embedded_images.py exists
-    embedded_images_path = os.path.join(
-        os.path.dirname(__file__), "..", "src", "embedded_images.py"
+    embedded_images_path = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "..", "src", "embedded_images.py")
     )
+    print(f"Checking for embedded_images.py at: {embedded_images_path}")
     if os.path.exists(embedded_images_path):
         print("✓ embedded_images.py found")
     else:

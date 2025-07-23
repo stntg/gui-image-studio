@@ -92,67 +92,69 @@ Example Categories
 Quick Start Examples
 --------------------
 
-**Load and Save an Image**
+**Load and Use an Image**
 
 .. code-block:: python
 
-    import gui_image_studio
+    from gui_image_studio import get_image
+    import tkinter as tk
 
-    # Load an image
-    image = gui_image_studio.get_image("input.jpg")
+    # Load an image for tkinter
+    image = get_image("input.jpg", framework="tkinter", size=(200, 200))
 
-    # Save in different format
-    gui_image_studio.save_image(image, "output.png")
+    # Use in GUI
+    root = tk.Tk()
+    label = tk.Label(root, image=image)
+    label.pack()
+    root.mainloop()
 
 **Apply Basic Effects**
 
 .. code-block:: python
 
-    import gui_image_studio
+    from gui_image_studio import get_image
 
-    # Load image
-    image = gui_image_studio.get_image("photo.jpg")
+    # Load image with transformations
+    image = get_image(
+        "photo.jpg",
+        framework="customtkinter",
+        size=(800, 600),
+        tint_color=(255, 107, 107),
+        tint_intensity=0.3,
+        contrast=1.2
+    )
 
-    # Apply tint and resize
-    tinted = gui_image_studio.apply_tint(image, "#FF6B6B")
-    resized = gui_image_studio.resize_image(tinted, (800, 600))
-
-    # Save result
-    gui_image_studio.save_image(resized, "processed.jpg")
-
-**Create Simple Animation**
+**Work with Animated GIFs**
 
 .. code-block:: python
 
-    import gui_image_studio
+    from gui_image_studio import get_image
 
-    # Create frames
-    frames = []
-    base_image = gui_image_studio.get_image("base.png")
+    # Load animated GIF
+    animation_data = get_image(
+        "animation.gif",
+        framework="customtkinter",
+        size=(100, 100),
+        animated=True,
+        frame_delay=100
+    )
 
-    for i in range(10):
-        angle = i * 36  # Rotate by 36 degrees each frame
-        rotated = gui_image_studio.rotate_image(base_image, angle)
-        frames.append(rotated)
-
-    # Create animated GIF
-    gui_image_studio.create_animation(frames, "spinning.gif", duration=100)
+    # Access frames and timing
+    frames = animation_data["animated_frames"]
+    delay = animation_data["frame_delay"]
 
 **Launch GUI Application**
 
 .. code-block:: python
 
-    import tkinter as tk
-    from gui_image_studio import ImageStudio
+    from gui_image_studio import launch_designer
 
-    root = tk.Tk()
-    root.title("My Image Editor")
-    root.geometry("1200x800")
+    # Launch the Image Studio GUI
+    launch_designer()
 
-    app = ImageStudio(root)
-    app.pack(fill=tk.BOTH, expand=True)
-
-    root.mainloop()
+    # Or programmatically
+    import gui_image_studio
+    gui_image_studio.launch_designer()
 
 Example Data
 ------------
@@ -207,15 +209,14 @@ All examples follow these conventions:
             True if successful, None if failed
         """
         try:
-            # Load image
-            image = gui_image_studio.get_image(input_path)
-
-            # Apply processing
-            tinted = gui_image_studio.apply_tint(image, tint_color)
-            resized = gui_image_studio.resize_image(tinted, (800, 600))
-
-            # Save result
-            gui_image_studio.save_image(resized, output_path)
+            # Load image with transformations
+            image = get_image(
+                input_path,
+                framework="tkinter",
+                size=(800, 600),
+                tint_color=tint_color,
+                tint_intensity=0.3
+            )
 
             return True
 

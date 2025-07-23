@@ -65,6 +65,7 @@ setup(
     python_requires=">=3.8",
     install_requires=[
         "Pillow>=8.0.0",
+        "threepanewindows>=1.0.0",
     ],
     extras_require={
         "customtkinter": ["customtkinter>=5.0.0"],

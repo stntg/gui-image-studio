@@ -70,6 +70,7 @@ python -c "import gui_image_studio; gui_image_studio.launch_designer()"
 ```
 
 The Image Studio GUI provides:
+
 - Drawing tools (brush, eraser, shapes, text)
 - Image transformations and filters
 - Multiple image management
@@ -309,14 +310,28 @@ file for details.
 
 ## Changelog
 
+### Version 1.0.1
+
+- **Security Fixes**: Fixed partial executable path vulnerability in Windows print function
+- **Documentation Updates**: Complete documentation overhaul with updated API references
+- **Bug Fixes**: Fixed Python code block syntax errors and GitHub Actions workflow issues
+- **Transparency Features**: Enhanced transparency preservation in image processing
+- **Info Button**: Added comprehensive image information display with detailed analysis
+
 ### Version 1.0.0
 
-- Initial release
-- Basic image embedding functionality
-- Support for tkinter and customtkinter
-- Image transformation features
-- Command line interface
-- Comprehensive examples
+- Initial release of gui-image-studio package
+- **GUI Image Studio**: Visual image editor with drawing tools
+- Core image embedding functionality with `embed_images_from_folder()`
+- Advanced image loading with `get_image()` function
+- Support for tkinter and customtkinter frameworks
+- Image transformation features (resize, rotate, tint, contrast, saturation)
+- Theme support (default, dark, light)
+- Animated GIF support with frame processing
+- Command line interface with console scripts
+- Sample image generation for testing
+- High-quality compression options
+- Comprehensive example collection
 
 ## Support
 

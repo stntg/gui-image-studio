@@ -43,8 +43,8 @@ The main function for generating embedded image resources from a folder.
 
     # Generate embedded images from a folder
     embed_images_from_folder(
-        folder_path="assets/icons",
-        output_file="embedded_icons.py",
+        folder_path="images/",
+        output_file="embedded_images.py",
         compression_quality=85
     )
 

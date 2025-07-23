@@ -106,7 +106,7 @@ def launch_designer() -> None:
     args = parser.parse_args()
 
     try:
-        from .image_studio import main
+        from .image_studio.main_app import main
 
         main()
     except ImportError as e:

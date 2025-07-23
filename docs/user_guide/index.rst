@@ -41,25 +41,27 @@ Complete guide to using GUI Image Studio for image processing and application de
 Overview
 --------
 
-GUI Image Studio is a comprehensive image processing library and application that provides:
+GUI Image Studio is a comprehensive Python toolkit for creating, embedding, and managing images in Python GUI applications that provides:
 
 **Core Capabilities**
-  * Professional image editing and processing
-  * Animated GIF creation and editing
-  * Batch processing workflows
-  * Extensible plugin architecture
+  * Visual Image Studio GUI with drawing tools
+  * Image embedding and base64 encoding
+  * Support for tkinter and customtkinter frameworks
+  * Advanced image transformations and processing
+  * Animated GIF support with frame control
+  * Batch processing of image folders
 
 **User Interfaces**
-  * Full-featured GUI application
+  * Visual Image Studio GUI application
   * Command-line tools for automation
-  * Python API for integration
-  * Web-based interface (planned)
+  * Python API for GUI integration
+  * Real-time preview and code generation
 
 **Target Users**
-  * Graphic designers and artists
-  * Software developers
-  * Content creators
-  * Automation specialists
+  * Python GUI developers (tkinter, customtkinter)
+  * Software developers needing embedded images
+  * Application developers requiring image resources
+  * Automation specialists for batch processing
 
 Key Concepts
 ------------
@@ -144,12 +146,23 @@ Getting Started Workflow
 
 .. code-block:: python
 
-    import gui_image_studio
+    from gui_image_studio import get_image, embed_images_from_folder
 
-    # Load and process an image
-    image = gui_image_studio.get_image("photo.jpg")
-    processed = gui_image_studio.apply_tint(image, "#FF6B6B")
-    gui_image_studio.save_image(processed, "output.png")
+    # Load an image with transformations
+    image = get_image(
+        "photo.jpg",
+        framework="tkinter",
+        size=(200, 200),
+        tint_color=(255, 107, 107),
+        tint_intensity=0.3
+    )
+
+    # Embed images from a folder
+    embed_images_from_folder(
+        folder_path="images/",
+        output_file="embedded_images.py",
+        compression_quality=85
+    )
 
 **3. GUI Application**
 
@@ -162,10 +175,20 @@ Getting Started Workflow
 
 .. code-block:: python
 
-    # Create animations
-    frames = [gui_image_studio.rotate_image(image, angle)
-              for angle in range(0, 360, 30)]
-    gui_image_studio.create_animation(frames, "spinning.gif")
+    from gui_image_studio import get_image
+
+    # Load animated GIF
+    animation_data = get_image(
+        "animation.gif",
+        framework="customtkinter",
+        size=(100, 100),
+        animated=True,
+        frame_delay=100
+    )
+
+    # Access frames and timing
+    frames = animation_data["animated_frames"]
+    delay = animation_data["frame_delay"]
 
 Common Use Cases
 ----------------

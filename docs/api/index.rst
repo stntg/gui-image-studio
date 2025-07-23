@@ -82,10 +82,10 @@ Basic Usage Pattern
 
 .. code-block:: python
 
-   import gui_image_studio
+   from gui_image_studio import get_image, embed_images_from_folder, create_sample_images
 
    # Load an image with transformations
-   image = gui_image_studio.get_image(
+   image = get_image(
        "path/to/image.png",
        framework="tkinter",
        size=(800, 600),
@@ -94,10 +94,10 @@ Basic Usage Pattern
    )
 
    # Create sample images
-   gui_image_studio.create_sample_images()
+   create_sample_images()
 
    # Generate embedded images from folder
-   gui_image_studio.embed_images_from_folder("images/", "embedded.py")
+   embed_images_from_folder("images/", "embedded.py")
 
 Common Parameters
 ~~~~~~~~~~~~~~~~~
@@ -190,15 +190,17 @@ Examples by Category
 
 .. code-block:: python
 
+   from gui_image_studio import get_image
+
    # Load from file
-   image = gui_image_studio.get_image("photo.jpg")
+   image = get_image("photo.jpg", framework="tkinter")
 
    # Load from embedded resources
-   image = gui_image_studio.get_image("sample_icon")
+   image = get_image("sample_icon", framework="customtkinter")
 
    # Load with error handling
    try:
-       image = gui_image_studio.get_image("might_not_exist.png")
+       image = get_image("might_not_exist.png", framework="tkinter")
    except FileNotFoundError:
        print("Image not found")
 
@@ -206,22 +208,27 @@ Examples by Category
 
 .. code-block:: python
 
+   from gui_image_studio import get_image
+
    # Load image with transformations applied
-   resized = gui_image_studio.get_image(
+   resized = get_image(
        "image.png",
+       framework="tkinter",
        size=(800, 600)
    )
 
    # Apply color effects
-   tinted = gui_image_studio.get_image(
+   tinted = get_image(
        "image.png",
+       framework="customtkinter",
        tint_color=(255, 107, 107),
        tint_intensity=0.3
    )
 
    # Geometric transformations
-   rotated = gui_image_studio.get_image(
+   rotated = get_image(
        "image.png",
+       framework="tkinter",
        rotate=45
    )
 
@@ -229,29 +236,31 @@ Examples by Category
 
 .. code-block:: python
 
+   from gui_image_studio import embed_images_from_folder, create_sample_images
+
    # Generate embedded images from a folder
-   gui_image_studio.embed_images_from_folder(
+   embed_images_from_folder(
        "input_images/",
        "embedded_images.py",
        compression_quality=85
    )
 
    # Create sample images for testing
-   gui_image_studio.create_sample_images()
+   create_sample_images()
 
 **GUI Integration**
 
 .. code-block:: python
 
    import tkinter as tk
-   import gui_image_studio
+   from gui_image_studio import get_image, launch_designer
 
    # Launch the GUI designer
-   gui_image_studio.launch_designer()
+   launch_designer()
 
    # Or use images in your own GUI
    root = tk.Tk()
-   image = gui_image_studio.get_image(
+   image = get_image(
        "icon.png",
        framework="tkinter",
        size=(64, 64)

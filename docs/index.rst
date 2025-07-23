@@ -21,19 +21,23 @@ GUI Image Studio Documentation
     :target: https://github.com/psf/black
     :alt: Code style: black
 
-**GUI Image Studio** is a professional Python library and application for advanced image processing, manipulation, and GUI design. It provides a comprehensive toolkit for creating, editing, and managing images with a modern, intuitive interface built on Tkinter and CustomTkinter.
+**GUI Image Studio** is a comprehensive Python toolkit for creating, embedding, and managing images in Python GUI applications. It provides support for tkinter and customtkinter frameworks with features like image transformations, animated GIF support, and a visual image studio GUI for creating and editing images.
 
 Features
 --------
 
-* **Professional Image Editor**: Full-featured GUI application with advanced editing tools
-* **Comprehensive Image Processing**: Support for filters, transformations, and effects
-* **Animation Support**: Create and edit animated GIFs with timeline controls
-* **Theme System**: Built-in light and dark themes with customization options
-* **Batch Processing**: Process multiple images with automated workflows
-* **Plugin Architecture**: Extensible system for custom filters and tools
-* **Multiple Export Formats**: Support for PNG, JPEG, GIF, BMP, and more
-* **Cross-Platform**: Works on Windows, macOS, and Linux
+* 🎨 **Visual Image Studio GUI** - Create and edit images with drawing tools
+* 🖼️ **Image Embedding** - Convert images to base64 encoded strings for easy distribution
+* 📁 **Batch Processing** - Process entire folders of images automatically
+* 🎨 **Multi-Framework Support** - Works with tkinter and customtkinter
+* 🔧 **Image Transformations** - Resize, rotate, flip, tint, contrast, saturation adjustments
+* 📦 **Embedded Python Modules** - Generate Python files with embedded images
+* 🎬 **Animated GIF Support** - Create and process animated GIFs with frame control
+* 🎯 **High-Quality Compression** - Configurable compression options for optimal file sizes
+* 📝 **Sample Image Generation** - Built-in sample creator for testing
+* 👁️ **Real-time Preview** - Live preview of transformations and code generation
+* 🔍 **Comprehensive Image Information** - Detailed image analysis with smart recommendations
+* 🌟 **Advanced Transparency Features** - Preserve existing transparency when making areas transparent
 
 Quick Start
 -----------
@@ -64,31 +68,39 @@ Basic Usage
 
 .. code-block:: python
 
-    import gui_image_studio
+    from gui_image_studio import get_image, embed_images_from_folder
 
-    # Load an image
-    image = gui_image_studio.get_image("path/to/image.png")
+    # Get a single image with transformations
+    image = get_image(
+        "my_image.png",
+        framework="tkinter",
+        size=(64, 64),
+        theme="default"
+    )
 
-    # Apply transformations
-    resized = gui_image_studio.resize_image(image, (800, 600))
-    tinted = gui_image_studio.apply_tint(resized, "#FF6B6B")
-
-    # Save the result
-    gui_image_studio.save_image(tinted, "output.png")
+    # Embed all images from a folder
+    embed_images_from_folder(
+        folder_path="images/",
+        output_file="embedded_images.py",
+        compression_quality=85
+    )
 
 Command Line Tools
 ~~~~~~~~~~~~~~~~~~
 
 .. code-block:: bash
 
+    # Launch the Image Studio GUI
+    gui-image-studio-designer
+
     # Create sample images for testing
     gui-image-studio-create-samples
 
-    # Generate embedded image resources
-    gui-image-studio-generate --folder images/
-
-    # Check version
-    gui-image-studio-designer --version
+    # Embed images from a folder
+    gui-image-studio-generate \
+      --folder images/ \
+      --output embedded_images.py \
+      --quality 85
 
 Table of Contents
 -----------------

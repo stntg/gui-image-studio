@@ -15,10 +15,13 @@ Dependencies
 
 The package has the following dependencies:
 
+* **Pillow (PIL)** >= 8.0.0 - Image processing library
+* **threepanewindows** >= 1.0.0 - Three-pane window layout system
 * **tkinter** - Usually included with Python
-* **customtkinter** - Modern UI components
-* **Pillow (PIL)** - Image processing library
-* **typing-extensions** - For Python < 3.10 compatibility
+
+**Optional Dependencies:**
+
+* **customtkinter** >= 5.0.0 - For modern CustomTkinter support
 
 Install from PyPI
 -----------------
@@ -73,8 +76,9 @@ Or test the CLI commands:
 
 .. code-block:: bash
 
-    gui-image-studio-designer --version
-    gui-image-studio-create-samples --help
+    gui-image-studio-designer
+    gui-image-studio-create-samples
+    gui-image-studio-generate --help
 
 Or run the verification script:
 

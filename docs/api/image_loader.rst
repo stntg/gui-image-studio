@@ -1,7 +1,7 @@
 Image Loader Module
 ===================
 
-The ``image_loader`` module provides core functionality for loading, processing, and saving images.
+The ``image_loader`` module provides core functionality for loading and transforming images for GUI applications. It supports both tkinter and customtkinter frameworks with advanced image processing capabilities.
 
 .. automodule:: gui_image_studio.image_loader
    :members:
@@ -16,31 +16,52 @@ get_image
 
 .. autofunction:: gui_image_studio.image_loader.get_image
 
-Load images from various sources including files, embedded resources, and URLs.
+Load and return an image object for the specified GUI framework with optional transformations.
 
 **Parameters:**
-  * ``image_name`` (str): Path to image file or embedded resource name
-  * ``fallback_color`` (str, optional): Color to use if image loading fails
+  * ``image_name`` (str): Name of the embedded image or path to image file
+  * ``framework`` (str): GUI framework ("tkinter" or "customtkinter")
+  * ``size`` (tuple, optional): Resize image to (width, height), default (32, 32)
+  * ``theme`` (str, optional): Theme name ("default", "dark", "light"), default "default"
+  * ``rotate`` (int, optional): Rotate image by degrees, default 0
+  * ``grayscale`` (bool, optional): Convert to grayscale, default False
+  * ``tint_color`` (tuple, optional): Apply color tint as (R, G, B), default None
+  * ``tint_intensity`` (float, optional): Tint blending factor (0.0-1.0), default 0.0
+  * ``contrast`` (float, optional): Adjust contrast (1.0 = normal), default 1.0
+  * ``saturation`` (float, optional): Adjust saturation (1.0 = normal), default 1.0
+  * ``transparency`` (float, optional): Adjust transparency (0.0-1.0), default 1.0
+  * ``animated`` (bool, optional): Process animated GIFs, default False
+  * ``frame_delay`` (int, optional): Animation frame delay in ms, default 100
 
 **Returns:**
-  * ``PIL.Image.Image``: Loaded image object
-
-**Raises:**
-  * ``FileNotFoundError``: If image file is not found
-  * ``PIL.UnidentifiedImageError``: If image format is not supported
+  * Framework-specific image object (PhotoImage for tkinter, CTkImage for customtkinter)
 
 **Examples:**
 
 .. code-block:: python
 
-   # Load from file
-   image = get_image("photo.jpg")
+   from gui_image_studio import get_image
 
-   # Load embedded resource
-   icon = get_image("sample_icon")
+   # Basic usage
+   image = get_image("icon.png", framework="tkinter")
 
-   # Load with fallback
-   image = get_image("might_not_exist.png", fallback_color="#FF0000")
+   # With transformations
+   image = get_image(
+       "photo.jpg",
+       framework="customtkinter",
+       size=(200, 200),
+       tint_color=(255, 0, 0),
+       tint_intensity=0.3,
+       rotate=45
+   )
+
+   # Animated GIF
+   animation = get_image(
+       "animation.gif",
+       framework="tkinter",
+       animated=True,
+       frame_delay=100
+   )
 
 save_image
 ~~~~~~~~~~

@@ -9,52 +9,108 @@ and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0
 [Unreleased]
 ------------
 
-**Added**
-- Comprehensive test coverage system with pytest and coverage.py
-- Automated coverage reporting with Codecov and Coveralls integration
-- GitHub Actions workflow for coverage tracking and reporting
-- Coverage badge and detailed coverage documentation
-- PowerShell and Python scripts for cross-platform coverage testing
-- Makefile for streamlined development workflows
-- Enhanced CI/CD pipeline with coverage validation
-- Comprehensive Sphinx documentation system
-- Advanced API reference with autosummary
-- Detailed examples and tutorials
-- User guide with step-by-step instructions
+[1.1.0] - 2024-01-20
+---------------------
 
-**Changed**
-- Updated GitHub Actions workflows to use latest versions (upload-artifact@v4)
-- Improved documentation structure and organization
-- Enhanced code examples with better error handling
-- Upgraded development tooling and dependency management
-- Streamlined testing and coverage collection processes
+**Major Documentation Update**
+
+**Added**
+- **Comprehensive User Guide**: 10 new documentation sections covering all aspects of GUI Image Studio
+  - Complete installation guide for Windows, macOS, and Linux
+  - First steps tutorial for new users
+  - Interface overview with detailed UI documentation
+  - Image processing guide with advanced techniques
+  - Animation tools and creation workflows
+  - Batch operations and automation guide
+  - Theme system integration documentation
+  - API usage guide with comprehensive examples
+  - Command-line tools complete reference
+  - Troubleshooting guide with common issues and solutions
+
+- **Enhanced Examples**:
+  - Animation creation examples with custom animation generation
+  - Advanced image processing workflows
+  - Integration patterns for tkinter and customtkinter
+  - Performance optimization techniques
+  - Memory management best practices
+
+- **API Documentation Improvements**:
+  - Updated all code examples to use current API patterns
+  - Added parameter validation examples
+  - Enhanced error handling documentation
+  - Comprehensive framework integration guides
+
+- **Info Button**: Comprehensive image information display in Image Properties section
+  - Shows detailed file properties, metadata, and technical specifications
+  - Displays color analysis with unique colors count and most common colors
+  - Provides memory usage estimates and pixel count information
+  - Includes smart recommendations based on image characteristics
+  - Features icon-based UI with fallback to text symbol
+  - Positioned next to Apply button in Image Properties for intuitive access
 
 **Fixed**
-- Documentation syntax errors in RST code blocks
-- Python code block indentation issues in changelog.rst
-- Incomplete code examples in API documentation (generator.rst, sample_creator.rst)
-- GitHub Actions deprecation warnings for artifact upload actions
-- Documentation cross-references and links
-- Test coverage collection and reporting accuracy
+- **Transparency Preservation**: Fixed critical issue in transparent background feature
+  - Existing transparent areas are now preserved when making additional areas transparent
+  - Semi-transparent pixels maintain their exact alpha values
+  - Only processes non-transparent pixels that match the selected color
+  - Enhanced user feedback shows existing vs. newly transparent pixel counts
+  - Prevents loss of transparency work when applying multiple transparency operations
 
-[1.0.0] - 2024-06-22
+**Changed**
+- Updated documentation structure with comprehensive user guides
+- Improved transparency operation feedback with detailed pixel statistics
+- Enhanced error handling in image information display
+- Better path resolution for icon loading across different environments
+- Updated version references throughout documentation
+- Improved code examples with current best practices
+
+[1.0.1] - 2025-06-25
+---------------------
+
+**Security**
+- security: fix partial executable path vulnerability in Windows print function.
+- Fix security issue and reduce method complexity in print_content.
+- Fix security vulnerabilities in process execution.
+
+**Changed**
+- refactor: reduce cyclomatic complexity in build-docs.py.
+- Update docs.yml.
+- Test pre-commit hooks.
+
+**Fixed**
+- Fix Python code block syntax errors in documentation.
+- Fix GitHub Actions workflow and documentation syntax errors.
+- Complete pre-commit hooks fix.
+
+**Removed**
+- Remove test file.
+
+[1.0.0] - 2024-12-19
 ---------------------
 
 **Added**
-- Complete GUI Image Studio application with modern interface
-- Core image processing functionality (resize, tint, rotate, flip)
-- Animated GIF creation and editing capabilities
-- Command-line interface with three main commands:
-  - ``gui-image-studio-designer`` - Launch main GUI application
-  - ``gui-image-studio-create-samples`` - Generate sample images
-  - ``gui-image-studio-generate`` - Create embedded image resources
-- Theme system with light and dark themes
-- Batch processing capabilities
-- Sample image creation system
-- Embedded image resource generation
-- Comprehensive test suite with pytest
-- Professional documentation structure
-- Cross-platform support (Windows, macOS, Linux)
+- Initial release of gui-image-studio package
+- **GUI Image Studio**: Visual image editor with drawing tools
+- Core image embedding functionality with ``embed_images_from_folder()``
+- Advanced image loading with ``get_image()`` function
+- Support for tkinter and customtkinter frameworks
+- Image transformation features:
+  - Resize, rotate operations
+  - Color tinting with RGB values and intensity control
+  - Contrast and saturation adjustments
+  - Grayscale conversion
+  - Transparency control
+- Theme support (default, dark, light)
+- Animated GIF support with frame processing
+- Batch processing of image folders
+- Command line interface with console scripts:
+  - ``gui-image-studio-generate``
+  - ``gui-image-studio-create-samples``
+  - ``gui-image-studio-designer``
+- Sample image generation for testing
+- High-quality compression options (JPEG/WebP)
+- Comprehensive example collection
+- Full documentation and API reference
 
 **Core Features**
 - Image loading from files and embedded resources

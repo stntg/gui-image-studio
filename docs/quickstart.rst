@@ -25,19 +25,16 @@ Let's launch the application and perform basic image editing:
 .. code-block:: python
 
     # You can also use the Python API directly
-    import gui_image_studio
+    from gui_image_studio import get_image
 
-    # Load an image
-    image = gui_image_studio.get_image("sample.png")
-
-    # Apply a tint
-    tinted = gui_image_studio.apply_tint(image, "#FF6B6B")
-
-    # Resize the image
-    resized = gui_image_studio.resize_image(tinted, (800, 600))
-
-    # Save the result
-    gui_image_studio.save_image(resized, "output.png")
+    # Load an image with transformations
+    image = get_image(
+        "sample.png",
+        framework="tkinter",
+        size=(800, 600),
+        tint_color=(255, 107, 107),
+        tint_intensity=0.3
+    )
 
 Understanding the Interface
 ---------------------------
@@ -66,91 +63,121 @@ Basic Image Operations
 
 .. code-block:: python
 
-    import gui_image_studio
+    from gui_image_studio import get_image
 
-    # Load from file
-    image = gui_image_studio.get_image("path/to/image.png")
+    # Load from file with basic settings
+    image = get_image("path/to/image.png", framework="tkinter")
 
-    # Load from URL (if supported)
-    image = gui_image_studio.get_image("https://example.com/image.jpg")
+    # Load with transformations
+    image = get_image(
+        "path/to/image.png",
+        framework="customtkinter",
+        size=(200, 200),
+        theme="dark"
+    )
 
 **Applying Transformations**
 
 .. code-block:: python
 
-    # Resize image
-    resized = gui_image_studio.resize_image(image, (width, height))
+    from gui_image_studio import get_image
 
-    # Apply color tint
-    tinted = gui_image_studio.apply_tint(image, "#FF6B6B")
+    # Apply transformations during loading
+    image = get_image(
+        "photo.jpg",
+        framework="customtkinter",
+        size=(200, 200),
+        rotate=45,
+        tint_color=(255, 0, 0),
+        tint_intensity=0.3,
+        contrast=1.2,
+        saturation=1.5,
+        grayscale=False,
+        transparency=1.0
+    )
 
-    # Rotate image
-    rotated = gui_image_studio.rotate_image(image, 90)
-
-    # Flip image
-    flipped = gui_image_studio.flip_image(image, horizontal=True)
-
-**Saving Images**
-
-.. code-block:: python
-
-    # Save in different formats
-    gui_image_studio.save_image(image, "output.png")
-    gui_image_studio.save_image(image, "output.jpg", quality=95)
-    gui_image_studio.save_image(image, "output.gif")
-
-Creating Your First Animation
-------------------------------
-
-GUI Image Studio excels at creating animated GIFs:
+**Using Images in GUI Applications**
 
 .. code-block:: python
 
-    import gui_image_studio
+    import tkinter as tk
+    from gui_image_studio import get_image
 
-    # Create frames for animation
-    frames = []
-    base_image = gui_image_studio.get_image("base.png")
+    root = tk.Tk()
 
-    # Create 10 frames with different tints
-    for i in range(10):
-        hue = i * 36  # 0 to 324 degrees
-        tinted = gui_image_studio.apply_hue_shift(base_image, hue)
-        frames.append(tinted)
+    # Load image for tkinter
+    photo = get_image(
+        "my_image.png",
+        framework="tkinter",
+        size=(100, 100),
+        theme="default"
+    )
+    label = tk.Label(root, image=photo)
+    label.pack()
 
-    # Create animated GIF
-    gui_image_studio.create_animation(frames, "rainbow.gif", duration=100)
+    root.mainloop()
 
-**Using the GUI for Animations**
+Working with Animated GIFs
+---------------------------
 
-1. Load your base image
-2. Click **Animation → New Animation**
-3. Add frames using **Animation → Add Frame**
-4. Adjust timing in the timeline
-5. Export with **File → Export Animation**
+GUI Image Studio supports animated GIF processing:
+
+.. code-block:: python
+
+    from gui_image_studio import get_image
+
+    # Load animated GIF
+    animation_data = get_image(
+        "animation.gif",
+        framework="customtkinter",
+        size=(100, 100),
+        animated=True,
+        frame_delay=100
+    )
+
+    # Use the frames in your application
+    frames = animation_data["animated_frames"]
+    delay = animation_data["frame_delay"]
+
+**Embedding Images from Folders**
+
+.. code-block:: python
+
+    from gui_image_studio import embed_images_from_folder
+
+    # Process all images in a folder
+    embed_images_from_folder(
+        folder_path="images/",
+        output_file="embedded_images.py",
+        compression_quality=85
+    )
 
 Working with Themes
 --------------------
 
-GUI Image Studio supports both light and dark themes:
+GUI Image Studio supports theme-aware image loading:
 
-**Switching Themes in GUI**
-
-1. Go to **View → Theme**
-2. Select **Light** or **Dark**
-3. The interface will update immediately
-
-**Setting Theme Programmatically**
+**Using Themes with Images**
 
 .. code-block:: python
 
-    import gui_image_studio
+    from gui_image_studio import get_image
 
-    # Set dark theme
-    gui_image_studio.set_theme("dark")
+    # Load image with dark theme
+    dark_image = get_image(
+        "icon.png",
+        framework="customtkinter",
+        theme="dark",
+        size=(64, 64)
+    )
 
-    # Set light theme
-    gui_image_studio.set_theme("light")
+    # Load image with light theme
+    light_image = get_image(
+        "icon.png",
+        framework="tkinter",
+        theme="light",
+        size=(64, 64)
+    )
 
 Command Line Tools
 ------------------

@@ -45,7 +45,7 @@ For more examples and documentation, see:
 https://github.com/stntg/gui_image_studio
 """
 
-__version__ = "1.0.1"
+__version__ = "1.1.0"
 __author__ = "Stan Griffiths"
 __email__ = "stantgriffiths@gmail.com"
 __license__ = "MIT"
@@ -69,7 +69,7 @@ __all__ = [
 def launch_designer() -> None:
     """Launch the GUI Image Studio."""
     try:
-        from .image_studio import main
+        from .image_studio.main_app import main
 
         main()
     except ImportError as e:
@@ -118,6 +118,11 @@ def check_dependencies() -> list[str]:
 
     if not TKINTER_AVAILABLE:
         missing.append("tkinter (usually built-in)")
+
+    try:
+        import threepanewindows  # noqa: F401
+    except ImportError:
+        missing.append("threepanewindows")
 
     return missing
 
