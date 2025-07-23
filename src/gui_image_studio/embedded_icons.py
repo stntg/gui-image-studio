@@ -5,8 +5,8 @@ Generated from simple colored rectangles as proper .ico files.
 
 import base64
 import io
-import tempfile
 import os
+import tempfile
 from typing import Optional
 
 # Base64 encoded .ico data
