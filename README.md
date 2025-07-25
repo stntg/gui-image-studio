@@ -1,4 +1,5 @@
 # GUI Image Studio
+
 [![PyPI version](https://img.shields.io/pypi/v/gui-image-studio.svg)](https://pypi.org/project/gui-image-studio/)
 [![Python versions](https://img.shields.io/pypi/pyversions/gui-image-studio.svg)](https://pypi.org/project/gui-image-studio/)
 [![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://stntg.github.io/gui-image-studio/)
@@ -13,13 +14,17 @@ Python GUI applications with support for tkinter and customtkinter.
 
 ## 📚 Documentation
 
-**[📖 Full Documentation](https://stntg.github.io/gui-image-studio/)** - Complete guides, API reference, and examples
+**[📖 Full Documentation](https://stntg.github.io/gui-image-studio/)** -
+Complete guides, API reference, and examples
 
 Quick links:
+
 - [🚀 Quick Start Guide](https://stntg.github.io/gui-image-studio/quickstart.html)
 - [📖 API Reference](https://stntg.github.io/gui-image-studio/api/)
 - [💡 Examples](https://stntg.github.io/gui-image-studio/examples/)
 - [🛠️ Installation Guide](https://stntg.github.io/gui-image-studio/installation.html)
+- [🗺️ Development Roadmap](DEVELOPMENT_ROADMAP.md) - Future features and
+  development plans
 
 ## Features
 
@@ -33,8 +38,10 @@ Quick links:
 - 🎯 High-quality compression options
 - 📝 Sample image generation for testing
 - 👁️ Real-time code preview and generation
-- 🔍 **Comprehensive Image Information** - Detailed image analysis with smart recommendations
-- 🌟 **Advanced Transparency Features** - Preserve existing transparency when making areas transparent
+- 🔍 **Comprehensive Image Information** - Detailed image analysis with smart
+  recommendations
+- 🌟 **Advanced Transparency Features** - Preserve existing transparency when
+  making areas transparent
 
 ## Installation
 
@@ -59,14 +66,11 @@ pip install -e .
 Launch the visual image studio to create images with drawing tools:
 
 ```bash
-# Launch the studio GUI
-python -m gui_image_studio
+# For PyPI installations (recommended)
+gui-image-studio-designer
 
-# Or use the launcher script
+# For development/contributors (GitHub repo only)
 python launch_designer.py
-
-# Or programmatically
-python -c "import gui_image_studio; gui_image_studio.launch_designer()"
 ```
 
 The Image Studio GUI provides:
@@ -228,7 +232,15 @@ Load and return an image object for the specified GUI framework.
 - `frame_delay` (int): Animation frame delay in ms, default 100
 - `format_override` (str): Convert to format ("PNG", "JPEG", etc.), default None
 
-#### `embed_images_from_folder(folder_path, output_file="embedded_images.py", compression_quality=85)`
+#### embed_images_from_folder
+
+```python
+embed_images_from_folder(
+    folder_path,
+    output_file="embedded_images.py",
+    compression_quality=85
+)
+```
 
 Process all images in a folder and generate an embedded Python module.
 
@@ -236,9 +248,11 @@ Process all images in a folder and generate an embedded Python module.
 
 - `folder_path` (str): Path to folder containing images
 - `output_file` (str): Output Python file path, default "embedded_images.py"
-- `compression_quality` (int): JPEG/WebP compression quality (1-100), default 85
+- `compression_quality` (int): JPEG/WebP compression quality (1-100),
+  default 85
 
 **Supported Formats:**
+
 - PNG, JPG, JPEG, BMP, TIFF, GIF, WebP, ICO
 
 ### Sample Creation
@@ -285,7 +299,7 @@ gui-image-studio/
 ├── LICENSE                   # License file
 ├── pyproject.toml            # Modern Python packaging
 ├── setup.py                  # Legacy packaging support
-└── launch_designer.py        # GUI launcher script
+└── launch_designer.py        # Development launcher script (GitHub repo only)
 ```
 
 ## Requirements
@@ -297,11 +311,17 @@ gui-image-studio/
 
 ## Contributing
 
+We welcome contributions! Please see our [Development Roadmap](DEVELOPMENT_ROADMAP.md)
+for planned features and development priorities.
+
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Commit your changes (`git commit -m 'Add amazing feature'`)
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
+
+For major features, please check the roadmap and consider opening an issue
+for discussion first.
 
 ## License
 
@@ -310,13 +330,37 @@ file for details.
 
 ## Changelog
 
+### Version 1.1.0
+
+- **Info Button Feature**: Added comprehensive image information display with
+  detailed analysis
+  - Shows file properties, metadata, and technical specifications
+  - Displays color analysis with unique colors count and distribution
+  - Provides memory usage estimates and smart recommendations
+  - Features professional icon-based UI with fallback support
+  - Located in Image Properties section next to Apply button
+- **Transparency Preservation**: Enhanced transparency preservation in image
+  processing
+  - Existing transparent areas are now preserved when making additional areas
+    transparent
+  - Semi-transparent pixels maintain their exact alpha values
+  - Only processes non-transparent pixels that match the selected color
+  - Enhanced user feedback shows existing vs. newly transparent pixel counts
+- **Technical Improvements**: Better path resolution for icon loading and
+  enhanced error handling
+
 ### Version 1.0.1
 
-- **Security Fixes**: Fixed partial executable path vulnerability in Windows print function
-- **Documentation Updates**: Complete documentation overhaul with updated API references
-- **Bug Fixes**: Fixed Python code block syntax errors and GitHub Actions workflow issues
-- **Transparency Features**: Enhanced transparency preservation in image processing
-- **Info Button**: Added comprehensive image information display with detailed analysis
+- **Security Fixes**: Fixed partial executable path vulnerability in Windows
+  print function
+- **Documentation Updates**: Complete documentation overhaul with updated API
+  references
+- **Bug Fixes**: Fixed Python code block syntax errors and GitHub Actions
+  workflow issues
+- **Transparency Features**: Enhanced transparency preservation in image
+  processing
+- **Info Button**: Added comprehensive image information display with detailed
+  analysis
 
 ### Version 1.0.0
 
@@ -325,7 +369,8 @@ file for details.
 - Core image embedding functionality with `embed_images_from_folder()`
 - Advanced image loading with `get_image()` function
 - Support for tkinter and customtkinter frameworks
-- Image transformation features (resize, rotate, tint, contrast, saturation)
+- Image transformation features (resize, rotate, tint, contrast,
+  saturation)
 - Theme support (default, dark, light)
 - Animated GIF support with frame processing
 - Command line interface with console scripts
@@ -343,4 +388,5 @@ If you encounter any issues or have questions, please
 - Built with [Pillow](https://pillow.readthedocs.io/) for image processing
 - Supports [customtkinter](https://github.com/TomSchimansky/CustomTkinter)
   for modern GUI development
-- Inspired by the need for easy image embedding in Python GUI applications
+- Inspired by the need for easy image embedding in Python GUI
+  applications

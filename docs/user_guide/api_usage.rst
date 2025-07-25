@@ -13,8 +13,7 @@ GUI Image Studio provides a simple yet powerful API centered around a few key fu
     from gui_image_studio import (
         get_image,                    # Load and transform images
         embed_images_from_folder,     # Create embedded image resources
-        create_sample_images,         # Generate sample images
-        launch_designer              # Launch visual designer
+        create_sample_images          # Generate sample images
     )
 
 Primary Functions
@@ -149,24 +148,27 @@ Generate sample images for testing:
     # Create in specific directory
     create_sample_images("test_data/samples")
 
-launch_designer()
-~~~~~~~~~~~~~~~~~
+Launching the Visual Designer
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Launch the visual image designer:
+The visual image designer is launched using the command-line interface:
 
-.. code-block:: python
+**Command:**
 
-    def launch_designer() -> None:
+.. code-block:: bash
+
+    gui-image-studio-designer
 
 **Examples:**
 
-.. code-block:: python
+.. code-block:: bash
 
-    # Launch designer
-    launch_designer()
+    # Launch the visual designer
+    gui-image-studio-designer
 
-    # Launch from command line
-    python -c "from gui_image_studio import launch_designer; launch_designer()"
+    # Launch from Python script (using subprocess)
+    import subprocess
+    subprocess.run(["gui-image-studio-designer"])
 
 Advanced API Usage
 ------------------

@@ -528,9 +528,11 @@ CLI Tools Not Found
     # Reinstall with --force-reinstall
     pip install --force-reinstall gui-image-studio
 
-    # Use Python module syntax as alternative
-    python -m gui_image_studio
-    python -c "from gui_image_studio import launch_designer; launch_designer()"
+    # Try the CLI command
+    gui-image-studio-designer
+
+    # For development/contributors (GitHub repo only)
+    python launch_designer.py
 
 **Issue: Permission denied on Linux/macOS**
 
@@ -780,7 +782,7 @@ macOS Issues
     brew install python-tk
 
     # For GUI apps, may need to run from terminal
-    python3 -c "from gui_image_studio import launch_designer; launch_designer()"
+    gui-image-studio-designer
 
 Linux Issues
 ~~~~~~~~~~~~

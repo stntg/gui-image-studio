@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Future features will be documented here
+
+### Changed
+
+- Future changes will be documented here
+
+### Fixed
+
+- Future fixes will be documented here
+
+## [1.1.0] - 2024-12-20
+
+### Added
+
 - **Info Button**: Comprehensive image information display in Image Properties section
   - Shows detailed file properties, metadata, and technical specifications
   - Displays color analysis with unique colors count and most common colors
@@ -31,7 +45,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved transparency operation feedback with detailed pixel statistics
 - Enhanced error handling in image information display
 - Better path resolution for icon loading across different environments
-
 
 ## [1.0.1] - 2025-06-25
 
@@ -161,6 +174,8 @@ When creating new releases, use this template:
 ## Version History Summary
 
 - **v1.0.0**: Initial release with core functionality
+- **v1.0.1**: Security fixes and documentation updates
+- **v1.1.0**: Info button feature and transparency preservation enhancements
 - **Future versions**: Will be documented here as they are released
 
 ## Migration Guides

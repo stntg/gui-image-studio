@@ -222,7 +222,7 @@ Common Workflows
 3. Apply appropriate styling
 4. Export as PNG with transparency
 
-**Animation Creation Workflow**
+**Animation Creation Workflow** To be implemented in image_studio app
 
 1. Plan your animation frames
 2. Create base images

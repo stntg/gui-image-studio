@@ -13,14 +13,11 @@ Launching the Designer
 
 .. code-block:: bash
 
-    # Launch from command line
+    # For PyPI installations (recommended)
     gui-image-studio-designer
 
-    # Or from Python
-    python -c "from gui_image_studio import launch_designer; launch_designer()"
-
-    # Or using the module
-    python -m gui_image_studio
+    # For development/contributors (GitHub repo only)
+    python launch_designer.py
 
 Main Window Layout
 ~~~~~~~~~~~~~~~~~~
@@ -390,14 +387,18 @@ Core Functions
     # Create in specific directory
     create_sample_images(output_dir="my_samples")
 
-**launch_designer() Function:**
+**Launching the Visual Designer:**
+
+.. code-block:: bash
+
+    # Launch the visual designer
+    gui-image-studio-designer
 
 .. code-block:: python
 
-    from gui_image_studio import launch_designer
-
-    # Launch the visual designer
-    launch_designer()
+    # Or from Python using subprocess
+    import subprocess
+    subprocess.run(["gui-image-studio-designer"])
 
 Integration Patterns
 ~~~~~~~~~~~~~~~~~~~~~
@@ -531,18 +532,23 @@ Theme Customization
 
 The designer supports theme customization:
 
+.. code-block:: bash
+
+    # Launch with theme options
+    gui-image-studio-designer --theme dark
+
 .. code-block:: python
 
-    # In your application
+    # Or programmatically with theme setup
     import customtkinter as ctk
-    from gui_image_studio import launch_designer
+    import subprocess
 
     # Set global theme
     ctk.set_appearance_mode("dark")  # "light", "dark", "system"
     ctk.set_default_color_theme("blue")  # "blue", "green", "dark-blue"
 
     # Launch with theme
-    launch_designer()
+    subprocess.run(["gui-image-studio-designer", "--theme", "dark"])
 
 Workspace Layout
 ~~~~~~~~~~~~~~~~

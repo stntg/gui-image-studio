@@ -107,9 +107,8 @@ base64-encoded images that work across multiple frameworks and use cases.
 ### Step 1: Create Your Images
 
 1. Launch GUI Image Studio:
-   - `python launch_designer.py`
-   - `python -m gui_image_studio`
-   - `gui-image-studio-designer` (after installation)
+   - `gui-image-studio-designer` (PyPI installation - recommended)
+   - `python launch_designer.py` (development/GitHub repo only)
 2. Click "Create Your First Image!" or "Load an Existing Image"
 3. Use the drawing tools to create your graphics:
    - **Brush**: Freehand drawing
@@ -136,27 +135,27 @@ base64-encoded images that work across multiple frameworks and use cases.
 
 ## 💡 **Pro Tips**
 
-### For Pixel Art:
+### For Pixel Art
 
 - Use the **Pencil** tool
 - Enable the **Grid** option
 - Zoom in 4x or more
 - Each grid square = 1 pixel
 
-### For Icons:
+### For Icons
 
 - Keep images small (16x16, 32x32, 64x64)
 - Use simple, clear designs
 - Consider transparency (PNG format)
 
-### For Game Sprites:
+### For Game Sprites
 
 - Use consistent sizing
 - Consider animation frames
 - Optimize for performance
 - Use appropriate color palettes
 
-### For Web Graphics:
+### For Web Graphics
 
 - Consider file size vs quality
 - Use appropriate formats

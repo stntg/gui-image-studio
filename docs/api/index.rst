@@ -29,10 +29,11 @@ Core Image Processing
 GUI Application
 ~~~~~~~~~~~~~~~
 
-.. autosummary::
-   :toctree: _autosummary
+The visual designer is launched using the CLI command:
 
-   gui_image_studio.launch_designer
+.. code-block:: bash
+
+   gui-image-studio-designer
 
 Resource Generation
 ~~~~~~~~~~~~~~~~~~~
@@ -74,7 +75,6 @@ For most applications, you'll primarily use these functions:
        get_image,                    # Load images from files or resources
        embed_images_from_folder,     # Generate embedded images
        create_sample_images,         # Create sample images
-       launch_designer,              # Launch GUI designer
    )
 
 Basic Usage Pattern
@@ -253,10 +253,11 @@ Examples by Category
 .. code-block:: python
 
    import tkinter as tk
-   from gui_image_studio import get_image, launch_designer
+   from gui_image_studio import get_image
+   import subprocess
 
    # Launch the GUI designer
-   launch_designer()
+   subprocess.run(["gui-image-studio-designer"])
 
    # Or use images in your own GUI
    root = tk.Tk()

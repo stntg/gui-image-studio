@@ -8,26 +8,37 @@ and programmatic APIs for seamless image integration.
 
 ## Package Structure
 
-```
+```text
 gui-image-studio/
 ├── src/
-│   ├── gui_image_studio/          # Main package
+│   ├── gui_image_studio/         # Main package
 │   │   ├── __init__.py           # Package initialization
 │   │   ├── __main__.py           # Module entry point
 │   │   ├── cli.py                # Command line interface
-│   │   ├── image_studio.py       # GUI Image Studio application
 │   │   ├── generator.py          # Image embedding utilities
 │   │   ├── image_loader.py       # Image loading with transformations
 │   │   ├── sample_creator.py     # Sample image creation
-│   │   └── embedded_images.py    # Default embedded images
+│   │   ├── embedded_images.py    # Default embedded images
+│   │   ├── embedded_icons.py     # Application icons
+│   │   ├── py.typed              # Type hints marker
+│   │   ├── image_studio.py       # Legacy GUI application
+│   │   └── image_studio/         # Modular GUI Image Studio
+│   │       ├── __init__.py       # Studio package initialization
+│   │       ├── main_app.py       # Main application entry point
+│   │       ├── core/             # Core functionality modules
+│   │       ├── ui/               # User interface components
+│   │       ├── toolkit/          # Drawing tools and resources
+│   │       └── utils/            # Utility functions
 ├── launch_designer.py            # Application launcher
 ├── tests/                        # Test directory
 ├── examples/                     # Usage examples
 ├── docs/                         # Documentation
+├── scripts/                      # Development scripts
+├── sample_images/                # Sample images for testing
 ├── USER_GUIDE.md                 # Complete user guide
 ├── IMAGE_USAGE_GUIDE.md          # Usage examples
 ├── QUICK_REFERENCE.md            # Quick reference card
-└── PACKAGE_DOCUMENTATION.md     # This file
+└── PACKAGE_DOCUMENTATION.md      # This file
 ```
 
 ## Components
@@ -36,13 +47,15 @@ gui-image-studio/
 
 The main interactive application for creating and editing images.
 
-#### Key Classes:
+#### Studio Classes
+
 - **`ImageDesignerGUI`**: Main application class
 - **`NewImageDialog`**: Dialog for creating new images
 - **`CodePreviewWindow`**: Code generation preview
 - **`HelpWindow`**: Comprehensive help system
 
-#### Features:
+#### Studio Features
+
 - 🎨 **Drawing Tools**: Brush, Pencil, Eraser, Shapes, Text, Fill
 - 🖼️ **Image Management**: Create, load, edit, organize images
 - 📱 **Live Preview**: Real-time preview in different contexts
@@ -54,10 +67,12 @@ The main interactive application for creating and editing images.
 
 Utilities for converting images to embedded Python code.
 
-#### Key Functions:
+#### Generator Functions
+
 - **`embed_images_from_folder()`**: Convert folder of images to Python code
 
-#### Features:
+#### Generator Features
+
 - 📁 **Batch Processing**: Convert multiple images at once
 - 🗂️ **Theme Organization**: Automatic categorization by filename
 - ⚙️ **Quality Control**: Adjustable compression settings
@@ -67,14 +82,17 @@ Utilities for converting images to embedded Python code.
 
 Advanced image loading with transformations and framework support.
 
-#### Key Functions:
+#### Loader Functions
+
 - **`get_image()`**: Main function for loading images with transformations
 - **`get_image_from_config()`**: Load image using configuration object
 
-#### Key Classes:
+#### Loader Classes
+
 - **`ImageConfig`**: Configuration dataclass for image processing parameters
 
-#### Features:
+#### Loader Features
+
 - 🛠️ **Framework Support**: tkinter and customtkinter
 - 🎨 **Image Transformations**: resize, rotate, tint, contrast, saturation
 - 🎬 **Animated GIF Support**: Full animation processing
@@ -85,12 +103,14 @@ Advanced image loading with transformations and framework support.
 ## Installation
 
 ### From Source
+
 ```bash
 cd gui-image-studio
 pip install -e .
 ```
 
 ### Dependencies
+
 ```bash
 pip install pillow customtkinter
 ```
@@ -100,14 +120,11 @@ pip install pillow customtkinter
 ### 1. Interactive Image Creation
 
 ```bash
-# Launch the GUI application
-python launch_designer.py
-
-# Or use the package
-python -m gui_image_studio
-
-# Or use the CLI command
+# Launch the GUI application (PyPI installation)
 gui-image-studio-designer
+
+# For development/contributors (GitHub repo only)
+python launch_designer.py
 ```
 
 ### 2. Programmatic Image Embedding
@@ -199,6 +216,7 @@ Process all images in a folder and generate an embedded Python module.
 - `compression_quality` (int): JPEG/WebP compression quality (1-100), default 85
 
 **Supported Formats:**
+
 - PNG, JPG, JPEG, BMP, TIFF, GIF, WebP, ICO
 
 #### `create_sample_images(output_dir="sample_images")`
@@ -217,12 +235,14 @@ gui-image-studio-designer
 gui-image-studio-create-samples
 
 # Generate embedded images from a folder
-gui-image-studio-generate --folder images/ --output embedded_images.py --quality 85
+gui-image-studio-generate --folder images/ --output embedded_images.py \
+    --quality 85
 ```
 
 ## Framework Integration
 
 ### Tkinter Integration
+
 ```python
 import tkinter as tk
 import gui_image_studio
@@ -241,6 +261,7 @@ root.mainloop()
 ```
 
 ### CustomTkinter Integration
+
 ```python
 import customtkinter as ctk
 import gui_image_studio
@@ -261,6 +282,7 @@ root.mainloop()
 ## Best Practices
 
 ### Image Creation
+
 1. **Plan your design** before starting
 2. **Use appropriate sizes** for your use case
 3. **Test at actual size**, not zoomed in
@@ -268,6 +290,7 @@ root.mainloop()
 5. **Save frequently** during creation
 
 ### Code Integration
+
 1. **Generate code early** to test integration
 2. **Use meaningful names** for images and themes
 3. **Keep image references** to prevent garbage collection
@@ -275,6 +298,7 @@ root.mainloop()
 5. **Document your image usage** patterns
 
 ### Performance Optimization
+
 1. **Use appropriate quality settings** (70-85 recommended)
 2. **Optimize image sizes** for purpose
 3. **Group related images** by theme
@@ -286,6 +310,7 @@ root.mainloop()
 ### Common Issues
 
 #### Import Errors
+
 ```python
 # Ensure proper installation
 pip install pillow customtkinter
@@ -296,6 +321,7 @@ sys.path.append('/path/to/gui-image-studio/src')
 ```
 
 #### Image Display Issues
+
 ```python
 # Keep image references in tkinter
 button.image = photo  # Prevents garbage collection
@@ -305,6 +331,7 @@ image.save('output.png', 'PNG')  # Not JPEG for transparency
 ```
 
 #### Performance Issues
+
 ```python
 # Optimize image sizes
 if image.width > 512 or image.height > 512:
@@ -323,17 +350,20 @@ embed_images_from_folder(folder, output, quality=75)  # Not 100
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE)
+file for details.
 
 ## Support
 
 ### Documentation
+
 - **USER_GUIDE.md**: Complete user guide
 - **IMAGE_USAGE_GUIDE.md**: Usage examples and patterns
 - **QUICK_REFERENCE.md**: Quick reference card
 - **Built-in Help**: Press F1 in the application
 
 ### Getting Help
+
 1. Check the built-in help system (F1)
 2. Review the documentation files
 3. Check the troubleshooting section

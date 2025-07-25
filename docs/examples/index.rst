@@ -145,16 +145,14 @@ Quick Start Examples
 
 **Launch GUI Application**
 
-.. code-block:: python
-
-    from gui_image_studio import launch_designer
+.. code-block:: bash
 
     # Launch the Image Studio GUI
-    launch_designer()
+    gui-image-studio-designer
 
-    # Or programmatically
-    import gui_image_studio
-    gui_image_studio.launch_designer()
+    # Or programmatically from Python
+    import subprocess
+    subprocess.run(["gui-image-studio-designer"])
 
 Example Data
 ------------

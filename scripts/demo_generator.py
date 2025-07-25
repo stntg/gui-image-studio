@@ -5,14 +5,19 @@ from pathlib import Path
 from typing import Tuple
 
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont, ImageOps
 from moviepy import ImageSequenceClip
+from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 # Monkey-patch gui-image-studio so it returns raw PIL Images
 import gui_image_studio.image_loader as _loader
+
 _loader._create_framework_image = lambda pil_img, framework, size: pil_img
 
-from gui_image_studio.image_loader import embedded_images, ImageConfig, get_image_from_config
+from gui_image_studio.image_loader import (
+    ImageConfig,
+    embedded_images,
+    get_image_from_config,
+)
 
 DEMO_SIZE = (400, 300)
 FONT = ImageFont.load_default()
@@ -49,7 +54,14 @@ def create_placeholder(path: Path, size: Tuple[int, int] = DEMO_SIZE) -> None:
     text = "Demo"
     bbox = draw.textbbox((0, 0), text, font=FONT)
     tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
-    draw.text((w - tw - 10, h - th - 10), text, font=FONT, fill="white", stroke_width=1, stroke_fill="black")
+    draw.text(
+        (w - tw - 10, h - th - 10),
+        text,
+        font=FONT,
+        fill="white",
+        stroke_width=1,
+        stroke_fill="black",
+    )
 
     path.parent.mkdir(parents=True, exist_ok=True)
     img.save(path)
@@ -85,7 +97,7 @@ def make_frames() -> list[Image.Image]:
             image_name="source.png",
             theme="default",
             framework="tkinter",
-            size=(240, 180)
+            size=(240, 180),
         ),
     ]
 
@@ -102,12 +114,14 @@ def make_frames() -> list[Image.Image]:
 
     frames = []
     for cfg in configs:
-        pil = get_image_from_config(cfg)                   # raw PIL via monkey-patch
+        pil = get_image_from_config(cfg)  # raw PIL via monkey-patch
         fit = ImageOps.fit(pil.convert("RGBA"), DEMO_SIZE)  # uniform sizing
         draw = ImageDraw.Draw(fit)
         # dynamic label top-left
         txt = label_for(cfg)
-        draw.text((10, 10), txt, font=FONT, fill="white", stroke_width=2, stroke_fill="black")
+        draw.text(
+            (10, 10), txt, font=FONT, fill="white", stroke_width=2, stroke_fill="black"
+        )
         frames.append(fit)
 
     return frames

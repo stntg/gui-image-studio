@@ -54,13 +54,10 @@ Launch the Application
 
 .. code-block:: bash
 
-    # Launch the main GUI application
+    # For PyPI installations (recommended)
     gui-image-studio-designer
 
-    # Or use Python module
-    python -m gui_image_studio
-
-    # Or use the launcher script
+    # For development/contributors (GitHub repo only)
     python launch_designer.py
 
 Basic Usage
