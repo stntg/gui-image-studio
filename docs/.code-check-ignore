@@ -6,5 +6,5 @@
 contributing.rst
 license.rst
 changelog.rst
-api_usage.rst
+user_guide/api_usage.rst
 api/generator.rst
