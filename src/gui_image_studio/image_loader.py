@@ -1,15 +1,17 @@
+from __future__ import annotations
+# Standard library
 import base64
 from dataclasses import dataclass
 from io import BytesIO
 from typing import Any, Optional, Tuple
 
+# Third-party
 from PIL import Image, ImageEnhance, ImageOps, ImageSequence
 
-# Try to import embedded_images, create empty dict if not found
+# Local application import
 try:
     from . import embedded_images
 except ImportError:
-    # Create a fallback embedded_images module
     class EmbeddedImages:
         embedded_images = {"default": {}}
 

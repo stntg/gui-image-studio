@@ -7,6 +7,9 @@ on:
       - 'src/**'
       - '.github/workflows/docs*.yml'
 
+  # Allow manual triggering
+  workflow_dispatch:
+
 permissions:
   contents: read
   pull-requests: write

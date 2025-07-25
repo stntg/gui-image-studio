@@ -8,17 +8,15 @@ import numpy as np
 from moviepy import ImageSequenceClip
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 
-# Monkey-patch gui-image-studio so it returns raw PIL Images
 import gui_image_studio.image_loader as _loader
-
-_loader._create_framework_image = lambda pil_img, framework, size: pil_img
-
 from gui_image_studio.image_loader import (
     ImageConfig,
     embedded_images,
     get_image_from_config,
 )
 
+# Monkey-patch gui-image-studio so it returns raw PIL Images
+_loader._create_framework_image = lambda pil_img, framework, size: pil_img
 DEMO_SIZE = (400, 300)
 FONT = ImageFont.load_default()
 
