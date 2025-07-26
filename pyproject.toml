@@ -80,6 +80,7 @@ Repository = "https://github.com/stntg/gui-image-studio"
 gui-image-studio-generate = "gui_image_studio.cli:generate_embedded_images"
 gui-image-studio-create-samples = "gui_image_studio.cli:create_sample_images"
 gui-image-studio-designer = "gui_image_studio.cli:launch_designer"
+gui-image-studio-process = "gui_image_studio.cli:image_processor"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

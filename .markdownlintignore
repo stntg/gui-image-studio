@@ -1,4 +1,7 @@
+# ignore listed files and folders in markdownlint
+
 LICENSE
 LICENSE.txt
 LICENSE.md
 CHANGELOG.md
+docs/.code-check-ignore

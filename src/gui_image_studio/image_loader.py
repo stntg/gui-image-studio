@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 # Standard library
 import base64
 from dataclasses import dataclass
@@ -6,16 +7,21 @@ from io import BytesIO
 from typing import Any, Optional, Tuple
 
 # Third-party
-from PIL import Image, ImageEnhance, ImageOps, ImageSequence
+from PIL import Image, ImageSequence
 
-# Local application import
+# Local application imports
 try:
     from . import embedded_images
 except ImportError:
+
     class EmbeddedImages:
         embedded_images = {"default": {}}
 
     embedded_images: Any = EmbeddedImages()
+
+# Import unified image processing core
+from .core.image_effects import apply_transformations
+from .core.io_utils import load_image_from_base64
 
 
 @dataclass
@@ -73,14 +79,13 @@ def _get_image_data(image_name: str, theme: str) -> Image.Image:
     if not theme_dict or image_name not in theme_dict:
         raise ValueError(f"Image '{image_name}' not found in theme '{theme}'.")
 
-    image_data = base64.b64decode(theme_dict[image_name])
-    stream = BytesIO(image_data)
-    return Image.open(stream)
+    # Use the unified core for loading base64 data
+    return load_image_from_base64(theme_dict[image_name])
 
 
 def _apply_image_transformations(img: Image.Image, **transforms: Any) -> Image.Image:
     """
-    Apply various transformations to a PIL Image.
+    Apply various transformations to a PIL Image using the unified core.
 
     Args:
         img (PIL.Image): The image to transform.
@@ -89,53 +94,8 @@ def _apply_image_transformations(img: Image.Image, **transforms: Any) -> Image.I
     Returns:
         PIL.Image: The transformed image.
     """
-    # Extract transformation parameters
-    grayscale = transforms.get("grayscale", False)
-    rotate = transforms.get("rotate", 0)
-    transparency = transforms.get("transparency", 1.0)
-    size = transforms.get("size")
-    contrast = transforms.get("contrast", 1.0)
-    saturation = transforms.get("saturation", 1.0)
-    tint_color = transforms.get("tint_color")
-    tint_intensity = transforms.get("tint_intensity", 0.0)
-    format_override = transforms.get("format_override")
-
-    # Apply transformations in sequence
-    if grayscale:
-        img = ImageOps.grayscale(img).convert("RGBA")
-
-    if rotate:
-        img = img.rotate(rotate, expand=True)
-
-    if transparency < 1.0:
-        img = ImageEnhance.Brightness(img).enhance(transparency)
-
-    if size:
-        # Use LANCZOS resampling - handle different Pillow versions
-        try:
-            resample = Image.Resampling.LANCZOS
-        except AttributeError:
-            resample = Image.LANCZOS  # type: ignore
-        img = img.resize(size, resample)
-
-    if contrast != 1.0:
-        img = ImageEnhance.Contrast(img).enhance(contrast)
-
-    if saturation != 1.0:
-        img = ImageEnhance.Color(img).enhance(saturation)
-
-    if tint_color is not None and tint_intensity > 0.0:
-        if img.mode != "RGBA":
-            img = img.convert("RGBA")
-        overlay = Image.new("RGBA", img.size, tint_color + (255,))
-        img = Image.blend(img, overlay, tint_intensity)
-
-    if format_override:
-        buffer = BytesIO()
-        img.save(buffer, format=format_override)
-        img = Image.open(BytesIO(buffer.getvalue()))
-
-    return img
+    # Use the unified image processing core
+    return apply_transformations(img, **transforms)
 
 
 def _create_framework_image(

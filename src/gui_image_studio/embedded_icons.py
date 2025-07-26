@@ -38,5 +38,9 @@ def cleanup_icon(icon_path: Optional[str]) -> None:
     if icon_path and os.path.exists(icon_path):
         try:
             os.unlink(icon_path)
-        except:
-            pass  # Ignore cleanup errors
+        except (OSError, IOError, PermissionError) as e:
+            # Log cleanup errors but don't raise - this is a cleanup operation
+            print(f"Warning: Could not remove temporary icon file {icon_path}: {e}")
+        except Exception as e:
+            # Catch any other unexpected errors during cleanup
+            print(f"Warning: Unexpected error removing icon file {icon_path}: {e}")

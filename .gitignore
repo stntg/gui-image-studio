@@ -152,10 +152,7 @@ sample_images/
 *.bak
 
 # Dev folder - allow documentation but ignore temporary files
-!dev/
-dev/temp/
-dev/*.tmp
-dev/test_env/
+dev/
 
 # Local testing files
 

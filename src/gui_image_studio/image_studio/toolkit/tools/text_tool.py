@@ -93,7 +93,9 @@ class TextTool(BaseTool):
             # Fallback to default font
             try:
                 font = ImageFont.load_default()
-            except:
+            except (OSError, IOError, ImportError) as e:
+                # Default font loading failed, use None (PIL will use built-in font)
+                print(f"Warning: Could not load default font: {e}")
                 font = None
 
         # Convert hex color to RGBA tuple for PIL

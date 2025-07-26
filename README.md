@@ -128,8 +128,6 @@ root.mainloop()
 ### Command Line Interface
 
 ```bash
-# Launch the Image Studio GUI
-python -m gui_image_studio
 # Or use the dedicated command
 gui-image-studio-designer
 
@@ -291,14 +289,25 @@ gui-image-studio/
 │   ├── image_loader.py       # Image loading utilities
 │   ├── image_studio.py       # GUI Image Studio application
 │   ├── sample_creator.py     # Sample image creation
-│   └── embedded_images.py    # Default embedded images
-├── examples/                 # Usage examples
-├── tests/                    # Test files
-├── docs/                     # Documentation
+│   ├── embedded_images.py    # Default embedded images
+│   ├── embedded_icons.py     # Embedded UI icons
+│   ├── py.typed              # Type hints marker
+│   └── image_studio/         # Modular Image Studio components
+│       ├── main_app.py       # Main application entry
+│       ├── core/             # Core functionality modules
+│       ├── ui/               # User interface components
+│       ├── toolkit/          # Drawing tools and icons
+│       └── utils/            # Utility functions
+├── examples/                 # Usage examples and demos
+├── tests/                    # Test files and test data
+├── docs/                     # Sphinx documentation
+├── scripts/                  # Development and build scripts
 ├── README.md                 # This file
 ├── LICENSE                   # License file
+├── DEVELOPMENT_ROADMAP.md    # Development roadmap
 ├── pyproject.toml            # Modern Python packaging
 ├── setup.py                  # Legacy packaging support
+├── tox.ini                   # Testing configuration
 └── launch_designer.py        # Development launcher script (GitHub repo only)
 ```
 
@@ -308,6 +317,7 @@ gui-image-studio/
 - Pillow (PIL) >= 8.0.0
 - tkinter (usually included with Python)
 - customtkinter >= 5.0.0 (optional, for customtkinter support)
+- threepanewindows (for advanced window management)
 
 ## Contributing
 
