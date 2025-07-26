@@ -30,6 +30,14 @@ class EffectParameter:
         if value is None and self.default is not None:
             return self.default
 
+        # Check choices first, before type conversion
+        if self.choices is not None:
+            if value not in self.choices:
+                raise ValueError(
+                    f"Value {value} not in allowed choices: {self.choices}"
+                )
+            return value
+
         # Type conversion
         if self.param_type == bool:
             if isinstance(value, str):
@@ -44,12 +52,6 @@ class EffectParameter:
             return converted
         elif self.param_type == str:
             return str(value)
-        elif self.choices is not None:
-            if value not in self.choices:
-                raise ValueError(
-                    f"Value {value} not in allowed choices: {self.choices}"
-                )
-            return value
         else:
             return self.param_type(value)
 

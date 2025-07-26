@@ -181,16 +181,23 @@ class TestFilters:
 
     def test_blur_filter(self, sample_image):
         """Test Gaussian blur."""
-        blurred = apply_blur(sample_image, 5.0)
-        assert blurred.size == sample_image.size
-        assert blurred.mode == sample_image.mode
+        # Create a test image with some pattern (not solid color)
+        test_image = Image.new("RGBA", (100, 100), (255, 255, 255, 255))
+        # Add a black square in the center to create edges
+        for x in range(40, 60):
+            for y in range(40, 60):
+                test_image.putpixel((x, y), (0, 0, 0, 255))
 
-        # Blurred image should be different from original
-        assert blurred.tobytes() != sample_image.tobytes()
+        blurred = apply_blur(test_image, 5.0)
+        assert blurred.size == test_image.size
+        assert blurred.mode == test_image.mode
+
+        # Blurred image should be different from original (edges should be softened)
+        assert blurred.tobytes() != test_image.tobytes()
 
         # No blur
-        no_blur = apply_blur(sample_image, 0.0)
-        assert no_blur.tobytes() == sample_image.tobytes()
+        no_blur = apply_blur(test_image, 0.0)
+        assert no_blur.tobytes() == test_image.tobytes()
 
         # Test edge cases
         with pytest.raises(ValueError):

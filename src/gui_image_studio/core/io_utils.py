@@ -46,7 +46,7 @@ def load_image_from_data(image_data: bytes) -> Image.Image:
         image_data: Raw image bytes
 
     Returns:
-        PIL Image object in RGBA mode
+        PIL Image object (preserves original mode for JPEG, converts to RGBA for others)
 
     Raises:
         IOError: If the image data cannot be processed
@@ -54,7 +54,12 @@ def load_image_from_data(image_data: bytes) -> Image.Image:
     try:
         stream = BytesIO(image_data)
         image = Image.open(stream)
-        return image.convert("RGBA")
+
+        # Preserve RGB mode for JPEG images, convert others to RGBA
+        if image.format == "JPEG" and image.mode == "RGB":
+            return image
+        else:
+            return image.convert("RGBA")
     except Exception as e:
         raise IOError(f"Cannot process image data: {e}")
 
@@ -102,7 +107,10 @@ def save_image(
     path = Path(path)
 
     # Create parent directories if they don't exist
-    path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+    except (ValueError, OSError) as e:
+        raise IOError(f"Cannot create directory for {path}: {e}")
 
     # Infer format from extension if not provided
     if format is None:

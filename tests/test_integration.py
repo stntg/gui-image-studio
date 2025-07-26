@@ -30,8 +30,20 @@ def temp_image_file(sample_image):
     with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
         sample_image.save(tmp.name, "PNG")
         yield Path(tmp.name)
-        # Cleanup
-        Path(tmp.name).unlink(missing_ok=True)
+        # Cleanup with retry for Windows
+        safe_unlink(tmp.name)
+
+
+def safe_unlink(path):
+    """Safely unlink a file with retry for Windows."""
+    import time
+
+    for _ in range(3):
+        try:
+            Path(path).unlink(missing_ok=True)
+            break
+        except PermissionError:
+            time.sleep(0.1)
 
 
 class TestCLIGUIConsistency:
@@ -240,11 +252,11 @@ class TestPerformanceConsistency:
 
         # Apply multiple transformations
         transformations = [
-            {"size": (80, 80)},
-            {"rotate": 15},
             {"contrast": 1.1},
             {"blur_radius": 0.5},
             {"saturation": 1.2},
+            {"rotate": 15},
+            {"size": (80, 80)},  # Apply resize last to ensure final size
         ]
 
         for transform in transformations:

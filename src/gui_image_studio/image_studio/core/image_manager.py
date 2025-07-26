@@ -73,8 +73,15 @@ class ImageManager:
             image = self.current_images[name]
             preview_image = create_thumbnail(image, (64, 64))
 
-            # Convert to PhotoImage
-            self.image_previews[name] = ImageTk.PhotoImage(preview_image)
+            # Convert to PhotoImage - handle case where no tkinter root exists
+            try:
+                self.image_previews[name] = ImageTk.PhotoImage(preview_image)
+            except RuntimeError as e:
+                if "no default root window" in str(e):
+                    # In testing or headless environment, store the PIL image instead
+                    self.image_previews[name] = preview_image
+                else:
+                    raise
         except Exception as e:
             print(f"Warning: Failed to update preview for {name}: {e}")
 

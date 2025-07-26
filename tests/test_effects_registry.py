@@ -374,6 +374,18 @@ class TestEffectDecorators:
 class TestBuiltinEffectsDiscovery:
     """Test discovery of built-in effects."""
 
+    def setup_method(self):
+        """Ensure effects are registered before each test."""
+        # Import the module to trigger effect registration
+        import importlib
+
+        from gui_image_studio.core import image_effects
+        from gui_image_studio.core.effects_registry import discover_and_register_effects
+
+        # Force reload to re-trigger decorator registration
+        importlib.reload(image_effects)
+        discover_and_register_effects()
+
     def test_builtin_effects_registered(self):
         """Test that built-in effects are automatically registered."""
         # The effects should be auto-registered when the module is imported
@@ -426,6 +438,18 @@ class TestBuiltinEffectsDiscovery:
 
 class TestEffectApplication:
     """Test actual effect application."""
+
+    def setup_method(self):
+        """Ensure effects are registered before each test."""
+        # Import the module to trigger effect registration
+        import importlib
+
+        from gui_image_studio.core import image_effects
+        from gui_image_studio.core.effects_registry import discover_and_register_effects
+
+        # Force reload to re-trigger decorator registration
+        importlib.reload(image_effects)
+        discover_and_register_effects()
 
     def test_sepia_effect(self, sample_image):
         """Test the sepia effect."""

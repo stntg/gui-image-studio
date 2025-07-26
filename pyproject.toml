@@ -210,7 +210,7 @@ exclude_lines = [
     "if TYPE_CHECKING:",
 ]
 show_missing = true
-fail_under = 7
+fail_under = 20
 precision = 1
 
 [tool.coverage.html]
