@@ -663,3 +663,11 @@ def apply_color_balance(
 
 
 # Note: Auto-discovery of effects is handled by the effects_registry module
+
+# Trigger discovery of legacy effects for backward compatibility
+try:
+    from .effects_registry import discover_and_register_effects
+
+    discover_and_register_effects()
+except ImportError:
+    pass

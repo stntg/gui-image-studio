@@ -50,7 +50,7 @@ __author__ = "Stan Griffiths"
 __email__ = "stantgriffiths@gmail.com"
 __license__ = "MIT"
 
-from .generator import embed_images_from_folder
+from .core.code_generation import embed_images_from_folder
 
 # Import main functionality
 from .image_loader import get_image

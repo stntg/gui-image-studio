@@ -440,3 +440,88 @@ def discover_and_register_effects():
 
 # Auto-discovery will be called after image_effects module is fully loaded
 # to avoid circular import issues
+
+
+# Bridge toolkit effects to core registry for unified access
+def bridge_toolkit_effects():
+    """Bridge toolkit effects to the core registry for unified access."""
+    try:
+        from ..image_studio.toolkit import effects  # This triggers effect registration
+        from ..image_studio.toolkit.effects.base_effect import (
+            EffectRegistry as ToolkitEffectRegistry,
+        )
+
+        toolkit_effects = ToolkitEffectRegistry.get_all_effects()
+
+        for name, effect in toolkit_effects.items():
+            # Skip if already registered
+            if EffectsRegistry.get_effect(name) is not None:
+                continue
+
+            # Create a wrapper function that matches core registry expectations
+            def make_effect_wrapper(effect_instance):
+                def effect_wrapper(image, **params):
+                    return effect_instance.apply_with_validation(image, **params)
+
+                return effect_wrapper
+
+            effect_wrapper = make_effect_wrapper(effect)
+
+            # Convert toolkit parameters to core registry format
+            core_parameters = []
+            for param in effect.get_parameters():
+                if param.param_type == "float":
+                    core_param = float_parameter(
+                        param.name,
+                        param.default,
+                        param.min_value or 0.0,
+                        param.max_value or 10.0,
+                        param.description,
+                    )
+                elif param.param_type == "int":
+                    core_param = int_parameter(
+                        param.name,
+                        param.default,
+                        param.min_value or 0,
+                        param.max_value or 100,
+                        param.description,
+                    )
+                elif param.param_type == "bool":
+                    core_param = bool_parameter(
+                        param.name, param.default, param.description
+                    )
+                elif param.param_type == "choice":
+                    core_param = choice_parameter(
+                        param.name,
+                        param.choices or [],
+                        param.default,
+                        param.description,
+                    )
+                else:
+                    core_param = create_parameter(
+                        param.name,
+                        type(param.default),
+                        param.default,
+                        param.description,
+                    )
+                core_parameters.append(core_param)
+
+            # Register with core registry
+            core_effect = ImageEffect(
+                name=name,
+                display_name=effect.display_name,
+                description=effect.get_description(),
+                category=effect.category,
+                function=effect_wrapper,
+                parameters=core_parameters,
+                preview_safe=getattr(effect, "preview_safe", True),
+            )
+            EffectsRegistry.register(core_effect)
+
+    except ImportError:
+        # Toolkit effects not available
+        pass
+
+
+# Bridge the effects systems
+bridge_toolkit_effects()

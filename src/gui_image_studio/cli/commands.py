@@ -13,13 +13,90 @@ from typing import Optional, Tuple
 
 from .. import __version__
 from ..core.code_generation import embed_images_from_folder
-from ..core.effects_registry import EffectsRegistry
-from ..core.image_effects import apply_transformations
 from ..core.io_utils import load_image, save_image
 from ..core.sample_creation import (
     create_sample_image_set,
     create_sample_images_legacy_compatible,
 )
+from ..image_studio.toolkit import effects  # This triggers effect registration
+
+# Use the modern toolkit effects system
+from ..image_studio.toolkit.effects.base_effect import EffectRegistry
+
+
+def apply_toolkit_transformations(image, **transforms):
+    """Apply transformations using the toolkit effects system."""
+    from PIL import Image
+
+    result = image
+
+    # Map CLI parameters to toolkit effects
+    effect_mappings = [
+        ("grayscale", "grayscale", {}),
+        ("rotate", "rotate", {"angle": transforms.get("rotate", 0)}),
+        ("contrast", "contrast", {"factor": transforms.get("contrast", 1.0)}),
+        ("saturation", "saturation", {"factor": transforms.get("saturation", 1.0)}),
+        ("brightness", "brightness", {"factor": transforms.get("brightness", 1.0)}),
+        ("blur_radius", "blur", {"radius": transforms.get("blur_radius", 0.0)}),
+    ]
+
+    # Apply each transformation if specified
+    for param_name, effect_name, effect_params in effect_mappings:
+        if param_name in transforms and transforms[param_name] != (
+            1.0 if "factor" in effect_params else 0
+        ):
+            effect = EffectRegistry.get_effect(effect_name)
+            if effect:
+                # Update effect params with actual values
+                for param_key, param_value in effect_params.items():
+                    if param_value == transforms.get(param_name):
+                        effect_params[param_key] = transforms[param_name]
+
+                result = effect.apply_with_validation(result, **effect_params)
+
+    # Handle special cases that don't map directly to toolkit effects
+
+    # Handle resize (not a toolkit effect, use PIL directly)
+    if "size" in transforms:
+        result = result.resize(transforms["size"], Image.Resampling.LANCZOS)
+
+    # Handle transparency (not a toolkit effect, use PIL directly)
+    if "transparency" in transforms and transforms["transparency"] != 1.0:
+        from PIL import ImageEnhance
+
+        enhancer = ImageEnhance.Brightness(result)
+        result = enhancer.enhance(transforms["transparency"])
+
+    # Handle tint (not a toolkit effect, use PIL directly)
+    if "tint_color" in transforms and "tint_intensity" in transforms:
+        tint_color = transforms["tint_color"]
+        intensity = transforms["tint_intensity"]
+        if intensity > 0.0:
+            if result.mode != "RGBA":
+                result = result.convert("RGBA")
+            overlay = Image.new("RGBA", result.size, tint_color + (255,))
+            result = Image.blend(result, overlay, intensity)
+
+    # Handle format conversion (not a toolkit effect, use PIL directly)
+    if "format_override" in transforms and transforms["format_override"]:
+        from io import BytesIO
+
+        target_format = transforms["format_override"]
+        buffer = BytesIO()
+
+        if target_format.upper() == "JPEG":
+            if result.mode in ("RGBA", "LA"):
+                background = Image.new("RGB", result.size, (255, 255, 255))
+                background.paste(
+                    result, mask=result.split()[-1] if result.mode == "RGBA" else None
+                )
+                result = background
+
+        result.save(buffer, format=target_format)
+        buffer.seek(0)
+        result = Image.open(buffer)
+
+    return result
 
 
 def image_processor() -> None:
@@ -159,9 +236,9 @@ def image_processor() -> None:
             transforms["tint_color"] = tuple(args.tint_color)
             transforms["tint_intensity"] = args.tint_intensity
 
-        # Apply transformations using unified core
+        # Apply transformations using toolkit effects system
         print("Applying transformations...")
-        processed_image = apply_transformations(image, **transforms)
+        processed_image = apply_toolkit_transformations(image, **transforms)
 
         # Save the result using unified core
         output_path = Path(args.output)
@@ -402,8 +479,8 @@ def list_effects() -> None:
     args = parser.parse_args()
 
     try:
-        effects = EffectsRegistry.get_all_effects()
-        categories = EffectsRegistry.get_categories()
+        effects = EffectRegistry.get_all_effects()
+        categories = EffectRegistry.get_categories()
 
         if args.category:
             if args.category not in categories:
@@ -521,7 +598,7 @@ def apply_effect() -> None:
     args = parser.parse_args()
 
     if args.list_effects:
-        effects = EffectsRegistry.get_all_effects()
+        effects = EffectRegistry.get_all_effects()
         print("Available effects:")
         for name, effect in effects.items():
             print(f"  {name:15} - {effect.display_name}")
@@ -529,7 +606,7 @@ def apply_effect() -> None:
 
     try:
         # Check if effect exists
-        effect = EffectsRegistry.get_effect(args.effect)
+        effect = EffectRegistry.get_effect(args.effect)
         if effect is None:
             print(f"Error: Unknown effect '{args.effect}'", file=sys.stderr)
             print("Use --list-effects to see available effects")

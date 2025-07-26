@@ -24,21 +24,20 @@ try:
 except ImportError:
     PSUTIL_AVAILABLE = False
 
-from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageFont, ImageTk
+from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageTk
 from threepanewindows import (  # type: ignore[import]
     EnhancedDockableThreePaneWindow,
     PaneConfig,
 )
 
 from gui_image_studio.embedded_icons import cleanup_icon, get_icon_path
-from gui_image_studio.generator import embed_images_from_folder
 
 from .core.canvas_manager import CanvasManager
 from .core.drawing_tools import DrawingToolsManager
 
 # Import refactored components
 from .core.image_manager import ImageManager
-from .ui.dialogs import CodePreviewWindow, HelpWindow, ImageSizeDialog, ToolTip
+from .ui.dialogs import CodePreviewWindow, HelpWindow, ImageSizeDialog
 from .ui.menu import MenuManager
 from .ui.panels import PanelManager
 
@@ -113,19 +112,8 @@ class EnhancedImageDesignerGUI:
         self.menu_manager = MenuManager(self)
         self.panel_manager = PanelManager(self)
 
-        # Drawing state
+        # Drawing state (initialize drawing tools grid setting)
         self.drawing_tools.show_grid = False
-        self.drawing = False
-        self.start_x = 0
-        self.start_y = 0
-
-        # Shape preview state
-        self.preview_shape = None  # Canvas item ID for preview shape
-        self.preview_active = False
-
-        # Pixel highlight for precise drawing
-        self.pixel_highlight = None  # Canvas item ID for pixel highlight
-        self.last_highlight_pos = None  # Track last highlighted position
 
         # Cursor settings - copied from original
         self.cursor_settings = {
@@ -475,9 +463,6 @@ class EnhancedImageDesignerGUI:
     def load_cursor_settings(self):
         """Load cursor settings from file."""
         try:
-            import json
-            import os
-
             settings_file = os.path.join(
                 os.path.expanduser("~"), ".gui_image_studio_cursors.json"
             )
@@ -498,9 +483,6 @@ class EnhancedImageDesignerGUI:
     def save_cursor_settings(self):
         """Save cursor settings to file."""
         try:
-            import json
-            import os
-
             settings_file = os.path.join(
                 os.path.expanduser("~"), ".gui_image_studio_cursors.json"
             )
@@ -548,8 +530,6 @@ class EnhancedImageDesignerGUI:
 
     def choose_color(self):
         """Open color chooser dialog."""
-        from tkinter import colorchooser
-
         color = colorchooser.askcolor(color=self.drawing_tools.get_brush_color())
         if color[1]:
             self.drawing_tools.set_brush_color(color[1])
@@ -858,14 +838,6 @@ class EnhancedImageDesignerGUI:
         self.update_image_list()
         self.select_image(new_name)
 
-    def on_image_select(self, event):
-        """Handle image selection from listbox."""
-        if hasattr(self, "image_listbox"):
-            selection = self.image_listbox.curselection()
-            if selection:
-                name = self.image_listbox.get(selection[0])
-                self.select_image(name)
-
     # Canvas event handlers are handled by CanvasManager
 
     # Drawing methods
@@ -921,8 +893,6 @@ class EnhancedImageDesignerGUI:
             return
 
         # Simple text input dialog
-        from tkinter import simpledialog
-
         text = simpledialog.askstring("Add Text", "Enter text:")
         if text:
             image = self.current_images[self.selected_image]
@@ -931,8 +901,6 @@ class EnhancedImageDesignerGUI:
             try:
                 # Try to use a default font with size based on brush size
                 font_size = max(12, self.size_var.get() * 2)
-                from PIL import ImageFont
-
                 font = ImageFont.load_default()
             except (OSError, IOError, ImportError) as e:
                 # Font loading failed, use None (PIL will use built-in font)
@@ -1868,25 +1836,7 @@ def display_image(parent, image_name, size=None):
                 "Memory Usage", "Memory monitoring not available (psutil not installed)"
             )
 
-    # Cursor settings methods
-    def open_cursor_settings(self):
-        """Open cursor settings dialog."""
-        messagebox.showinfo(
-            "Cursor Settings",
-            "Cursor settings not yet implemented in refactored version.",
-        )
-
-    def load_cursor_settings(self):
-        """Load cursor settings from file."""
-        pass  # Already implemented
-
-    def save_cursor_settings(self):
-        """Save cursor settings to file."""
-        pass  # Already implemented
-
-    def reset_cursor_settings(self):
-        """Reset cursor settings to defaults."""
-        pass  # Already implemented
+    # Cursor settings methods (implemented above)
 
     # Export/Import methods
     def export_images(self):
@@ -2004,21 +1954,7 @@ def display_image(parent, image_name, size=None):
         except Exception as e:
             messagebox.showerror("Export Error", f"Failed to export images: {str(e)}")
 
-    # Panel management methods (already implemented)
-    def toggle_left_panel(self):
-        """Toggle left panel visibility."""
-        if hasattr(self, "three_pane"):
-            self.three_pane.toggle_pane("left")
-
-    def toggle_right_panel(self):
-        """Toggle right panel visibility."""
-        if hasattr(self, "three_pane"):
-            self.three_pane.toggle_pane("right")
-
-    def reset_panel_layout(self):
-        """Reset panel layout to default."""
-        if hasattr(self, "three_pane"):
-            self.three_pane.reset_layout()
+    # Panel management methods (already implemented above)
 
     # Right panel functionality
     def update_rotation_display(self, value=None):
@@ -2698,13 +2634,13 @@ def display_image(parent, image_name, size=None):
     def zoom_in(self):
         """Zoom in on the canvas."""
         current_zoom = self.drawing_tools.get_zoom_level()
-        self.drawing_tools.set_zoom_level(current_zoom * 1.2)
+        self.drawing_tools.set_zoom_level(min(current_zoom * 1.5, 10.0))
         self.update_canvas()
 
     def zoom_out(self):
         """Zoom out on the canvas."""
         current_zoom = self.drawing_tools.get_zoom_level()
-        self.drawing_tools.set_zoom_level(current_zoom / 1.2)
+        self.drawing_tools.set_zoom_level(max(current_zoom / 1.5, 0.1))
         self.update_canvas()
 
     def reset_zoom(self):
@@ -2719,7 +2655,10 @@ def display_image(parent, image_name, size=None):
 
     def toggle_grid(self):
         """Toggle grid display."""
-        self.drawing_tools.toggle_grid()
+        if hasattr(self, "grid_var"):
+            self.drawing_tools.show_grid = self.grid_var.get()
+        else:
+            self.drawing_tools.show_grid = not self.drawing_tools.show_grid
         self.update_canvas()
 
     # Settings
@@ -2770,8 +2709,6 @@ def display_image(parent, image_name, size=None):
 
     def open_online_help(self):
         """Open online documentation."""
-        from tkinter import messagebox
-
         messagebox.showinfo(
             "Online Help",
             "Online documentation would be available at:\n"
@@ -2779,14 +2716,7 @@ def display_image(parent, image_name, size=None):
             "For now, use the comprehensive help system (F1) for detailed information.",
         )
 
-    # Additional methods referenced by panels
-    def choose_color(self):
-        """Open color chooser dialog."""
-        color = colorchooser.askcolor(color=self.drawing_tools.get_brush_color())
-        if color[1]:  # color[1] is the hex string
-            self.drawing_tools.set_brush_color(color[1])
-            if hasattr(self, "color_button"):
-                self.color_button.configure(bg=color[1])
+    # Additional methods referenced by panels (choose_color implemented above)
 
     def duplicate_image(self):
         """Duplicate the selected image."""
@@ -2845,20 +2775,6 @@ def display_image(parent, image_name, size=None):
                 self.update_image_list()
                 self.update_preview()
 
-    def zoom_in(self):
-        """Zoom in on the canvas."""
-        self.drawing_tools.set_zoom_level(
-            min(self.drawing_tools.get_zoom_level() * 1.5, 10.0)
-        )
-        self.update_canvas()
-
-    def zoom_out(self):
-        """Zoom out on the canvas."""
-        self.drawing_tools.set_zoom_level(
-            max(self.drawing_tools.get_zoom_level() / 1.5, 0.1)
-        )
-        self.update_canvas()
-
     def zoom_fit(self):
         """Fit image to canvas."""
         if not self.selected_image:
@@ -2875,19 +2791,6 @@ def display_image(parent, image_name, size=None):
                 self.drawing_tools.set_zoom_level(min(zoom_x, zoom_y, 10.0))
                 self.update_canvas()
 
-    def reset_zoom(self):
-        """Reset zoom to 100%."""
-        self.drawing_tools.set_zoom_level(1.0)
-        self.update_canvas()
-
-    def toggle_grid(self):
-        """Toggle grid display."""
-        if hasattr(self, "grid_var"):
-            self.drawing_tools.show_grid = self.grid_var.get()
-        else:
-            self.drawing_tools.show_grid = not self.drawing_tools.show_grid
-        self.update_canvas()
-
     def on_name_change(self, event):
         """Handle name change in properties."""
         if self.selected_image and hasattr(self, "name_var"):
@@ -2895,14 +2798,72 @@ def display_image(parent, image_name, size=None):
             if new_name and new_name != self.selected_image:
                 self.rename_image(self.selected_image, new_name)
 
+    def rename_image(self, old_name, new_name):
+        """Rename an image."""
+        if old_name not in self.current_images:
+            return
+
+        if new_name in self.current_images:
+            messagebox.showwarning("Warning", "Name already exists")
+            if hasattr(self, "name_var"):
+                self.name_var.set(old_name)
+            return
+
+        # Rename image in all dictionaries
+        image = self.current_images[old_name]
+        del self.current_images[old_name]
+        self.current_images[new_name] = image
+
+        if old_name in self.original_images:
+            self.original_images[new_name] = self.original_images[old_name]
+            del self.original_images[old_name]
+
+        if old_name in self.base_images:
+            self.base_images[new_name] = self.base_images[old_name]
+            del self.base_images[old_name]
+
+        if old_name in self.current_rotations:
+            self.current_rotations[new_name] = self.current_rotations[old_name]
+            del self.current_rotations[old_name]
+
+        if old_name in self.image_previews:
+            self.image_previews[new_name] = self.image_previews[old_name]
+            del self.image_previews[old_name]
+
+        # Update selected image
+        if self.selected_image == old_name:
+            self.selected_image = new_name
+
+        self.update_image_list()
+        self.select_image(new_name)
+
     def resize_image(self):
         """Resize the current image."""
+        if not self.selected_image:
+            messagebox.showwarning("Warning", "No image selected")
+            return
+
         if hasattr(self, "width_var") and hasattr(self, "height_var"):
             try:
                 width = self.width_var.get()
                 height = self.height_var.get()
-                self.canvas_manager.create_new_image((width, height))
-            except tk.TclError:
+
+                if width <= 0 or height <= 0:
+                    messagebox.showerror("Error", "Invalid size values")
+                    return
+
+                # Resize the current image
+                image = self.current_images[self.selected_image]
+                resized = image.resize((width, height), Image.LANCZOS)
+                self.current_images[self.selected_image] = resized
+
+                # Update base image to the resized version and reset rotation
+                self.update_base_image()
+
+                self.update_canvas()
+                self.update_preview()
+
+            except (tk.TclError, ValueError):
                 messagebox.showerror("Error", "Invalid size values")
 
     def generate_python_code(self):
@@ -2975,6 +2936,9 @@ def display_image(parent, image_name, size=None):
         # Cleanup temporary files and icons
         try:
             import shutil
+
+            if hasattr(self, "temp_dir"):
+                shutil.rmtree(self.temp_dir, ignore_errors=True)
 
             if hasattr(self.image_manager, "temp_dir"):
                 shutil.rmtree(self.image_manager.temp_dir, ignore_errors=True)
