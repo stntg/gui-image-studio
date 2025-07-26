@@ -226,7 +226,14 @@ class CanvasManager:
             print(f"Shape tool {current_tool} started at ({x}, {y})")  # Debug
 
         elif current_tool in text_tools:
-            self.app.add_text(x, y)
+            # Use the drawing tools system for text
+            image = self.app.current_images[self.app.selected_image]
+            kwargs = {
+                "size": self.app.size_var.get(),
+                "root": self.app.root,
+            }
+            self.app.drawing_tools.handle_click(image, x, y, **kwargs)
+            self.app.update_canvas()
 
     def on_canvas_drag(self, event):
         """Handle canvas drag events."""

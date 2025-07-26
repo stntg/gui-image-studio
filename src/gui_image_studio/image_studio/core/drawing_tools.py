@@ -164,6 +164,14 @@ class DrawingToolsManager:
             ):  # Don't let tool-specific color override global brush color
                 merged[key] = value
 
+        # Special handling for text tool: map font_size to size if size not provided
+        if (
+            self.current_tool_name == "text"
+            and "font_size" in merged
+            and "size" not in kwargs
+        ):
+            merged["size"] = merged["font_size"]
+
         # Override with provided kwargs
         merged.update(kwargs)
 
@@ -186,6 +194,11 @@ class DrawingToolsManager:
             temp_settings[setting] = value
             validated = tool.validate_settings(temp_settings)
             self.tool_settings[tool_name] = validated
+
+            # Debug output for text tool
+            # if tool_name == "text":
+            #     print(f"Setting {setting} = {value} for text tool")
+            #     print(f"Validated settings: {validated}")
         else:
             self.tool_settings[tool_name][setting] = value
 

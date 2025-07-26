@@ -73,29 +73,175 @@ class TextTool(BaseTool):
         italic = kwargs.get("italic", self.settings["italic"])
 
         # Try to load font
-        try:
-            # Construct font style
-            font_style = ""
+        font = None
+        font_loaded = False
+
+        # Try different font loading approaches
+        font_attempts = []
+
+        # Attempt 1: Try with style suffix
+        if bold and italic:
+            font_attempts.extend(
+                [
+                    f"{font_family} Bold Italic",
+                    f"{font_family}bi",
+                    f"{font_family}-BoldItalic",
+                ]
+            )
+        elif bold:
+            font_attempts.extend(
+                [f"{font_family} Bold", f"{font_family}b", f"{font_family}-Bold"]
+            )
+        elif italic:
+            font_attempts.extend(
+                [f"{font_family} Italic", f"{font_family}i", f"{font_family}-Italic"]
+            )
+
+        # Attempt 2: Try base font name
+        font_attempts.append(font_family)
+
+        # Attempt 3: Try common system font names with Windows paths
+        import os
+
+        windows_fonts_dir = "C:/Windows/Fonts/"
+
+        if font_family.lower() == "arial":
             if bold and italic:
-                font_style = "bold italic"
+                font_attempts.extend(
+                    [
+                        os.path.join(windows_fonts_dir, "arialbi.ttf"),
+                        "arial bold italic",
+                    ]
+                )
             elif bold:
-                font_style = "bold"
+                font_attempts.extend(
+                    [os.path.join(windows_fonts_dir, "arialbd.ttf"), "arial bold"]
+                )
             elif italic:
-                font_style = "italic"
+                font_attempts.extend(
+                    [os.path.join(windows_fonts_dir, "ariali.ttf"), "arial italic"]
+                )
+            font_attempts.extend(
+                [os.path.join(windows_fonts_dir, "arial.ttf"), "arial.ttf", "Arial"]
+            )
+        elif font_family.lower() == "times new roman":
+            if bold and italic:
+                font_attempts.extend(
+                    [
+                        os.path.join(windows_fonts_dir, "timesbi.ttf"),
+                        "times new roman bold italic",
+                    ]
+                )
+            elif bold:
+                font_attempts.extend(
+                    [
+                        os.path.join(windows_fonts_dir, "timesbd.ttf"),
+                        "times new roman bold",
+                    ]
+                )
+            elif italic:
+                font_attempts.extend(
+                    [
+                        os.path.join(windows_fonts_dir, "timesi.ttf"),
+                        "times new roman italic",
+                    ]
+                )
+            font_attempts.extend(
+                [
+                    os.path.join(windows_fonts_dir, "times.ttf"),
+                    "times.ttf",
+                    "Times New Roman",
+                    "Times",
+                ]
+            )
+        elif font_family.lower() == "courier new":
+            if bold and italic:
+                font_attempts.extend(
+                    [
+                        os.path.join(windows_fonts_dir, "courbi.ttf"),
+                        "courier new bold italic",
+                    ]
+                )
+            elif bold:
+                font_attempts.extend(
+                    [os.path.join(windows_fonts_dir, "courbd.ttf"), "courier new bold"]
+                )
+            elif italic:
+                font_attempts.extend(
+                    [os.path.join(windows_fonts_dir, "couri.ttf"), "courier new italic"]
+                )
+            font_attempts.extend(
+                [
+                    os.path.join(windows_fonts_dir, "cour.ttf"),
+                    "cour.ttf",
+                    "Courier New",
+                    "Courier",
+                ]
+            )
+        elif font_family.lower() == "helvetica":
+            # Helvetica often maps to Arial on Windows
+            if bold and italic:
+                font_attempts.extend(
+                    [
+                        os.path.join(windows_fonts_dir, "arialbi.ttf"),
+                        "helvetica bold italic",
+                    ]
+                )
+            elif bold:
+                font_attempts.extend(
+                    [os.path.join(windows_fonts_dir, "arialbd.ttf"), "helvetica bold"]
+                )
+            elif italic:
+                font_attempts.extend(
+                    [os.path.join(windows_fonts_dir, "ariali.ttf"), "helvetica italic"]
+                )
+            font_attempts.extend(
+                [
+                    os.path.join(windows_fonts_dir, "arial.ttf"),
+                    "arial.ttf",
+                    "Arial",
+                    "Helvetica",
+                ]
+            )
+        elif font_family.lower() == "verdana":
+            if bold and italic:
+                font_attempts.extend(
+                    [
+                        os.path.join(windows_fonts_dir, "verdanaz.ttf"),
+                        "verdana bold italic",
+                    ]
+                )
+            elif bold:
+                font_attempts.extend(
+                    [os.path.join(windows_fonts_dir, "verdanab.ttf"), "verdana bold"]
+                )
+            elif italic:
+                font_attempts.extend(
+                    [os.path.join(windows_fonts_dir, "verdanai.ttf"), "verdana italic"]
+                )
+            font_attempts.extend(
+                [
+                    os.path.join(windows_fonts_dir, "verdana.ttf"),
+                    "verdana.ttf",
+                    "Verdana",
+                ]
+            )
 
-            if font_style:
-                font_name = f"{font_family} {font_style}"
-            else:
-                font_name = font_family
+        # Try to load fonts in order of preference
+        for font_name in font_attempts:
+            try:
+                font = ImageFont.truetype(font_name, font_size)
+                font_loaded = True
+                break
+            except (OSError, IOError):
+                continue
 
-            font = ImageFont.truetype(font_name, font_size)
-        except (OSError, IOError):
-            # Fallback to default font
+        if not font_loaded:
+            # Fallback to default font with size
             try:
                 font = ImageFont.load_default()
-            except (OSError, IOError, ImportError) as e:
+            except (OSError, IOError, ImportError):
                 # Default font loading failed, use None (PIL will use built-in font)
-                print(f"Warning: Could not load default font: {e}")
                 font = None
 
         # Convert hex color to RGBA tuple for PIL

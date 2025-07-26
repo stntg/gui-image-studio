@@ -401,6 +401,10 @@ class EnhancedImageDesignerGUI:
         # Update cursor with proper orientation
         self.update_tool_cursor(tool)
 
+        # Update settings panel for the selected tool
+        if hasattr(self, "panel_manager") and hasattr(self.panel_manager, "left_panel"):
+            self.panel_manager.left_panel.setup_tool_settings(tool)
+
     def update_tool_cursor(self, tool):
         """Update the canvas cursor based on the selected tool and user settings."""
         if not hasattr(self, "canvas") or self.canvas is None:
@@ -535,6 +539,15 @@ class EnhancedImageDesignerGUI:
             self.drawing_tools.set_brush_color(color[1])
             if hasattr(self, "color_button"):
                 self.color_button.configure(bg=self.drawing_tools.get_brush_color())
+
+    def open_tool_settings(self, tool_name: str):
+        """Open settings dialog for a specific tool."""
+        # For now, just switch to the tool and update the settings panel
+        # This ensures the settings panel shows the tool's settings
+        self.select_tool(tool_name)
+
+        # Future enhancement: Could open a separate settings dialog
+        # For now, the settings are shown in the left panel
 
     def update_ui_state(self):
         """Update UI state based on current selection."""
