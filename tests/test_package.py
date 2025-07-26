@@ -10,7 +10,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 import gui_image_studio
-from gui_image_studio.generator import embed_images_from_folder
+from gui_image_studio.core.code_generation import embed_images_from_folder
 from gui_image_studio.sample_creator import create_sample_images
 
 
