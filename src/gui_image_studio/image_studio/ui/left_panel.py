@@ -371,6 +371,12 @@ class LeftPanel:
             self.app.settings_frame.configure(text="Tool Settings")
             self.app.tool_settings_label.configure(text="No Tool Selected")
 
+            # Collapse the tool settings section when no tool is selected
+            if self.app.settings_expanded.get():
+                self.app.tool_settings_frame.pack_forget()
+                self.app.expand_button.configure(text="▶")
+                self.app.settings_expanded.set(False)
+
             # Show message that no tool is selected
             no_tool_label = ttk.Label(
                 self.app.tool_settings_frame,
@@ -390,6 +396,12 @@ class LeftPanel:
             self.app.tool_settings_label.configure(
                 text=f"{tool_info['display_name']} Specific Settings"
             )
+
+        # Expand the tool settings section when a tool is selected
+        if not self.app.settings_expanded.get():
+            self.app.tool_settings_frame.pack(fill=tk.X, padx=3, pady=3)
+            self.app.expand_button.configure(text="▼")
+            self.app.settings_expanded.set(True)
 
         # Get tool settings panel configuration
         settings_panel = self.app.drawing_tools.get_tool_settings_panel(tool_name)
