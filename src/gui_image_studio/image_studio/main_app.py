@@ -138,13 +138,16 @@ class EnhancedImageDesignerGUI:
         self.setup_bindings()
         self.setup_preview_bindings()
 
-        # Initialize default tool
-        self.select_tool("brush")
+        # Don't select any tool initially when no images are present
+        # Tools will be enabled when an image is created or loaded
 
         # Initialize UI state
         self.update_ui_state()
         self.update_canvas()  # Show initial instructions
         self.update_preview()  # Show initial preview
+
+        # Set initial button styles (prominent when no images)
+        self.update_button_styles()
 
         # Center the window on the desktop
         self.center_window()
@@ -197,6 +200,47 @@ class EnhancedImageDesignerGUI:
         style.map(
             "ProminentLoad.TButton", background=[("active", "#1976D2")]
         )  # Darker blue on hover
+
+    def update_button_styles(self):
+        """Update button styles based on whether images are present."""
+        if hasattr(self, "new_image_btn") and hasattr(self, "load_image_btn"):
+            if not self.current_images:
+                # Prominent styles when no images are present
+                self.new_image_btn.configure(
+                    text="🆕 New",
+                    bg="#4CAF50",  # Green background
+                    fg="white",  # White text
+                    font=("Arial", 8, "bold"),
+                    activebackground="#45a049",  # Darker green when pressed
+                    activeforeground="white",
+                )
+                self.load_image_btn.configure(
+                    text="📁 Load",
+                    bg="#2196F3",  # Blue background
+                    fg="white",  # White text
+                    font=("Arial", 8, "bold"),
+                    activebackground="#1976D2",  # Darker blue when pressed
+                    activeforeground="white",
+                )
+            else:
+                # Normal button appearance when images exist - using consistent colors
+                # across platforms
+                self.new_image_btn.configure(
+                    text="🆕 New",
+                    bg="#f0f0f0",  # Light gray background (consistent across platforms)
+                    fg="#000000",  # Black text
+                    font=("Arial", 8),
+                    activebackground="#e0e0e0",  # Slightly darker gray when pressed
+                    activeforeground="#000000",
+                )
+                self.load_image_btn.configure(
+                    text="📁 Load",
+                    bg="#f0f0f0",  # Light gray background (consistent across platforms)
+                    fg="#000000",  # Black text
+                    font=("Arial", 8),
+                    activebackground="#e0e0e0",  # Slightly darker gray when pressed
+                    activeforeground="#000000",
+                )
 
     def setup_ui(self) -> None:
         """Setup the enhanced user interface with threepanewindows."""
@@ -811,6 +855,10 @@ class EnhancedImageDesignerGUI:
                         self.image_listbox.see(index)
                 except Exception as e:
                     print(f"Error updating listbox selection: {e}")
+
+            # Auto-select brush tool when an image is selected (if no tool is currently selected)
+            if self.drawing_tools.get_current_tool() is None:
+                self.select_tool("brush")
 
     def on_name_change(self, event):
         """Handle image name change."""
@@ -2908,6 +2956,9 @@ def display_image(parent, image_name, size=None):
                         self.image_manager.add_image(name, image)
                 except Exception as e:
                     print(f"Error syncing image manager: {e}")
+
+        # Update button styles based on whether images are present
+        self.update_button_styles()
 
     # Drawing methods - copied from original
     def add_text(self, x, y):

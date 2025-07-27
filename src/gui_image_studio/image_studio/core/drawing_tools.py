@@ -14,7 +14,7 @@ class DrawingToolsManager:
 
     def __init__(self):
         # Core state
-        self.current_tool_name = "brush"
+        self.current_tool_name = None  # No tool selected initially
         self.brush_size = 5
         self.brush_color = "#000000"
         self.canvas_size = (300, 300)

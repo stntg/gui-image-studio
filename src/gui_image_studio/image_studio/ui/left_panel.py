@@ -5,7 +5,7 @@ Contains tools and image management functionality.
 
 import tkinter as tk
 from tkinter import ttk
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     from ..main_app import EnhancedImageDesignerGUI
@@ -202,6 +202,7 @@ class LeftPanel:
         btn_frame.pack(fill=tk.X, padx=3, pady=3)
 
         # Use grid for more compact button layout
+        # Use tk.Button for better color control
         self.app.new_image_btn = tk.Button(
             btn_frame,
             text="🆕 New",
@@ -324,11 +325,20 @@ class LeftPanel:
             self.app.expand_button.configure(text="▼")
             self.app.settings_expanded.set(True)
 
-    def _update_permanent_controls(self, tool_name: str, current_settings: dict):
+    def _update_permanent_controls(
+        self, tool_name: Optional[str], current_settings: dict = None
+    ):
         """Update the permanent color and size controls with current tool values."""
         # Update color button
         current_color = self.app.drawing_tools.get_brush_color()
         self.app.color_button.configure(bg=current_color)
+
+        # If no tool is selected, show the permanent size control
+        if tool_name is None:
+            self.app.size_frame.pack(fill=tk.X, padx=3, pady=2)
+            current_size = self.app.drawing_tools.get_brush_size()
+            self.app.size_var.set(current_size)
+            return
 
         # Update size control - check if tool has its own size setting
         settings_panel = self.app.drawing_tools.get_tool_settings_panel(tool_name)
@@ -350,11 +360,26 @@ class LeftPanel:
             current_size = self.app.drawing_tools.get_brush_size()
             self.app.size_var.set(current_size)
 
-    def setup_tool_settings(self, tool_name: str):
+    def setup_tool_settings(self, tool_name: Optional[str]):
         """Setup the settings panel for the specified tool."""
         # Clear existing tool-specific settings widgets
         for widget in self.app.tool_settings_frame.winfo_children():
             widget.destroy()
+
+        # Handle case where no tool is selected
+        if tool_name is None:
+            self.app.settings_frame.configure(text="Tool Settings")
+            self.app.tool_settings_label.configure(text="No Tool Selected")
+
+            # Show message that no tool is selected
+            no_tool_label = ttk.Label(
+                self.app.tool_settings_frame,
+                text="Select a tool to see its settings",
+                font=("Arial", 8),
+                foreground="gray",
+            )
+            no_tool_label.pack(padx=3, pady=10)
+            return
 
         # Update frame title and tool settings label
         tool_info = self.app.drawing_tools.get_tool_info(tool_name)
@@ -394,8 +419,9 @@ class LeftPanel:
         # Update permanent controls with tool-specific values
         self._update_permanent_controls(tool_name, current_settings)
 
-        # Update global size variable to match tool's size setting
-        self._sync_global_size_with_tool(tool_name, current_settings)
+        # Update global size variable to match tool's size setting (only if tool is selected)
+        if tool_name is not None:
+            self._sync_global_size_with_tool(tool_name, current_settings)
 
     def _create_setting_widget(
         self, tool_name: str, setting_name: str, config: dict, current_settings: dict
