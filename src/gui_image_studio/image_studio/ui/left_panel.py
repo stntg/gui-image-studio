@@ -132,28 +132,6 @@ class LeftPanel:
             btn.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
             self.app.tool_buttons[tool_name] = btn
 
-            # Check if tool has settings panel
-            settings_panel = self.app.drawing_tools.get_tool_settings_panel(tool_name)
-            if settings_panel:
-                # Create settings button with gear icon
-                settings_btn = tk.Button(
-                    tool_frame,
-                    text="⚙",
-                    command=lambda t=tool_name: self.app.open_tool_settings(t),
-                    font=("Arial", 8),
-                    relief="raised",
-                    bd=1,
-                    width=2,
-                    padx=1,
-                    pady=1,
-                )
-                settings_btn.pack(side=tk.RIGHT)
-
-                # Add tooltip for settings button
-                self._create_tooltip(
-                    settings_btn, f"Settings for {tool_info['display_name']}"
-                )
-
         tools_grid.columnconfigure(0, weight=1)
         tools_grid.columnconfigure(1, weight=1)
 

@@ -540,15 +540,6 @@ class EnhancedImageDesignerGUI:
             if hasattr(self, "color_button"):
                 self.color_button.configure(bg=self.drawing_tools.get_brush_color())
 
-    def open_tool_settings(self, tool_name: str):
-        """Open settings dialog for a specific tool."""
-        # For now, just switch to the tool and update the settings panel
-        # This ensures the settings panel shows the tool's settings
-        self.select_tool(tool_name)
-
-        # Future enhancement: Could open a separate settings dialog
-        # For now, the settings are shown in the left panel
-
     def update_ui_state(self):
         """Update UI state based on current selection."""
         # Placeholder for UI state updates
