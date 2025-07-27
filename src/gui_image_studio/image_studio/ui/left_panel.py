@@ -23,16 +23,81 @@ class LeftPanel:
         tools_frame = ttk.LabelFrame(parent, text="Design Tools")
         tools_frame.pack(fill=tk.X, padx=3, pady=3)
 
-        # Tool buttons - more compact with shorter labels
-        tools_grid = ttk.Frame(tools_frame)
-        tools_grid.pack(fill=tk.X, padx=3, pady=3)
-
         self.app.tool_buttons = {}
 
         # Get all registered tools from the drawing tools manager
         from ..toolkit.icons import icon_manager
 
         tools_info = self.app.drawing_tools.get_all_tool_info()
+        num_tools = len(tools_info)
+
+        # Create scrollable area if more than 10 tools, otherwise use regular frame
+        if num_tools > 10:
+            # Create a container frame with fixed height
+            tools_container = ttk.Frame(tools_frame)
+            tools_container.pack(fill=tk.X, padx=3, pady=3)
+
+            # Create canvas with explicit fixed height and scrollbar
+            tools_canvas = tk.Canvas(
+                tools_container, highlightthickness=0, height=120, width=200
+            )
+            tools_scrollbar = ttk.Scrollbar(
+                tools_container, orient="vertical", command=tools_canvas.yview
+            )
+            tools_scrollable_frame = ttk.Frame(tools_canvas)
+
+            # Configure scrolling
+            def configure_scroll_region(event=None):
+                tools_canvas.configure(scrollregion=tools_canvas.bbox("all"))
+
+            tools_scrollable_frame.bind("<Configure>", configure_scroll_region)
+
+            # Create window in canvas
+            canvas_window = tools_canvas.create_window(
+                (0, 0), window=tools_scrollable_frame, anchor="nw"
+            )
+            tools_canvas.configure(yscrollcommand=tools_scrollbar.set)
+
+            # Pack canvas and scrollbar
+            tools_canvas.grid(row=0, column=0, sticky="ew")
+            tools_scrollbar.grid(row=0, column=1, sticky="ns")
+
+            # Configure grid weights
+            tools_container.grid_rowconfigure(0, weight=1)
+            tools_container.grid_columnconfigure(0, weight=1)
+
+            # Ensure the scrollable frame width matches canvas width
+            def configure_canvas_width(event):
+                canvas_width = tools_canvas.winfo_width()
+                tools_canvas.itemconfig(canvas_window, width=canvas_width)
+
+            tools_canvas.bind("<Configure>", configure_canvas_width)
+
+            # Use the scrollable frame as the parent for tools
+            tools_grid = tools_scrollable_frame
+
+            # Bind mousewheel to canvas for scrolling
+            def _on_mousewheel(event):
+                tools_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+
+            tools_canvas.bind("<MouseWheel>", _on_mousewheel)
+            tools_scrollable_frame.bind("<MouseWheel>", _on_mousewheel)
+
+            # Also bind mousewheel to the tools frame itself
+            def bind_mousewheel_recursive(widget):
+                widget.bind("<MouseWheel>", _on_mousewheel)
+                for child in widget.winfo_children():
+                    bind_mousewheel_recursive(child)
+
+            # Bind after a short delay to ensure all widgets are created
+            tools_frame.after(
+                100, lambda: bind_mousewheel_recursive(tools_scrollable_frame)
+            )
+
+        else:
+            # Use regular frame for 10 or fewer tools
+            tools_grid = ttk.Frame(tools_frame)
+            tools_grid.pack(fill=tk.X, padx=3, pady=3)
 
         # Create a frame for each tool (button + settings button)
         for i, (tool_name, tool_info) in enumerate(tools_info.items()):
