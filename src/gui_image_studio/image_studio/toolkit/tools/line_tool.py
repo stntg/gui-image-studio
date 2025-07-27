@@ -46,6 +46,7 @@ class LineTool(BaseTool):
         draw = ImageDraw.Draw(image)
         width = kwargs.get("width", self.settings["width"])
         color = kwargs.get("color", "#000000")  # Use passed color or default black
+        style = kwargs.get("style", self.settings["style"])
 
         # Convert hex color to RGBA tuple for PIL
         try:
@@ -58,8 +59,76 @@ class LineTool(BaseTool):
         except (ValueError, IndexError):
             rgba_color = (0, 0, 0, 255)  # Default to black
 
-        # Draw the line
-        draw.line([x1, y1, x2, y2], fill=rgba_color, width=width)
+        # Draw the line based on style
+        if style == "solid":
+            draw.line([x1, y1, x2, y2], fill=rgba_color, width=width)
+        else:
+            self._draw_styled_line(draw, x1, y1, x2, y2, rgba_color, width, style)
+
+    def _draw_styled_line(self, draw, x1, y1, x2, y2, color, width, style):
+        """Draw a dashed or dotted line."""
+        import math
+
+        # Calculate line length and direction
+        dx = x2 - x1
+        dy = y2 - y1
+        length = math.sqrt(dx * dx + dy * dy)
+
+        if length == 0:
+            return
+
+        # Normalize direction vector
+        unit_x = dx / length
+        unit_y = dy / length
+
+        # Define dash patterns
+        if style == "dashed":
+            dash_length = max(8, width * 2)
+            gap_length = max(4, width)
+        elif style == "dotted":
+            dash_length = max(2, width // 2 + 1)
+            gap_length = max(3, width)
+        else:
+            return
+
+        # Draw dashes/dots along the line
+        current_pos = 0
+        drawing = True
+
+        while current_pos < length:
+            if drawing:
+                # Calculate start and end of current dash/dot
+                start_pos = current_pos
+                end_pos = min(current_pos + dash_length, length)
+
+                # Calculate actual coordinates
+                start_x = x1 + start_pos * unit_x
+                start_y = y1 + start_pos * unit_y
+                end_x = x1 + end_pos * unit_x
+                end_y = y1 + end_pos * unit_y
+
+                if style == "dotted" and dash_length <= 2:
+                    # Draw dots as small circles for very small dash lengths
+                    dot_radius = max(1, width // 2)
+                    draw.ellipse(
+                        [
+                            start_x - dot_radius,
+                            start_y - dot_radius,
+                            start_x + dot_radius,
+                            start_y + dot_radius,
+                        ],
+                        fill=color,
+                    )
+                else:
+                    # Draw line segment
+                    draw.line([start_x, start_y, end_x, end_y], fill=color, width=width)
+
+                current_pos += dash_length
+            else:
+                # Skip gap
+                current_pos += gap_length
+
+            drawing = not drawing
 
     def supports_preview(self) -> bool:
         """Line tool supports preview."""
@@ -70,12 +139,21 @@ class LineTool(BaseTool):
     ) -> Optional[int]:
         """Create a preview line on the canvas."""
         color = kwargs.get("color", "#000000")  # Use passed color or default black
+        width = kwargs.get("width", self.settings["width"])
+        style = kwargs.get("style", self.settings["style"])
 
         # Convert image coordinates to canvas coordinates
         canvas_x1 = x1 * zoom + 10
         canvas_y1 = y1 * zoom + 10
         canvas_x2 = x2 * zoom + 10
         canvas_y2 = y2 * zoom + 10
+
+        # Determine dash pattern based on style
+        dash_pattern = None
+        if style == "dashed":
+            dash_pattern = (8, 4)
+        elif style == "dotted":
+            dash_pattern = (2, 3)
 
         # Create preview line
         return canvas.create_line(
@@ -84,8 +162,8 @@ class LineTool(BaseTool):
             canvas_x2,
             canvas_y2,
             fill=color,
-            width=2,
-            dash=(5, 5),
+            width=max(1, int(width * zoom)),
+            dash=dash_pattern,
             tags="preview",
         )
 

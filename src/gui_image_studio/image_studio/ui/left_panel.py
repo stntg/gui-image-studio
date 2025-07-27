@@ -32,14 +32,14 @@ class LeftPanel:
         num_tools = len(tools_info)
 
         # Create scrollable area if more than 10 tools, otherwise use regular frame
-        if num_tools > 10:
+        if num_tools > 8:
             # Create a container frame with fixed height
             tools_container = ttk.Frame(tools_frame)
             tools_container.pack(fill=tk.X, padx=3, pady=3)
 
             # Create canvas with explicit fixed height and scrollbar
             tools_canvas = tk.Canvas(
-                tools_container, highlightthickness=0, height=120, width=200
+                tools_container, highlightthickness=0, height=104, width=200
             )
             tools_scrollbar = ttk.Scrollbar(
                 tools_container, orient="vertical", command=tools_canvas.yview
@@ -157,9 +157,44 @@ class LeftPanel:
         tools_grid.columnconfigure(0, weight=1)
         tools_grid.columnconfigure(1, weight=1)
 
-        # Dynamic tool settings panel
+        # Settings panel with permanent color controls and collapsible tool settings
         self.app.settings_frame = ttk.LabelFrame(parent, text="Tool Settings")
         self.app.settings_frame.pack(fill=tk.X, padx=3, pady=3)
+
+        # Always visible color controls section
+        self.app.color_controls_frame = ttk.Frame(self.app.settings_frame)
+        self.app.color_controls_frame.pack(fill=tk.X, padx=3, pady=3)
+
+        # Create permanent color controls
+        self._create_permanent_color_controls()
+
+        # Collapsible tool-specific settings section
+        self.app.tool_settings_header = ttk.Frame(self.app.settings_frame)
+        self.app.tool_settings_header.pack(fill=tk.X, padx=3, pady=(3, 0))
+
+        # Expand/collapse button and label
+        self.app.settings_expanded = tk.BooleanVar(value=True)
+        self.app.expand_button = tk.Button(
+            self.app.tool_settings_header,
+            text="▼",
+            font=("Arial", 8),
+            width=2,
+            command=self._toggle_tool_settings,
+            relief="flat",
+            bd=0,
+        )
+        self.app.expand_button.pack(side=tk.LEFT)
+
+        self.app.tool_settings_label = ttk.Label(
+            self.app.tool_settings_header,
+            text="Tool Specific Settings",
+            font=("Arial", 8, "bold"),
+        )
+        self.app.tool_settings_label.pack(side=tk.LEFT, padx=(5, 0))
+
+        # Collapsible frame for tool-specific settings
+        self.app.tool_settings_frame = ttk.Frame(self.app.settings_frame)
+        self.app.tool_settings_frame.pack(fill=tk.X, padx=3, pady=3)
 
         # Initialize with default tool settings
         self.setup_tool_settings(self.app.drawing_tools.get_current_tool())
@@ -259,17 +294,98 @@ class LeftPanel:
         widget.bind("<Enter>", on_enter)
         widget.bind("<Leave>", on_leave)
 
+    def _create_permanent_color_controls(self):
+        """Create permanent color controls that are always visible."""
+        # Color control
+        color_frame = ttk.Frame(self.app.color_controls_frame)
+        color_frame.pack(fill=tk.X, padx=3, pady=3)
+
+        ttk.Label(color_frame, text="Color:", font=("Arial", 8)).pack(side=tk.LEFT)
+
+        self.app.color_button = tk.Button(
+            color_frame,
+            bg=self.app.drawing_tools.get_brush_color(),
+            width=4,
+            height=1,
+            command=self.app.choose_color,
+        )
+        self.app.color_button.pack(side=tk.RIGHT)
+
+        # Basic size control (if not overridden by tool-specific settings)
+        self.app.size_frame = ttk.Frame(self.app.color_controls_frame)
+        self.app.size_frame.pack(fill=tk.X, padx=3, pady=2)
+
+        ttk.Label(self.app.size_frame, text="Size:", font=("Arial", 8)).pack(
+            anchor=tk.W
+        )
+
+        current_size = self.app.drawing_tools.get_brush_size()
+        self.app.size_var = tk.IntVar(value=current_size)
+
+        self.app.size_scale = ttk.Scale(
+            self.app.size_frame,
+            from_=1,
+            to=50,
+            variable=self.app.size_var,
+            orient=tk.HORIZONTAL,
+            length=150,
+            command=lambda val: self.app.drawing_tools.set_brush_size(int(float(val))),
+        )
+        self.app.size_scale.pack(fill=tk.X, padx=3, pady=1)
+
+    def _toggle_tool_settings(self):
+        """Toggle the visibility of tool-specific settings."""
+        if self.app.settings_expanded.get():
+            # Collapse
+            self.app.tool_settings_frame.pack_forget()
+            self.app.expand_button.configure(text="▶")
+            self.app.settings_expanded.set(False)
+        else:
+            # Expand
+            self.app.tool_settings_frame.pack(fill=tk.X, padx=3, pady=3)
+            self.app.expand_button.configure(text="▼")
+            self.app.settings_expanded.set(True)
+
+    def _update_permanent_controls(self, tool_name: str, current_settings: dict):
+        """Update the permanent color and size controls with current tool values."""
+        # Update color button
+        current_color = self.app.drawing_tools.get_brush_color()
+        self.app.color_button.configure(bg=current_color)
+
+        # Update size control - check if tool has its own size setting
+        settings_panel = self.app.drawing_tools.get_tool_settings_panel(tool_name)
+        handled_settings = set(settings_panel.keys()) if settings_panel else set()
+
+        size_related_settings = {
+            "size",
+            "font_size",
+            "width",
+        }
+        has_size_setting = bool(handled_settings & size_related_settings)
+
+        if has_size_setting:
+            # Hide the permanent size control if tool has its own
+            self.app.size_frame.pack_forget()
+        else:
+            # Show and update the permanent size control
+            self.app.size_frame.pack(fill=tk.X, padx=3, pady=2)
+            current_size = self.app.drawing_tools.get_brush_size()
+            self.app.size_var.set(current_size)
+
     def setup_tool_settings(self, tool_name: str):
         """Setup the settings panel for the specified tool."""
-        # Clear existing settings widgets
-        for widget in self.app.settings_frame.winfo_children():
+        # Clear existing tool-specific settings widgets
+        for widget in self.app.tool_settings_frame.winfo_children():
             widget.destroy()
 
-        # Update frame title
+        # Update frame title and tool settings label
         tool_info = self.app.drawing_tools.get_tool_info(tool_name)
         if tool_info:
             self.app.settings_frame.configure(
                 text=f"{tool_info['display_name']} Settings"
+            )
+            self.app.tool_settings_label.configure(
+                text=f"{tool_info['display_name']} Specific Settings"
             )
 
         # Get tool settings panel configuration
@@ -282,14 +398,23 @@ class LeftPanel:
         self.app.setting_vars[tool_name] = {}
 
         if settings_panel:
-            # Create tool-specific settings
+            # Create tool-specific settings in the collapsible frame
             for setting_name, setting_config in settings_panel.items():
                 self._create_setting_widget(
                     tool_name, setting_name, setting_config, current_settings
                 )
+        else:
+            # If no tool-specific settings, show a message
+            no_settings_label = ttk.Label(
+                self.app.tool_settings_frame,
+                text="No additional settings for this tool",
+                font=("Arial", 8),
+                foreground="gray",
+            )
+            no_settings_label.pack(padx=3, pady=10)
 
-        # Always include basic size and color controls
-        self._create_basic_controls(tool_name, current_settings)
+        # Update permanent controls with tool-specific values
+        self._update_permanent_controls(tool_name, current_settings)
 
         # Update global size variable to match tool's size setting
         self._sync_global_size_with_tool(tool_name, current_settings)
@@ -298,7 +423,7 @@ class LeftPanel:
         self, tool_name: str, setting_name: str, config: dict, current_settings: dict
     ):
         """Create a widget for a specific setting."""
-        frame = ttk.Frame(self.app.settings_frame)
+        frame = ttk.Frame(self.app.tool_settings_frame)
         frame.pack(fill=tk.X, padx=3, pady=2)
 
         # Label
@@ -418,76 +543,6 @@ class LeftPanel:
                 color_btn_frame, text=current_value, font=("Arial", 7)
             )
             color_label.pack(side=tk.LEFT, padx=(5, 0))
-
-    def _create_basic_controls(self, tool_name: str, current_settings: dict):
-        """Create basic size and color controls."""
-        # Get tool settings panel to check what settings are already handled
-        settings_panel = self.app.drawing_tools.get_tool_settings_panel(tool_name)
-        handled_settings = set(settings_panel.keys()) if settings_panel else set()
-
-        # Size control - only create if tool doesn't have its own size-related setting
-        size_related_settings = {
-            "size",
-            "font_size",
-            "width",
-        }  # Common size-related setting names
-        has_size_setting = bool(handled_settings & size_related_settings)
-
-        if not has_size_setting:
-            size_frame = ttk.Frame(self.app.settings_frame)
-            size_frame.pack(fill=tk.X, padx=3, pady=2)
-
-            ttk.Label(size_frame, text="Size:", font=("Arial", 8)).pack(anchor=tk.W)
-
-            current_size = self.app.drawing_tools.get_brush_size()
-            if not hasattr(self.app, "size_var"):
-                self.app.size_var = tk.IntVar(value=current_size)
-            else:
-                self.app.size_var.set(current_size)
-
-            size_scale = ttk.Scale(
-                size_frame,
-                from_=1,
-                to=50,
-                variable=self.app.size_var,
-                orient=tk.HORIZONTAL,
-                length=150,
-                command=lambda val: self.app.drawing_tools.set_brush_size(
-                    int(float(val))
-                ),
-            )
-            size_scale.pack(fill=tk.X, padx=3, pady=1)
-
-        # Color control
-        color_frame = ttk.Frame(self.app.settings_frame)
-        color_frame.pack(fill=tk.X, padx=3, pady=3)
-
-        ttk.Label(color_frame, text="Color:", font=("Arial", 8)).pack(side=tk.LEFT)
-
-        if not hasattr(self.app, "color_button") or self.app.color_button is None:
-            self.app.color_button = tk.Button(
-                color_frame,
-                bg=self.app.drawing_tools.get_brush_color(),
-                width=4,
-                height=1,
-                command=self.app.choose_color,
-            )
-        else:
-            # Reparent existing color button
-            try:
-                self.app.color_button.pack_forget()
-                self.app.color_button.configure(master=color_frame)
-            except tk.TclError:
-                # If the button was destroyed, create a new one
-                self.app.color_button = tk.Button(
-                    color_frame,
-                    bg=self.app.drawing_tools.get_brush_color(),
-                    width=4,
-                    height=1,
-                    command=self.app.choose_color,
-                )
-
-        self.app.color_button.pack(side=tk.RIGHT)
 
     def _on_setting_change(self, tool_name: str, setting_name: str, value):
         """Handle setting value changes."""
